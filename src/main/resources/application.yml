@@ -9,8 +9,6 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
-    # 1단계에서는 엔티티/스키마가 없으므로 검증/생성 모두 비활성.
-    # 2단계에서 Flyway가 V1 적용 후 'validate'로 올린다.
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -28,13 +26,23 @@ spring:
 
 server:
   port: 8080
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: RESOURCEHUB_SESSION
+        http-only: true
+        same-site: strict
+        secure: false   # 운영 전환 시 true로 변경
 
 # 애플리케이션 고유 설정
 resourcehub:
   upload:
-    # 로컬 기본값: ./storage/uploads
-    # 운영에서는 환경변수 RESOURCEHUB_UPLOAD_BASE_DIR로 덮어쓴다.
     base-dir: ${RESOURCEHUB_UPLOAD_BASE_DIR:./storage/uploads}
+  company-email-domain: ${RESOURCEHUB_COMPANY_EMAIL_DOMAIN:eactive.co.kr}
+  admin:
+    email: ${RESOURCEHUB_ADMIN_EMAIL:admin@eactive.co.kr}
+    password: ${RESOURCEHUB_ADMIN_PASSWORD:Admin1234!}
 
 logging:
   level:
