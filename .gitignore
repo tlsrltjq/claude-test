@@ -1,0 +1,27 @@
+# Build artifacts
+build/
+.gradle/
+out/
+bin/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+
+# Secrets / environment
+.env
+
+# Runtime data — 절대 Git에 들어가면 안 됨
+storage/
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

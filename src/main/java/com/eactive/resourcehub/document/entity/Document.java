@@ -1,0 +1,67 @@
+package com.eactive.resourcehub.document.entity;
+
+import com.eactive.resourcehub.common.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "documents")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Document extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "folder_id", nullable = false)
+    private Folder folder;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private DocumentType documentType;
+
+    @Column(nullable = false, length = 255)
+    private String title;
+
+    // circular FK: documents.current_version_id → document_versions.id (DEFERRABLE INITIALLY DEFERRED)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_version_id")
+    private DocumentVersion currentVersion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private DocumentStatus status;
+
+    public static Document create(Folder folder, DocumentType documentType, String title) {
+        Document document = new Document();
+        document.folder = folder;
+        document.documentType = documentType;
+        document.title = title;
+        document.status = DocumentStatus.ACTIVE;
+        return document;
+    }
+
+    public void setCurrentVersion(DocumentVersion version) {
+        this.currentVersion = version;
+    }
+
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+
+    public void moveToTrash() {
+        this.status = DocumentStatus.IN_TRASH;
+    }
+
+    public void restore() {
+        this.status = DocumentStatus.ACTIVE;
+    }
+
+    public void delete() {
+        this.status = DocumentStatus.DELETED;
+    }
+}

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: resourcehub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: resourcehub
+      POSTGRES_USER: resourcehub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - resourcehub_postgres_data:/var/lib/postgresql
+
+volumes:
+  resourcehub_postgres_data:
