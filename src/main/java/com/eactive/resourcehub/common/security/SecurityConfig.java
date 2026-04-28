@@ -25,6 +25,7 @@ public class SecurityConfig {
                         "/login", "/signup", "/signup/**",
                         "/health", "/css/**", "/js/**", "/images/**"
                 ).permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

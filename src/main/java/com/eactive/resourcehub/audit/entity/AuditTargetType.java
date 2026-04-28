@@ -4,5 +4,6 @@ public enum AuditTargetType {
     DOCUMENT,
     FOLDER,
     USER,
-    PERMISSION
+    PERMISSION,
+    TEAM
 }

@@ -6,5 +6,8 @@ public enum AuditActionType {
     UPLOAD,
     UPDATE,
     DELETE,
-    PERMISSION_CHANGE
+    PERMISSION_CHANGE,
+    APPROVE,
+    REJECT,
+    CREATE
 }
