@@ -2,6 +2,11 @@ spring:
   application:
     name: eactive-resource-hub
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 40MB
+
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/resourcehub}
     username: ${SPRING_DATASOURCE_USERNAME:resourcehub}
@@ -39,6 +44,7 @@ server:
 resourcehub:
   upload:
     base-dir: ${RESOURCEHUB_UPLOAD_BASE_DIR:./storage/uploads}
+    allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx
   company-email-domain: ${RESOURCEHUB_COMPANY_EMAIL_DOMAIN:eactive.co.kr}
   admin:
     email: ${RESOURCEHUB_ADMIN_EMAIL:admin@eactive.co.kr}
