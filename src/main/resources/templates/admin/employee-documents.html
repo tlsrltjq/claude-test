@@ -34,6 +34,7 @@
             <th>크기</th>
             <th>버전</th>
             <th>업로드일</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -53,6 +54,10 @@
             <td th:text="${doc.currentVersion != null ? #numbers.formatDecimal(doc.currentVersion.fileSize / 1024.0, 1, 1) + ' KB' : '-'}"></td>
             <td th:text="${doc.currentVersion != null ? 'v' + doc.currentVersion.versionNo : '-'}"></td>
             <td th:text="${doc.currentVersion != null ? #temporals.format(doc.currentVersion.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+            <td>
+                <a th:href="@{/admin/employees/{uid}/documents/{did}(uid=${user.id},did=${doc.id})}"
+                   class="btn btn-outline-primary btn-sm">상세</a>
+            </td>
         </tr>
         </tbody>
     </table>

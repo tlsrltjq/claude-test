@@ -24,4 +24,10 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM Document d LEFT JOIN FETCH d.currentVersion WHERE d.folder.id = :folderId AND d.status = :status")
     List<Document> findByFolderIdAndStatusWithVersion(
             @Param("folderId") Long folderId, @Param("status") DocumentStatus status);
+
+    @Query("SELECT d FROM Document d " +
+           "JOIN FETCH d.folder f JOIN FETCH f.owner " +
+           "LEFT JOIN FETCH d.currentVersion " +
+           "WHERE d.id = :id")
+    Optional<Document> findByIdForDetail(@Param("id") Long id);
 }

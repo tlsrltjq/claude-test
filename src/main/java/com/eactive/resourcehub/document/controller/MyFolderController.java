@@ -6,9 +6,12 @@ import com.eactive.resourcehub.document.entity.Document;
 import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentType;
 import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
+import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
+import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +22,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/my/folder")
@@ -27,6 +31,7 @@ public class MyFolderController {
 
     private final FolderRepository folderRepository;
     private final DocumentRepository documentRepository;
+    private final DocumentVersionRepository documentVersionRepository;
     private final DocumentUploadService documentUploadService;
 
     @GetMapping
@@ -71,6 +76,46 @@ public class MyFolderController {
             return "redirect:/my/folder/documents/upload";
         }
         return "redirect:/my/folder";
+    }
+
+    @GetMapping("/documents/{documentId}")
+    public String documentDetail(@PathVariable Long documentId,
+                                 @AuthenticationPrincipal CustomUserDetails userDetails,
+                                 Model model) {
+        Long userId = userDetails.getUser().getId();
+        Document document = documentRepository.findByIdForDetail(documentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
+
+        if (!document.getFolder().getOwner().getId().equals(userId)) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        List<DocumentVersion> versions = documentVersionRepository
+                .findByDocumentIdOrderByVersionNoDesc(documentId);
+        DocumentVersion currentVersion = document.getCurrentVersion() != null
+                ? document.getCurrentVersion() : (versions.isEmpty() ? null : versions.get(0));
+
+        model.addAttribute("document", document);
+        model.addAttribute("currentVersion", currentVersion);
+        model.addAttribute("versions", versions);
+        model.addAttribute("previewType", resolvePreviewType(currentVersion));
+        return "my/document-detail";
+    }
+
+    private String resolvePreviewType(DocumentVersion version) {
+        if (version == null) return "none";
+        String ext = extension(version.getOriginalFileName()).toLowerCase();
+        if ("pdf".equals(ext)) return "pdf";
+        if (Set.of("jpg", "jpeg", "png").contains(ext)) return "image";
+        if (Set.of("docx", "hwp", "hwpx").contains(ext))
+            return version.getPreviewStoragePath() != null ? "pdf" : "none";
+        return "none";
+    }
+
+    private static String extension(String filename) {
+        if (filename == null || !filename.contains(".")) return "";
+        return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

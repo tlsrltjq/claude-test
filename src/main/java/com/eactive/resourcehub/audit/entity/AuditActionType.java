@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.audit.entity;
 
 public enum AuditActionType {
+    VIEW,
     PREVIEW,
     DOWNLOAD,
     UPLOAD,
