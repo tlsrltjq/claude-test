@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다운로드 통계 — eActive Resource Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" th:href="@{/admin}">eActive Hub — 관리자</a>
+        <div class="ms-auto d-flex gap-2">
+            <a th:href="@{/admin/users/pending}" class="btn btn-outline-warning btn-sm">승인 대기</a>
+            <a th:href="@{/admin/documents/review}" class="btn btn-outline-info btn-sm">문서 검토</a>
+            <a th:href="@{/admin/teams}" class="btn btn-outline-light btn-sm">팀 관리</a>
+            <a th:href="@{/admin/employees}" class="btn btn-outline-light btn-sm">직원 목록</a>
+            <a th:href="@{/admin/statistics}" class="btn btn-outline-success btn-sm">통계</a>
+            <a th:href="@{/dashboard}" class="btn btn-outline-secondary btn-sm">내 화면</a>
+            <form th:action="@{/logout}" method="post" class="mb-0">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-outline-danger btn-sm">로그아웃</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h2 class="mb-4">다운로드 통계</h2>
+
+    <!-- 요약 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center text-bg-primary">
+                <div class="card-body">
+                    <h6 class="card-title">전체 다운로드</h6>
+                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.totalCount}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center text-bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">오늘</h6>
+                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.todayCount}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center text-bg-info">
+                <div class="card-body">
+                    <h6 class="card-title">최근 7일</h6>
+                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.weekCount}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center text-bg-warning">
+                <div class="card-body">
+                    <h6 class="card-title">이번 달</h6>
+                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.monthCount}">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- TOP 10 문서 -->
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header fw-bold">TOP 10 다운로드 문서</div>
+                <div class="card-body p-0">
+                    <div th:if="${#lists.isEmpty(topDocuments)}" class="p-3 text-muted">데이터가 없습니다.</div>
+                    <table th:if="${!#lists.isEmpty(topDocuments)}" class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width:36px;">#</th>
+                            <th>문서</th>
+                            <th>소유자</th>
+                            <th class="text-end">횟수</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="doc, stat : ${topDocuments}">
+                            <td class="text-center text-muted small" th:text="${stat.index + 1}"></td>
+                            <td>
+                                <div class="fw-semibold text-truncate" style="max-width:160px;" th:text="${doc.documentTitle}"></div>
+                                <small class="text-muted text-truncate d-block" style="max-width:160px;" th:text="${doc.originalFileName}"></small>
+                            </td>
+                            <td>
+                                <div class="small" th:text="${doc.ownerName}"></div>
+                                <small class="text-muted" th:text="${doc.teamName}"></small>
+                            </td>
+                            <td class="text-end fw-bold" th:text="${doc.downloadCount}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 최근 다운로드 이력 -->
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header fw-bold">최근 다운로드 이력 (최대 30건)</div>
+                <div class="card-body p-0" style="max-height:520px;overflow-y:auto;">
+                    <div th:if="${#lists.isEmpty(recentDownloads)}" class="p-3 text-muted">다운로드 이력이 없습니다.</div>
+                    <table th:if="${!#lists.isEmpty(recentDownloads)}" class="table table-sm table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                        <tr>
+                            <th>일시</th>
+                            <th>다운로더</th>
+                            <th>대상 버전 ID</th>
+                            <th>사유</th>
+                            <th>IP</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="log : ${recentDownloads}">
+                            <td class="small text-nowrap"
+                                th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
+                            <td class="small" th:text="${log.user.name}"></td>
+                            <td class="small text-muted" th:text="${log.targetId}"></td>
+                            <td class="small text-truncate" style="max-width:160px;"
+                                th:text="${log.reason}"></td>
+                            <td class="small text-muted" th:text="${log.ipAddress}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

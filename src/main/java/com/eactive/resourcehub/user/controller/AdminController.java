@@ -1,5 +1,9 @@
 package com.eactive.resourcehub.user.controller;
 
+import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.audit.entity.AuditLog;
+import com.eactive.resourcehub.audit.repository.AuditLogRepository;
+import com.eactive.resourcehub.audit.service.StatisticsService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
 import com.eactive.resourcehub.document.entity.DocumentStatus;
@@ -15,6 +19,8 @@ import com.eactive.resourcehub.permission.repository.PermissionRepository;
 import com.eactive.resourcehub.permission.service.FolderPermissionService;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.service.UserRoleService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 
 import java.util.Set;
@@ -52,6 +58,8 @@ public class AdminController {
     private final DocumentVersionRepository documentVersionRepository;
     private final DocumentReviewService documentReviewService;
     private final PermissionRepository permissionRepository;
+    private final StatisticsService statisticsService;
+    private final AuditLogRepository auditLogRepository;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -288,6 +296,17 @@ public class AdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/documents/review";
+    }
+
+    // ── 통계: /admin/statistics ──────────────────────────────────
+    @GetMapping("/statistics")
+    public String statistics(Model model) {
+        model.addAttribute("downloadStats", statisticsService.getDownloadStats());
+        model.addAttribute("topDocuments", statisticsService.getTopDownloadedDocuments(10));
+        Page<AuditLog> recentPage = auditLogRepository.findByActionTypeWithUser(
+                AuditActionType.DOWNLOAD, PageRequest.of(0, 30));
+        model.addAttribute("recentDownloads", recentPage.getContent());
+        return "admin/statistics";
     }
 
     private String resolvePreviewType(DocumentVersion version) {

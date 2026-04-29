@@ -43,4 +43,12 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
            "LEFT JOIN FETCH dv.reviewedBy " +
            "WHERE dv.id = :id")
     Optional<DocumentVersion> findByIdForReviewDetail(@Param("id") Long id);
+
+    @Query("SELECT dv FROM DocumentVersion dv " +
+           "JOIN FETCH dv.document d " +
+           "JOIN FETCH d.folder f " +
+           "JOIN FETCH f.owner u " +
+           "LEFT JOIN FETCH u.team " +
+           "WHERE dv.id IN :ids")
+    List<DocumentVersion> findByIdInWithOwnerAndTeam(@Param("ids") List<Long> ids);
 }
