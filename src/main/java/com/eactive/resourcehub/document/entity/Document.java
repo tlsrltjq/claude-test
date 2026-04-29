@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "documents")
@@ -41,6 +43,12 @@ public class Document extends BaseEntity {
     @Column(name = "expires_at")
     private LocalDate expiresAt;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "document_tags",
+               joinColumns = @JoinColumn(name = "document_id"),
+               inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<Tag> tags = new HashSet<>();
+
     public static Document create(Folder folder, DocumentType documentType, String title) {
         Document document = new Document();
         document.folder = folder;
@@ -72,5 +80,13 @@ public class Document extends BaseEntity {
 
     public void updateExpiresAt(LocalDate expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    public void addTag(Tag tag) {
+        this.tags.add(tag);
+    }
+
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
     }
 }

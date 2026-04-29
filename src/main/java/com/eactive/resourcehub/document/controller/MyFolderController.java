@@ -11,6 +11,7 @@ import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
+import com.eactive.resourcehub.document.service.TagService;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -38,6 +39,7 @@ public class MyFolderController {
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
     private final DocumentUploadService documentUploadService;
+    private final TagService tagService;
 
     @GetMapping
     public String myFolder(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -95,7 +97,7 @@ public class MyFolderController {
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  Model model) {
         Long userId = userDetails.getUser().getId();
-        Document document = documentRepository.findByIdForDetail(documentId)
+        Document document = documentRepository.findByIdForDetailWithTags(documentId)
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
 
@@ -112,6 +114,7 @@ public class MyFolderController {
         model.addAttribute("currentVersion", currentVersion);
         model.addAttribute("versions", versions);
         model.addAttribute("previewType", resolvePreviewType(currentVersion));
+        model.addAttribute("allTags", tagService.findAll());
         return "my/document-detail";
     }
 
@@ -128,6 +131,30 @@ public class MyFolderController {
     private static String extension(String filename) {
         if (filename == null || !filename.contains(".")) return "";
         return filename.substring(filename.lastIndexOf('.') + 1);
+    }
+
+    @PostMapping("/documents/{documentId}/tags")
+    public String addTag(@PathVariable Long documentId,
+                         @RequestParam String tagName,
+                         @AuthenticationPrincipal CustomUserDetails userDetails,
+                         RedirectAttributes ra) {
+        try {
+            tagService.addTag(documentId, tagName, userDetails.getUser().getId());
+            ra.addFlashAttribute("successMessage", "태그가 추가되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/my/folder/documents/" + documentId;
+    }
+
+    @PostMapping("/documents/{documentId}/tags/{tagId}/remove")
+    public String removeTag(@PathVariable Long documentId,
+                            @PathVariable Long tagId,
+                            @AuthenticationPrincipal CustomUserDetails userDetails,
+                            RedirectAttributes ra) {
+        tagService.removeTag(documentId, tagId, userDetails.getUser().getId());
+        ra.addFlashAttribute("successMessage", "태그가 제거되었습니다.");
+        return "redirect:/my/folder/documents/" + documentId;
     }
 
     @PostMapping("/documents/{documentId}/expiry")

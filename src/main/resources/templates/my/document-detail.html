@@ -101,6 +101,38 @@
                 </div>
             </div>
 
+            <!-- 태그 -->
+            <div class="card mb-3">
+                <div class="card-header fw-bold small">태그</div>
+                <div class="card-body">
+                    <!-- 현재 태그 -->
+                    <div class="mb-2">
+                        <span th:if="${document.tags.isEmpty()}" class="text-muted small">태그 없음</span>
+                        <span th:each="t : ${document.tags}" class="me-1 mb-1 d-inline-flex align-items-center">
+                            <span class="badge rounded-pill bg-light text-secondary border" th:text="${'#' + t.name}"></span>
+                            <form th:action="@{/my/folder/documents/{id}/tags/{tid}/remove(id=${document.id},tid=${t.id})}"
+                                  method="post" class="d-inline ms-1">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                                <button type="submit" class="btn-close btn-close-sm"
+                                        style="font-size:0.55rem;" aria-label="제거"
+                                        onclick="return confirm('태그를 제거하시겠습니까?')"></button>
+                            </form>
+                        </span>
+                    </div>
+                    <!-- 태그 추가 -->
+                    <form th:action="@{/my/folder/documents/{id}/tags(id=${document.id})}" method="post"
+                          class="d-flex gap-2">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                        <input type="text" name="tagName" class="form-control form-control-sm"
+                               placeholder="태그 입력" list="tagSuggestions" maxlength="50">
+                        <datalist id="tagSuggestions">
+                            <option th:each="t : ${allTags}" th:value="${t.name}"></option>
+                        </datalist>
+                        <button type="submit" class="btn btn-outline-secondary btn-sm text-nowrap">추가</button>
+                    </form>
+                </div>
+            </div>
+
             <!-- 만료일 수정 -->
             <div class="card mb-3">
                 <div class="card-header fw-bold small">만료일 수정</div>

@@ -47,4 +47,54 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
            "ORDER BY d.expiresAt ASC")
     List<Document> findExpiringSoon(@Param("today") LocalDate today,
                                     @Param("threshold") LocalDate threshold);
+
+    // 본인 문서 검색 — 태그 FETCH, 태그 필터는 EXISTS 서브쿼리
+    @Query("SELECT DISTINCT d FROM Document d " +
+           "JOIN FETCH d.folder f JOIN FETCH f.owner " +
+           "LEFT JOIN FETCH d.tags " +
+           "WHERE f.owner.id = :ownerId AND d.status = 'ACTIVE' " +
+           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword) " +
+           "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
+           "AND (:tagName IS NULL OR EXISTS (SELECT t FROM d.tags t WHERE LOWER(t.name) = :tagName)) " +
+           "ORDER BY d.createdAt DESC")
+    List<Document> searchOwn(@Param("ownerId") Long ownerId,
+                             @Param("keyword") String keyword,
+                             @Param("typeFilter") DocumentType typeFilter,
+                             @Param("tagName") String tagName);
+
+    // 공유 폴더 문서 검색
+    @Query("SELECT DISTINCT d FROM Document d " +
+           "JOIN FETCH d.folder f JOIN FETCH f.owner " +
+           "LEFT JOIN FETCH d.tags " +
+           "WHERE f.id IN :folderIds AND d.status = 'ACTIVE' AND d.currentVersion IS NOT NULL " +
+           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword) " +
+           "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
+           "AND (:tagName IS NULL OR EXISTS (SELECT t FROM d.tags t WHERE LOWER(t.name) = :tagName)) " +
+           "ORDER BY d.createdAt DESC")
+    List<Document> searchInFolders(@Param("folderIds") List<Long> folderIds,
+                                   @Param("keyword") String keyword,
+                                   @Param("typeFilter") DocumentType typeFilter,
+                                   @Param("tagName") String tagName);
+
+    // 관리자: 전체 문서 검색
+    @Query("SELECT DISTINCT d FROM Document d " +
+           "JOIN FETCH d.folder f JOIN FETCH f.owner u " +
+           "LEFT JOIN FETCH u.team " +
+           "LEFT JOIN FETCH d.tags " +
+           "WHERE d.status = 'ACTIVE' " +
+           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword) " +
+           "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
+           "AND (:tagName IS NULL OR EXISTS (SELECT t FROM d.tags t WHERE LOWER(t.name) = :tagName)) " +
+           "ORDER BY d.createdAt DESC")
+    List<Document> searchAll(@Param("keyword") String keyword,
+                             @Param("typeFilter") DocumentType typeFilter,
+                             @Param("tagName") String tagName);
+
+    // 본인 문서 태그 포함 조회 (detail용)
+    @Query("SELECT d FROM Document d " +
+           "JOIN FETCH d.folder f JOIN FETCH f.owner " +
+           "LEFT JOIN FETCH d.currentVersion " +
+           "LEFT JOIN FETCH d.tags " +
+           "WHERE d.id = :id")
+    Optional<Document> findByIdForDetailWithTags(@Param("id") Long id);
 }

@@ -62,6 +62,7 @@
 
     <div class="d-flex flex-wrap gap-2">
         <a th:href="@{/my/folder}" class="btn btn-primary">내 폴더</a>
+        <a th:href="@{/search}" class="btn btn-outline-primary">문서 검색</a>
         <a th:href="@{/my/activity}" class="btn btn-outline-secondary">내 다운로드 이력</a>
         <a th:if="${user.role.name() == 'TEAM_LEADER' or user.role.name() == 'ADMIN'}"
            th:href="@{/team/members}" class="btn btn-warning text-dark">팀원 관리</a>
