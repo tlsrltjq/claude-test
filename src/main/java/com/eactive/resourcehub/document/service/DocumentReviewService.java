@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.document.service;
 
 import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.common.email.EmailSender;
 import com.eactive.resourcehub.document.entity.Document;
 import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
@@ -10,11 +11,13 @@ import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DocumentReviewService {
@@ -23,6 +26,7 @@ public class DocumentReviewService {
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
+    private final EmailSender emailSender;
 
     @Transactional(readOnly = true)
     public List<DocumentVersion> findPendingVersions() {
@@ -48,6 +52,16 @@ public class DocumentReviewService {
         document.setCurrentVersion(version);
 
         auditLogService.logApproveDocument(reviewerUserId, documentVersionId, request);
+
+        // 이메일 알림 — 실패해도 트랜잭션 영향 없음
+        try {
+            User owner = document.getFolder().getOwner();
+            emailSender.sendDocumentApproved(
+                    owner.getEmail(), owner.getName(),
+                    document.getTitle(), version.getVersionNo());
+        } catch (Exception e) {
+            log.warn("승인 알림 이메일 발송 실패: {}", e.getMessage());
+        }
     }
 
     @Transactional
@@ -71,5 +85,15 @@ public class DocumentReviewService {
         // current_version_id 변경 없음
 
         auditLogService.logRejectDocument(reviewerUserId, documentVersionId, reason.trim(), request);
+
+        // 이메일 알림 — 실패해도 트랜잭션 영향 없음
+        try {
+            User owner = version.getDocument().getFolder().getOwner();
+            emailSender.sendDocumentRejected(
+                    owner.getEmail(), owner.getName(),
+                    version.getDocument().getTitle(), version.getVersionNo(), reason.trim());
+        } catch (Exception e) {
+            log.warn("반려 알림 이메일 발송 실패: {}", e.getMessage());
+        }
     }
 }
