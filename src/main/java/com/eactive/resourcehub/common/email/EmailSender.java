@@ -9,4 +9,10 @@ public interface EmailSender {
 
     void sendDocumentRejected(String toEmail, String ownerName,
                               String documentTitle, int versionNo, String reason);
+
+    void sendDocumentExpiringSoon(String toEmail, String ownerName,
+                                  String documentTitle, java.time.LocalDate expiresAt, int daysLeft);
+
+    void sendDocumentExpired(String toEmail, String ownerName,
+                             String documentTitle, java.time.LocalDate expiresAt);
 }

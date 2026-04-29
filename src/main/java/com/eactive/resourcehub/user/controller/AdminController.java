@@ -4,6 +4,7 @@ import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditLog;
 import com.eactive.resourcehub.audit.repository.AuditLogRepository;
 import com.eactive.resourcehub.audit.service.StatisticsService;
+import com.eactive.resourcehub.document.service.DocumentExpiryService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
 import com.eactive.resourcehub.document.entity.DocumentStatus;
@@ -60,6 +61,7 @@ public class AdminController {
     private final PermissionRepository permissionRepository;
     private final StatisticsService statisticsService;
     private final AuditLogRepository auditLogRepository;
+    private final DocumentExpiryService documentExpiryService;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -296,6 +298,14 @@ public class AdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/documents/review";
+    }
+
+    // ── 만료 현황: /admin/documents/expiry ──────────────────────
+    @GetMapping("/documents/expiry")
+    public String expiryDashboard(Model model) {
+        model.addAttribute("expiredDocuments", documentExpiryService.findExpired());
+        model.addAttribute("expiringSoonDocuments", documentExpiryService.findExpiringSoon());
+        return "admin/documents-expiry";
     }
 
     // ── 통계: /admin/statistics ──────────────────────────────────

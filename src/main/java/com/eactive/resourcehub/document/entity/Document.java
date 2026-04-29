@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "documents")
 @Getter
@@ -36,6 +38,9 @@ public class Document extends BaseEntity {
     @Column(nullable = false, length = 50)
     private DocumentStatus status;
 
+    @Column(name = "expires_at")
+    private LocalDate expiresAt;
+
     public static Document create(Folder folder, DocumentType documentType, String title) {
         Document document = new Document();
         document.folder = folder;
@@ -63,5 +68,9 @@ public class Document extends BaseEntity {
 
     public void delete() {
         this.status = DocumentStatus.DELETED;
+    }
+
+    public void updateExpiresAt(LocalDate expiresAt) {
+        this.expiresAt = expiresAt;
     }
 }

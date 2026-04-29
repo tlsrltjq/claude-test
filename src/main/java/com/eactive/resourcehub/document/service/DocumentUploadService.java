@@ -81,6 +81,11 @@ public class DocumentUploadService {
             isNew = true;
         }
 
+        // 만료일 설정/갱신 (null이면 기존 값 유지)
+        if (req.getExpiresAt() != null) {
+            document.updateExpiresAt(req.getExpiresAt());
+        }
+
         String subPath = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
 
         String storedFileName = UUID.randomUUID() + "." + extension(req.getFile().getOriginalFilename());

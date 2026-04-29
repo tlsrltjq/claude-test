@@ -11,7 +11,9 @@ import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -126,6 +128,25 @@ public class MyFolderController {
     private static String extension(String filename) {
         if (filename == null || !filename.contains(".")) return "";
         return filename.substring(filename.lastIndexOf('.') + 1);
+    }
+
+    @PostMapping("/documents/{documentId}/expiry")
+    public String updateExpiry(@PathVariable Long documentId,
+                               @RequestParam(required = false)
+                               @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiresAt,
+                               @AuthenticationPrincipal CustomUserDetails userDetails,
+                               RedirectAttributes redirectAttributes) {
+        Long userId = userDetails.getUser().getId();
+        Document document = documentRepository.findByIdForDetail(documentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND));
+        if (!document.getFolder().getOwner().getId().equals(userId)) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        document.updateExpiresAt(expiresAt);
+        documentRepository.save(document);
+        redirectAttributes.addFlashAttribute("successMessage", "만료일이 수정되었습니다.");
+        return "redirect:/my/folder/documents/" + documentId;
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

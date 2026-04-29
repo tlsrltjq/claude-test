@@ -115,6 +115,11 @@
                                   class="badge bg-danger">반려됨</span>
                             <span th:if="${lv != null and lv.reviewStatus.name() == 'ARCHIVED'}"
                                   class="badge bg-secondary">보관됨</span>
+                            <!-- 만료 배지 -->
+                            <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
+                                  class="badge bg-danger">만료됨</span>
+                            <span th:if="${doc.expiresAt != null and !doc.expiresAt.isBefore(#temporals.createToday()) and doc.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
+                                  class="badge bg-warning text-dark">만료임박</span>
                         </div>
                         <h6 class="card-title mb-1 text-truncate" th:text="${doc.title}"></h6>
                         <small class="text-muted d-block text-truncate"
