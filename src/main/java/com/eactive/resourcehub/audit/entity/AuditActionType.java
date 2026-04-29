@@ -11,5 +11,8 @@ public enum AuditActionType {
     PERMISSION_CHANGE,
     APPROVE,
     REJECT,
-    CREATE
+    CREATE,
+    CHANGE_ROLE,
+    GRANT_PERMISSION,
+    REVOKE_PERMISSION
 }

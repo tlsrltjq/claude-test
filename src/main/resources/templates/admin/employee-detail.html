@@ -59,16 +59,22 @@
         </div>
     </div>
 
-    <div class="card">
-    <div class="mb-3">
+    <div class="d-flex gap-2 mb-3">
         <a th:href="@{/admin/employees/{id}/documents(id=${user.id})}"
            class="btn btn-outline-secondary btn-sm">문서 목록 보기</a>
+        <a th:href="@{/admin/users/{id}/role(id=${user.id})}"
+           class="btn btn-outline-warning btn-sm">역할 변경</a>
+        <a th:href="@{/admin/users/{id}/permissions(id=${user.id})}"
+           class="btn btn-outline-info btn-sm">권한 관리</a>
     </div>
+
+    <div class="card">
 
         <div class="card-header fw-bold">팀 변경</div>
         <div class="card-body">
             <form th:action="@{/admin/employees/{id}/change-team(id=${user.id})}" method="post"
                   class="d-flex gap-2 align-items-center">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <select name="teamId" class="form-select">
                     <option th:each="t : ${teams}" th:value="${t.id}" th:text="${t.name}"
                             th:selected="${user.team != null and user.team.id == t.id}"></option>
