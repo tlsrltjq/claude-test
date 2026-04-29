@@ -60,6 +60,11 @@
     </div>
 
     <div class="card">
+    <div class="mb-3">
+        <a th:href="@{/admin/employees/{id}/documents(id=${user.id})}"
+           class="btn btn-outline-secondary btn-sm">문서 목록 보기</a>
+    </div>
+
         <div class="card-header fw-bold">팀 변경</div>
         <div class="card-body">
             <form th:action="@{/admin/employees/{id}/change-team(id=${user.id})}" method="post"

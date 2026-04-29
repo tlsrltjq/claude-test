@@ -4,7 +4,7 @@ public enum DocumentType {
     RESUME,
     CAREER_DESCRIPTION,
     GRADUATION_CERTIFICATE,
-    CERTIFICATE,
+    LICENSE,
     EMPLOYMENT_CERTIFICATE,
-    OTHER
+    ETC
 }

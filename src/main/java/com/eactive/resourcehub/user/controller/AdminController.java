@@ -1,6 +1,8 @@
 package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
+import com.eactive.resourcehub.document.entity.DocumentStatus;
+import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.team.repository.TeamRepository;
 import com.eactive.resourcehub.user.dto.ApproveUserRequest;
@@ -30,6 +32,7 @@ public class AdminController {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final FolderRepository folderRepository;
+    private final DocumentRepository documentRepository;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -109,5 +112,17 @@ public class AdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/employees/" + userId;
+    }
+
+    // ── 직원 문서 목록: /admin/employees/{userId}/documents ──
+    @GetMapping("/employees/{userId}/documents")
+    public String employeeDocuments(@PathVariable Long userId, Model model) {
+        User user = employeeService.findById(userId);
+        model.addAttribute("user", user);
+        folderRepository.findByOwnerId(userId).ifPresent(folder -> {
+            model.addAttribute("documents",
+                    documentRepository.findByFolderIdAndStatusWithVersion(folder.getId(), DocumentStatus.ACTIVE));
+        });
+        return "admin/employee-documents";
     }
 }

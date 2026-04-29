@@ -5,6 +5,7 @@ public enum AuditActionType {
     DOWNLOAD,
     UPLOAD,
     UPDATE,
+    UPDATE_DOCUMENT,
     DELETE,
     PERMISSION_CHANGE,
     APPROVE,
