@@ -6,6 +6,13 @@ import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
+import com.eactive.resourcehub.permission.entity.Permission;
+import com.eactive.resourcehub.permission.entity.PermissionTargetType;
+import com.eactive.resourcehub.permission.entity.PermissionType;
+import com.eactive.resourcehub.permission.repository.PermissionRepository;
+import com.eactive.resourcehub.permission.service.FolderPermissionService;
+import com.eactive.resourcehub.user.entity.UserRole;
+import com.eactive.resourcehub.user.service.UserRoleService;
 import org.springframework.http.HttpStatus;
 
 import java.util.Set;
@@ -34,11 +41,14 @@ public class AdminController {
 
     private final AdminUserApprovalService approvalService;
     private final EmployeeManagementService employeeService;
+    private final UserRoleService userRoleService;
+    private final FolderPermissionService folderPermissionService;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final FolderRepository folderRepository;
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
+    private final PermissionRepository permissionRepository;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -152,6 +162,81 @@ public class AdminController {
         model.addAttribute("versions", versions);
         model.addAttribute("previewType", resolvePreviewType(currentVersion));
         return "admin/employee-document-detail";
+    }
+
+    // ── 역할 변경: /admin/users/{userId}/role ──────────────────
+    @GetMapping("/users/{userId}/role")
+    public String roleForm(@PathVariable Long userId, Model model) {
+        User user = employeeService.findById(userId);
+        model.addAttribute("user", user);
+        model.addAttribute("roles", UserRole.values());
+        return "admin/user-role";
+    }
+
+    @PostMapping("/users/{userId}/role")
+    public String changeRole(@PathVariable Long userId,
+                             @RequestParam UserRole role,
+                             @AuthenticationPrincipal CustomUserDetails actor,
+                             HttpServletRequest request,
+                             RedirectAttributes ra) {
+        try {
+            userRoleService.changeRole(userId, role, actor.getUser().getId(), request);
+            ra.addFlashAttribute("successMessage", "역할을 변경했습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/employees/" + userId;
+    }
+
+    // ── 권한 관리: /admin/users/{userId}/permissions ────────────
+    @GetMapping("/users/{userId}/permissions")
+    public String permissionsForm(@PathVariable Long userId, Model model) {
+        User user = employeeService.findById(userId);
+        List<Permission> permissions = folderPermissionService.findPermissionsByUser(userId);
+
+        List<Long> grantedFolderIds = permissions.stream()
+                .map(Permission::getTargetId).toList();
+
+        var allFolders = folderRepository.findAllWithOwner();
+        var grantableFolders = allFolders.stream()
+                .filter(f -> !f.getOwner().getId().equals(userId))
+                .filter(f -> !grantedFolderIds.contains(f.getId()))
+                .toList();
+
+        model.addAttribute("user", user);
+        model.addAttribute("permissions", permissions);
+        model.addAttribute("grantableFolders", grantableFolders);
+        return "admin/user-permissions";
+    }
+
+    @PostMapping("/users/{userId}/permissions/grant")
+    public String grantPermission(@PathVariable Long userId,
+                                  @RequestParam Long folderId,
+                                  @AuthenticationPrincipal CustomUserDetails actor,
+                                  HttpServletRequest request,
+                                  RedirectAttributes ra) {
+        try {
+            folderPermissionService.grant(userId, folderId, actor.getUser().getId(), request);
+            ra.addFlashAttribute("successMessage", "권한을 부여했습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/users/" + userId + "/permissions";
+    }
+
+    @PostMapping("/users/{userId}/permissions/revoke")
+    public String revokePermission(@PathVariable Long userId,
+                                   @RequestParam Long folderId,
+                                   @AuthenticationPrincipal CustomUserDetails actor,
+                                   HttpServletRequest request,
+                                   RedirectAttributes ra) {
+        try {
+            folderPermissionService.revoke(userId, folderId, actor.getUser().getId(), request);
+            ra.addFlashAttribute("successMessage", "권한을 회수했습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/users/" + userId + "/permissions";
     }
 
     private String resolvePreviewType(DocumentVersion version) {

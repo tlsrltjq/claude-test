@@ -60,8 +60,12 @@
         </div>
     </div>
 
-    <div class="alert alert-info">
-        추가 기능은 순차적으로 개발 중입니다. (팀 관리, 문서 업로드, 파일 미리보기 등)
+    <div class="d-flex flex-wrap gap-2">
+        <a th:href="@{/my/folder}" class="btn btn-primary">내 폴더</a>
+        <a th:if="${user.role.name() == 'TEAM_LEADER' or user.role.name() == 'ADMIN'}"
+           th:href="@{/team/members}" class="btn btn-warning text-dark">팀원 관리</a>
+        <a th:href="@{/shared/folders}" class="btn btn-info text-dark">공유 폴더</a>
+        <a th:if="${user.role.name() == 'ADMIN'}" th:href="@{/admin}" class="btn btn-danger">관리자 패널</a>
     </div>
 </div>
 

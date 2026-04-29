@@ -34,6 +34,27 @@ public class AuditLogService {
                 documentVersionId, reason, request);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logChangeRole(Long actorUserId, Long targetUserId, String detail,
+                              HttpServletRequest request) {
+        record(actorUserId, AuditActionType.CHANGE_ROLE, AuditTargetType.USER,
+                targetUserId, detail, request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logGrantPermission(Long actorUserId, Long permissionId, String detail,
+                                   HttpServletRequest request) {
+        record(actorUserId, AuditActionType.GRANT_PERMISSION, AuditTargetType.PERMISSION,
+                permissionId, detail, request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logRevokePermission(Long actorUserId, Long targetUserId, String detail,
+                                    HttpServletRequest request) {
+        record(actorUserId, AuditActionType.REVOKE_PERMISSION, AuditTargetType.PERMISSION,
+                targetUserId, detail, request);
+    }
+
     private void record(Long userId, AuditActionType action, AuditTargetType targetType,
                         Long targetId, String reason, HttpServletRequest request) {
         try {
