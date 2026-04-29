@@ -2,8 +2,13 @@ package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentStatus;
+import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
+import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
+import org.springframework.http.HttpStatus;
+
+import java.util.Set;
 import com.eactive.resourcehub.team.repository.TeamRepository;
 import com.eactive.resourcehub.user.dto.ApproveUserRequest;
 import com.eactive.resourcehub.user.dto.RejectUserRequest;
@@ -33,6 +38,7 @@ public class AdminController {
     private final TeamRepository teamRepository;
     private final FolderRepository folderRepository;
     private final DocumentRepository documentRepository;
+    private final DocumentVersionRepository documentVersionRepository;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -124,5 +130,42 @@ public class AdminController {
                     documentRepository.findByFolderIdAndStatusWithVersion(folder.getId(), DocumentStatus.ACTIVE));
         });
         return "admin/employee-documents";
+    }
+
+    // ── 직원 문서 상세: /admin/employees/{userId}/documents/{documentId} ──
+    @GetMapping("/employees/{userId}/documents/{documentId}")
+    public String employeeDocumentDetail(@PathVariable Long userId,
+                                         @PathVariable Long documentId,
+                                         Model model) {
+        User user = employeeService.findById(userId);
+        var document = documentRepository.findByIdForDetail(documentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
+
+        var versions = documentVersionRepository.findByDocumentIdOrderByVersionNoDesc(documentId);
+        DocumentVersion currentVersion = document.getCurrentVersion() != null
+                ? document.getCurrentVersion() : (versions.isEmpty() ? null : versions.get(0));
+
+        model.addAttribute("user", user);
+        model.addAttribute("document", document);
+        model.addAttribute("currentVersion", currentVersion);
+        model.addAttribute("versions", versions);
+        model.addAttribute("previewType", resolvePreviewType(currentVersion));
+        return "admin/employee-document-detail";
+    }
+
+    private String resolvePreviewType(DocumentVersion version) {
+        if (version == null) return "none";
+        String ext = extension(version.getOriginalFileName()).toLowerCase();
+        if ("pdf".equals(ext)) return "pdf";
+        if (Set.of("jpg", "jpeg", "png").contains(ext)) return "image";
+        if (Set.of("docx", "hwp", "hwpx").contains(ext))
+            return version.getPreviewStoragePath() != null ? "pdf" : "none";
+        return "none";
+    }
+
+    private static String extension(String filename) {
+        if (filename == null || !filename.contains(".")) return "";
+        return filename.substring(filename.lastIndexOf('.') + 1);
     }
 }

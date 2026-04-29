@@ -44,6 +44,7 @@
                 <th>업로드일</th>
                 <th>미리보기</th>
                 <th>다운로드</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -67,6 +68,10 @@
                 </td>
                 <td>
                     <button class="btn btn-outline-secondary btn-sm" disabled>다운로드</button>
+                </td>
+                <td>
+                    <a th:href="@{/my/folder/documents/{id}(id=${doc.id})}"
+                       class="btn btn-outline-primary btn-sm">상세</a>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(documents)}">
