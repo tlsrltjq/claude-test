@@ -57,9 +57,15 @@
                         </tr>
                     </table>
                 </div>
-                <div class="card-footer" th:if="${currentVersion != null}">
+                <div class="card-footer d-flex gap-1 flex-wrap" th:if="${currentVersion != null}">
                     <a th:href="@{/documents/{id}/download/reason(id=${currentVersion.id})}"
-                       class="btn btn-primary btn-sm w-100">다운로드</a>
+                       class="btn btn-primary btn-sm flex-fill">다운로드</a>
+                    <!-- 본인 문서이므로 썸네일 재생성 항상 허용 -->
+                    <form th:action="@{/documents/{id}/thumbnail/regenerate(id=${currentVersion.id})}"
+                          method="post" class="d-inline flex-fill">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm w-100">썸네일 재생성</button>
+                    </form>
                 </div>
             </div>
 

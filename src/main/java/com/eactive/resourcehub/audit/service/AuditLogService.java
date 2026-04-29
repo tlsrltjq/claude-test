@@ -55,6 +55,13 @@ public class AuditLogService {
                 targetUserId, detail, request);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logRegenerate(Long actorUserId, Long documentVersionId, String detail,
+                              HttpServletRequest request) {
+        record(actorUserId, AuditActionType.REGENERATE_THUMBNAIL, AuditTargetType.DOCUMENT_VERSION,
+                documentVersionId, detail, request);
+    }
+
     private void record(Long userId, AuditActionType action, AuditTargetType targetType,
                         Long targetId, String reason, HttpServletRequest request) {
         try {
