@@ -87,6 +87,10 @@ public class User extends BaseEntity {
         this.team = team;
     }
 
+    public void changePosition(String position) {
+        this.position = position;
+    }
+
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
