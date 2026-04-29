@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.document.service;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
+import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.entity.Folder;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
@@ -30,6 +31,7 @@ public class DocumentAccessService {
                         HttpStatus.NOT_FOUND, "문서 버전을 찾을 수 없습니다."));
 
         checkReadAccess(version.getDocument().getFolder(), userDetails);
+        checkReviewStatusAccess(version, userDetails);
         return version;
     }
 
@@ -55,5 +57,21 @@ public class DocumentAccessService {
         }
 
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
+    }
+
+    /**
+     * 팀장/개별 권한자는 APPROVED 버전만 접근 가능.
+     * ADMIN/본인은 모든 상태 접근 가능.
+     */
+    public void checkReviewStatusAccess(DocumentVersion version, CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        UserRole role = userDetails.getUser().getRole();
+
+        if (role == UserRole.ADMIN) return;
+        if (version.getDocument().getFolder().getOwner().getId().equals(userId)) return;
+
+        if (version.getReviewStatus() != DocumentReviewStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "승인된 문서만 접근할 수 있습니다.");
+        }
     }
 }

@@ -1,0 +1,16 @@
+spring:
+  thymeleaf:
+    cache: true
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true      # HTTPS 전용
+        same-site: strict
+
+logging:
+  level:
+    com.eactive.resourcehub: WARN
+    org.flywaydb: INFO
+    org.hibernate.SQL: WARN

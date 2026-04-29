@@ -72,6 +72,19 @@ public class DocumentVersion extends BaseEntity {
         return version;
     }
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private DocumentReviewStatus reviewStatus = DocumentReviewStatus.PENDING_REVIEW;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewed_by")
+    private com.eactive.resourcehub.user.entity.User reviewedBy;
+
+    private LocalDateTime reviewedAt;
+
+    @Column(length = 500)
+    private String rejectReason;
+
     @Column(length = 255)
     private String thumbnailFileName;
 
@@ -94,6 +107,19 @@ public class DocumentVersion extends BaseEntity {
         this.thumbnailStoragePath = thumbnailStoragePath;
         this.thumbnailContentType = thumbnailContentType;
         this.thumbnailGeneratedAt = LocalDateTime.now();
+    }
+
+    public void approve(com.eactive.resourcehub.user.entity.User reviewer) {
+        this.reviewStatus = DocumentReviewStatus.APPROVED;
+        this.reviewedBy = reviewer;
+        this.reviewedAt = LocalDateTime.now();
+    }
+
+    public void reject(com.eactive.resourcehub.user.entity.User reviewer, String reason) {
+        this.reviewStatus = DocumentReviewStatus.REJECTED;
+        this.reviewedBy = reviewer;
+        this.reviewedAt = LocalDateTime.now();
+        this.rejectReason = reason;
     }
 
     public void clearThumbnail() {

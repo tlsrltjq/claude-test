@@ -77,6 +77,7 @@
         <div id="cardGrid" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3"
              th:if="${!#lists.isEmpty(documents)}">
             <div th:each="doc : ${documents}" class="col doc-card-col"
+                 th:with="lv=${latestVersions[doc.id]}"
                  th:data-type="${doc.documentType.name()}"
                  th:data-label="${doc.documentType.name() == 'RESUME' ? '이력서' :
                                  doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
@@ -84,40 +85,56 @@
                                  doc.documentType.name() == 'LICENSE' ? '자격증' :
                                  doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
                  th:data-title="${doc.title}"
-                 th:data-filename="${doc.currentVersion != null ? doc.currentVersion.originalFileName : ''}"
-                 th:data-date="${doc.currentVersion != null ? doc.currentVersion.createdAt : ''}">
+                 th:data-filename="${lv != null ? lv.originalFileName : ''}"
+                 th:data-date="${lv != null ? lv.createdAt : ''}">
                 <div class="card h-100 doc-card">
                     <!-- 썸네일 -->
-                    <div th:if="${doc.currentVersion != null and doc.currentVersion.thumbnailStoragePath != null}">
-                        <img th:src="@{/documents/{id}/thumbnail(id=${doc.currentVersion.id})}"
+                    <div th:if="${lv != null and lv.thumbnailStoragePath != null}">
+                        <img th:src="@{/documents/{id}/thumbnail(id=${lv.id})}"
                              class="card-img-top doc-thumbnail" alt="썸네일"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                         <div class="doc-thumbnail-placeholder" style="display:none;">📄</div>
                     </div>
-                    <div th:if="${doc.currentVersion == null or doc.currentVersion.thumbnailStoragePath == null}"
+                    <div th:if="${lv == null or lv.thumbnailStoragePath == null}"
                          class="doc-thumbnail-placeholder">📄</div>
 
                     <div class="card-body p-2">
-                        <span th:text="${doc.documentType.name() == 'RESUME' ? '이력서' :
-                                         doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                                         doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                                         doc.documentType.name() == 'LICENSE' ? '자격증' :
-                                         doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
-                              class="badge bg-secondary mb-1"></span>
+                        <div class="d-flex gap-1 flex-wrap mb-1">
+                            <span th:text="${doc.documentType.name() == 'RESUME' ? '이력서' :
+                                             doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
+                                             doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
+                                             doc.documentType.name() == 'LICENSE' ? '자격증' :
+                                             doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
+                                  class="badge bg-secondary"></span>
+                            <!-- 검토 상태 배지 -->
+                            <span th:if="${lv != null and lv.reviewStatus.name() == 'PENDING_REVIEW'}"
+                                  class="badge bg-warning text-dark">검토 대기</span>
+                            <span th:if="${lv != null and lv.reviewStatus.name() == 'APPROVED'}"
+                                  class="badge bg-success">승인됨</span>
+                            <span th:if="${lv != null and lv.reviewStatus.name() == 'REJECTED'}"
+                                  class="badge bg-danger">반려됨</span>
+                            <span th:if="${lv != null and lv.reviewStatus.name() == 'ARCHIVED'}"
+                                  class="badge bg-secondary">보관됨</span>
+                            <!-- 만료 배지 -->
+                            <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
+                                  class="badge bg-danger">만료됨</span>
+                            <span th:if="${doc.expiresAt != null and !doc.expiresAt.isBefore(#temporals.createToday()) and doc.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
+                                  class="badge bg-warning text-dark">만료임박</span>
+                        </div>
                         <h6 class="card-title mb-1 text-truncate" th:text="${doc.title}"></h6>
                         <small class="text-muted d-block text-truncate"
-                               th:text="${doc.currentVersion != null ? doc.currentVersion.originalFileName : '-'}"></small>
+                               th:text="${lv != null ? lv.originalFileName : '-'}"></small>
                         <small class="text-muted"
-                               th:text="${doc.currentVersion != null ? 'v' + doc.currentVersion.versionNo : ''}"></small>
+                               th:text="${lv != null ? 'v' + lv.versionNo : ''}"></small>
                         <small class="text-muted ms-1"
-                               th:text="${doc.currentVersion != null ? #temporals.format(doc.currentVersion.createdAt, 'yyyy-MM-dd') : ''}"></small>
+                               th:text="${lv != null ? #temporals.format(lv.createdAt, 'yyyy-MM-dd') : ''}"></small>
                     </div>
                     <div class="card-footer p-2 d-flex gap-1 flex-wrap">
-                        <a th:if="${doc.currentVersion != null}"
-                           th:href="@{/documents/{id}/preview(id=${doc.currentVersion.id})}"
+                        <a th:if="${lv != null}"
+                           th:href="@{/documents/{id}/preview(id=${lv.id})}"
                            target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">미리보기</a>
-                        <a th:if="${doc.currentVersion != null}"
-                           th:href="@{/documents/{id}/download/reason(id=${doc.currentVersion.id})}"
+                        <a th:if="${lv != null}"
+                           th:href="@{/documents/{id}/download/reason(id=${lv.id})}"
                            class="btn btn-outline-secondary btn-sm flex-fill">다운로드</a>
                         <a th:href="@{/my/folder/documents/{id}(id=${doc.id})}"
                            class="btn btn-outline-primary btn-sm flex-fill">상세</a>

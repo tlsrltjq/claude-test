@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문서 검색 — eActive Resource Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">eActive Resource Hub</a>
+        <div class="ms-auto d-flex gap-2">
+            <a th:href="@{/my/folder}" class="btn btn-outline-light btn-sm">내 폴더</a>
+            <a th:href="@{/dashboard}" class="btn btn-outline-light btn-sm">대시보드</a>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-outline-light btn-sm">로그아웃</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4" style="max-width:900px;">
+    <h2 class="mb-4">문서 검색</h2>
+
+    <!-- 검색 폼 -->
+    <form th:action="@{/search}" method="get" class="card card-body mb-4">
+        <div class="row g-2">
+            <div class="col-md-5">
+                <input type="text" name="q" class="form-control" placeholder="제목 키워드"
+                       th:value="${q}">
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">전체 종류</option>
+                    <option th:each="dt : ${documentTypes}"
+                            th:value="${dt.name()}"
+                            th:selected="${dt.name() == type}"
+                            th:text="${dt.name() == 'RESUME' ? '이력서' :
+                                       dt.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
+                                       dt.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
+                                       dt.name() == 'LICENSE' ? '자격증' :
+                                       dt.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}">
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="tag" class="form-select">
+                    <option value="">전체 태그</option>
+                    <option th:each="t : ${allTags}"
+                            th:value="${t.name}"
+                            th:selected="${t.name == tag}"
+                            th:text="${'#' + t.name}">
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">검색</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 결과 -->
+    <div th:if="${results != null}">
+        <p class="text-muted mb-3">
+            검색 결과 <strong th:text="${totalCount}">0</strong>건
+        </p>
+
+        <div th:if="${#lists.isEmpty(results)}" class="alert alert-info">검색 결과가 없습니다.</div>
+
+        <div th:if="${!#lists.isEmpty(results)}" class="list-group">
+            <a th:each="doc : ${results}"
+               th:href="@{/my/folder/documents/{id}(id=${doc.id})}"
+               class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1 me-2">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span th:switch="${doc.documentType.name()}" class="badge bg-secondary">
+                                <span th:case="'RESUME'">이력서</span>
+                                <span th:case="'CAREER_DESCRIPTION'">경력기술서</span>
+                                <span th:case="'GRADUATION_CERTIFICATE'">졸업증명서</span>
+                                <span th:case="'LICENSE'">자격증</span>
+                                <span th:case="'EMPLOYMENT_CERTIFICATE'">재직증명서</span>
+                                <span th:case="*">기타</span>
+                            </span>
+                            <!-- 만료 배지 -->
+                            <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
+                                  class="badge bg-danger">만료됨</span>
+                            <span th:if="${doc.expiresAt != null and !doc.expiresAt.isBefore(#temporals.createToday()) and doc.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
+                                  class="badge bg-warning text-dark">만료임박</span>
+                            <strong th:text="${doc.title}"></strong>
+                        </div>
+                        <!-- 태그 -->
+                        <div th:if="${!doc.tags.isEmpty()}" class="mb-1">
+                            <span th:each="t : ${doc.tags}"
+                                  class="badge rounded-pill bg-light text-secondary border me-1"
+                                  th:text="${'#' + t.name}"></span>
+                        </div>
+                        <small class="text-muted">
+                            <span th:if="${doc.folder != null}" th:text="${doc.folder.owner.name + ' · '}"></span>
+                            <span th:if="${doc.expiresAt != null}"
+                                  th:text="'만료일: ' + ${#temporals.format(doc.expiresAt, 'yyyy-MM-dd')}"></span>
+                        </small>
+                    </div>
+                    <small class="text-muted text-nowrap"
+                           th:text="${#temporals.format(doc.createdAt, 'yyyy-MM-dd')}"></small>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 검색 전 안내 -->
+    <div th:if="${results == null}" class="text-center text-muted mt-5">
+        <div class="fs-1 mb-2">🔍</div>
+        <div>키워드, 문서 종류, 태그로 검색해 보세요.</div>
+        <div class="small mt-1">본인 문서와 공유받은 폴더의 문서가 검색됩니다.</div>
+    </div>
+</div>
+</body>
+</html>
