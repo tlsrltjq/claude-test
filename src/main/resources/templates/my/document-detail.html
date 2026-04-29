@@ -44,6 +44,23 @@
                             <td th:text="'v' + ${currentVersion.versionNo}"></td>
                         </tr>
                         <tr th:if="${currentVersion != null}">
+                            <th class="text-muted fw-normal">검토 상태</th>
+                            <td>
+                                <span th:if="${currentVersion.reviewStatus.name() == 'PENDING_REVIEW'}"
+                                      class="badge bg-warning text-dark">검토 대기</span>
+                                <span th:if="${currentVersion.reviewStatus.name() == 'APPROVED'}"
+                                      class="badge bg-success">승인됨</span>
+                                <span th:if="${currentVersion.reviewStatus.name() == 'REJECTED'}"
+                                      class="badge bg-danger">반려됨</span>
+                                <span th:if="${currentVersion.reviewStatus.name() == 'ARCHIVED'}"
+                                      class="badge bg-secondary">보관됨</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${currentVersion != null and currentVersion.reviewStatus.name() == 'REJECTED' and currentVersion.rejectReason != null}">
+                            <th class="text-muted fw-normal">반려 사유</th>
+                            <td class="text-danger small" th:text="${currentVersion.rejectReason}"></td>
+                        </tr>
+                        <tr th:if="${currentVersion != null}">
                             <th class="text-muted fw-normal">파일명</th>
                             <td th:text="${currentVersion.originalFileName}" class="text-break small"></td>
                         </tr>
@@ -77,7 +94,11 @@
                         th:each="v : ${versions}">
                         <span>
                             <span th:text="'v' + ${v.versionNo}" class="fw-bold"></span>
-                            <span th:text="${v.originalFileName}" class="text-muted ms-1 text-truncate d-inline-block" style="max-width:120px;vertical-align:middle;"></span>
+                            <span th:text="${v.originalFileName}" class="text-muted ms-1 text-truncate d-inline-block" style="max-width:100px;vertical-align:middle;"></span>
+                            <span th:if="${v.reviewStatus.name() == 'PENDING_REVIEW'}" class="badge bg-warning text-dark ms-1">대기</span>
+                            <span th:if="${v.reviewStatus.name() == 'APPROVED'}" class="badge bg-success ms-1">승인</span>
+                            <span th:if="${v.reviewStatus.name() == 'REJECTED'}" class="badge bg-danger ms-1">반려</span>
+                            <span th:if="${v.reviewStatus.name() == 'ARCHIVED'}" class="badge bg-secondary ms-1">보관</span>
                         </span>
                         <span th:text="${#temporals.format(v.createdAt, 'MM-dd HH:mm')}" class="text-muted"></span>
                     </li>

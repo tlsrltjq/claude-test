@@ -11,6 +11,9 @@ import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
+
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -42,10 +45,17 @@ public class MyFolderController {
             model.addAttribute("errorMessage", "개인 폴더가 없습니다. 관리자에게 문의하세요.");
             return "my/folder";
         }
-        List<Document> documents = documentRepository
-                .findByFolderIdAndStatusWithVersion(folder.getId(), DocumentStatus.ACTIVE);
+        // 본인은 모든 상태 문서 조회 (currentVersion이 없는 PENDING 문서 포함)
+        List<Document> documents = documentRepository.findByFolderIdAndStatus(folder.getId(), DocumentStatus.ACTIVE);
+        // 각 문서의 최신 버전을 별도 조회 (review status 포함)
+        Map<Long, DocumentVersion> latestVersions = new HashMap<>();
+        for (Document doc : documents) {
+            documentVersionRepository.findFirstByDocumentIdOrderByVersionNoDesc(doc.getId())
+                    .ifPresent(v -> latestVersions.put(doc.getId(), v));
+        }
         model.addAttribute("folder", folder);
         model.addAttribute("documents", documents);
+        model.addAttribute("latestVersions", latestVersions);
         return "my/folder";
     }
 
@@ -93,8 +103,8 @@ public class MyFolderController {
 
         List<DocumentVersion> versions = documentVersionRepository
                 .findByDocumentIdOrderByVersionNoDesc(documentId);
-        DocumentVersion currentVersion = document.getCurrentVersion() != null
-                ? document.getCurrentVersion() : (versions.isEmpty() ? null : versions.get(0));
+        // 본인은 최신 버전을 currentVersion으로 표시 (pending/rejected 포함)
+        DocumentVersion currentVersion = versions.isEmpty() ? null : versions.get(0);
 
         model.addAttribute("document", document);
         model.addAttribute("currentVersion", currentVersion);

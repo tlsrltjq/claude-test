@@ -62,6 +62,25 @@ public class AuditLogService {
                 documentVersionId, detail, request);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logSubmitReview(Long actorUserId, Long documentVersionId, HttpServletRequest request) {
+        record(actorUserId, AuditActionType.SUBMIT_REVIEW, AuditTargetType.DOCUMENT_VERSION,
+                documentVersionId, "검토 요청", request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logApproveDocument(Long actorUserId, Long documentVersionId, HttpServletRequest request) {
+        record(actorUserId, AuditActionType.APPROVE_DOCUMENT, AuditTargetType.DOCUMENT_VERSION,
+                documentVersionId, "문서 승인", request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logRejectDocument(Long actorUserId, Long documentVersionId, String reason,
+                                  HttpServletRequest request) {
+        record(actorUserId, AuditActionType.REJECT_DOCUMENT, AuditTargetType.DOCUMENT_VERSION,
+                documentVersionId, "반려: " + reason, request);
+    }
+
     private void record(Long userId, AuditActionType action, AuditTargetType targetType,
                         Long targetId, String reason, HttpServletRequest request) {
         try {

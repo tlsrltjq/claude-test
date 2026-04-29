@@ -3,6 +3,7 @@ package com.eactive.resourcehub.document.service;
 import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.file.FileStorage;
+import com.eactive.resourcehub.audit.service.AuditLogService;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.dto.DocumentUploadRequest;
 import com.eactive.resourcehub.document.entity.Document;
@@ -43,6 +44,7 @@ public class DocumentUploadService {
     private final DocumentVersionRepository documentVersionRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final AuditLogService auditLogService;
     private final ThumbnailService thumbnailService;
 
     @Value("${resourcehub.upload.allowed-extensions:pdf,jpg,jpeg,png,docx,hwp,hwpx}")
@@ -121,11 +123,12 @@ public class DocumentUploadService {
             throw e;
         }
 
-        document.setCurrentVersion(version);
+        // current_version_id는 승인 시에만 갱신 — 여기서 갱신하지 않음
 
         AuditActionType action = isNew ? AuditActionType.UPLOAD : AuditActionType.UPDATE_DOCUMENT;
         auditService.log(ownerId, action, AuditTargetType.DOCUMENT, document.getId(),
                 "버전 " + versionNo + " 업로드", httpRequest);
+        auditLogService.logSubmitReview(ownerId, version.getId(), httpRequest);
 
         log.info("문서 업로드 — ownerId={}, docId={}, version={}", ownerId, document.getId(), versionNo);
 

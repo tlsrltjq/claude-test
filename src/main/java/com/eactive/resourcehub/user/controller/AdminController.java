@@ -1,11 +1,13 @@
 package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
+import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
 import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
+import com.eactive.resourcehub.document.service.DocumentReviewService;
 import com.eactive.resourcehub.permission.entity.Permission;
 import com.eactive.resourcehub.permission.entity.PermissionTargetType;
 import com.eactive.resourcehub.permission.entity.PermissionType;
@@ -48,6 +50,7 @@ public class AdminController {
     private final FolderRepository folderRepository;
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
+    private final DocumentReviewService documentReviewService;
     private final PermissionRepository permissionRepository;
 
     @GetMapping({"", "/"})
@@ -56,6 +59,8 @@ public class AdminController {
                 userRepository.findByStatus(UserStatus.PENDING_ADMIN_APPROVAL).size());
         model.addAttribute("totalUsers", userRepository.count());
         model.addAttribute("totalTeams", teamRepository.count());
+        model.addAttribute("pendingReviewCount",
+                documentReviewService.findPendingVersions().size());
         return "admin/dashboard";
     }
 
@@ -237,6 +242,52 @@ public class AdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/users/" + userId + "/permissions";
+    }
+
+    // ── 문서 검토: /admin/documents/review ──────────────────────
+    @GetMapping("/documents/review")
+    public String reviewList(Model model) {
+        model.addAttribute("pendingVersions", documentReviewService.findPendingVersions());
+        return "admin/documents-review";
+    }
+
+    @GetMapping("/documents/review/{documentVersionId}")
+    public String reviewDetail(@PathVariable Long documentVersionId, Model model) {
+        DocumentVersion version = documentVersionRepository.findByIdForReviewDetail(documentVersionId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "문서 버전을 찾을 수 없습니다."));
+        model.addAttribute("version", version);
+        model.addAttribute("previewType", resolvePreviewType(version));
+        return "admin/document-review-detail";
+    }
+
+    @PostMapping("/documents/review/{documentVersionId}/approve")
+    public String approve(@PathVariable Long documentVersionId,
+                          @AuthenticationPrincipal CustomUserDetails actor,
+                          HttpServletRequest request,
+                          RedirectAttributes ra) {
+        try {
+            documentReviewService.approve(documentVersionId, actor.getUser().getId(), request);
+            ra.addFlashAttribute("successMessage", "문서를 승인했습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/documents/review";
+    }
+
+    @PostMapping("/documents/review/{documentVersionId}/reject")
+    public String rejectDocument(@PathVariable Long documentVersionId,
+                                 @RequestParam String reason,
+                                 @AuthenticationPrincipal CustomUserDetails actor,
+                                 HttpServletRequest request,
+                                 RedirectAttributes ra) {
+        try {
+            documentReviewService.reject(documentVersionId, reason, actor.getUser().getId(), request);
+            ra.addFlashAttribute("successMessage", "문서를 반려했습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/documents/review";
     }
 
     private String resolvePreviewType(DocumentVersion version) {
