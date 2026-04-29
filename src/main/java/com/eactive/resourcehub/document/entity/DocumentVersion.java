@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "document_versions")
 @Getter
@@ -70,8 +72,34 @@ public class DocumentVersion extends BaseEntity {
         return version;
     }
 
+    @Column(length = 255)
+    private String thumbnailFileName;
+
+    @Column(length = 500)
+    private String thumbnailStoragePath;
+
+    @Column(length = 100)
+    private String thumbnailContentType;
+
+    private LocalDateTime thumbnailGeneratedAt;
+
     public void setPreview(String previewFileName, String previewStoragePath) {
         this.previewFileName = previewFileName;
         this.previewStoragePath = previewStoragePath;
+    }
+
+    public void setThumbnail(String thumbnailFileName, String thumbnailStoragePath,
+                             String thumbnailContentType) {
+        this.thumbnailFileName = thumbnailFileName;
+        this.thumbnailStoragePath = thumbnailStoragePath;
+        this.thumbnailContentType = thumbnailContentType;
+        this.thumbnailGeneratedAt = LocalDateTime.now();
+    }
+
+    public void clearThumbnail() {
+        this.thumbnailFileName = null;
+        this.thumbnailStoragePath = null;
+        this.thumbnailContentType = null;
+        this.thumbnailGeneratedAt = null;
     }
 }

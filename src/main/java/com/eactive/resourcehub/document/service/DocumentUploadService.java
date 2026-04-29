@@ -43,6 +43,7 @@ public class DocumentUploadService {
     private final DocumentVersionRepository documentVersionRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final ThumbnailService thumbnailService;
 
     @Value("${resourcehub.upload.allowed-extensions:pdf,jpg,jpeg,png,docx,hwp,hwpx}")
     private String allowedExtensionsRaw;
@@ -127,6 +128,14 @@ public class DocumentUploadService {
                 "버전 " + versionNo + " 업로드", httpRequest);
 
         log.info("문서 업로드 — ownerId={}, docId={}, version={}", ownerId, document.getId(), versionNo);
+
+        // 썸네일 생성 (실패해도 업로드 성공 유지)
+        try {
+            thumbnailService.generateAndSave(version);
+        } catch (Exception e) {
+            log.warn("썸네일 생성 실패 (업로드는 성공): {}", e.getMessage());
+        }
+
         return document;
     }
 

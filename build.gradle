@@ -39,6 +39,12 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    // PDF thumbnail (PDFBox 3.x)
+    implementation 'org.apache.pdfbox:pdfbox:3.0.3'
+
+    // Image thumbnail
+    implementation 'net.coobird:thumbnailator:0.4.20'
+
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

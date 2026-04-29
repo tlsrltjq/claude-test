@@ -5,8 +5,10 @@ import com.eactive.resourcehub.common.file.FileStorage;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.service.DocumentAccessService;
+import com.eactive.resourcehub.document.service.ThumbnailService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +35,7 @@ public class DocumentController {
     private final DocumentAccessService accessService;
     private final AuditLogService auditLogService;
     private final FileStorage fileStorage;
+    private final ThumbnailService thumbnailService;
 
     // GET /documents/{documentVersionId}/preview
     @GetMapping("/documents/{documentVersionId}/preview")
@@ -127,6 +130,56 @@ public class DocumentController {
                                 .build().toString())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(new InputStreamResource(stream));
+    }
+
+    // GET /documents/{documentVersionId}/thumbnail
+    @GetMapping("/documents/{documentVersionId}/thumbnail")
+    public ResponseEntity<InputStreamResource> thumbnail(
+            @PathVariable Long documentVersionId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+
+        DocumentVersion version = accessService.getVersionWithAccessCheck(documentVersionId, userDetails);
+
+        if (version.getThumbnailStoragePath() != null) {
+            try {
+                InputStream stream = fileStorage.load(version.getThumbnailStoragePath());
+                String ct = version.getThumbnailContentType() != null
+                        ? version.getThumbnailContentType() : "image/png";
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(ct))
+                        .body(new InputStreamResource(stream));
+            } catch (IOException e) {
+                // fall through to default
+            }
+        }
+
+        // Default icon from classpath
+        ClassPathResource icon = new ClassPathResource("static/images/doc-icon.png");
+        if (icon.exists()) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(new InputStreamResource(icon.getInputStream()));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // POST /documents/{documentVersionId}/thumbnail/regenerate
+    @PostMapping("/documents/{documentVersionId}/thumbnail/regenerate")
+    public String regenerateThumbnail(
+            @PathVariable Long documentVersionId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            HttpServletRequest request,
+            RedirectAttributes ra) {
+
+        try {
+            thumbnailService.regenerate(documentVersionId, userDetails, request);
+            ra.addFlashAttribute("successMessage", "썸네일이 재생성되었습니다.");
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            ra.addFlashAttribute("errorMessage", e.getReason());
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "썸네일 재생성 중 오류가 발생했습니다.");
+        }
+        return "redirect:" + request.getHeader("Referer");
     }
 
     private static String extension(String filename) {
