@@ -57,21 +57,26 @@ public class User extends BaseEntity {
         user.team = team;
         user.position = position;
         user.role = UserRole.EMPLOYEE;
-        user.status = UserStatus.PENDING;
+        user.status = UserStatus.PENDING_EMAIL_VERIFICATION;
         user.emailVerified = false;
         return user;
     }
 
     public void verifyEmail() {
         this.emailVerified = true;
+        this.status = UserStatus.PENDING_ADMIN_APPROVAL;
     }
 
     public void activate() {
         this.status = UserStatus.ACTIVE;
     }
 
-    public void deactivate() {
-        this.status = UserStatus.INACTIVE;
+    public void reject() {
+        this.status = UserStatus.REJECTED;
+    }
+
+    public void disable() {
+        this.status = UserStatus.DISABLED;
     }
 
     public void changeRole(UserRole role) {
