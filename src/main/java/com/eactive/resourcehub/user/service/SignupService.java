@@ -49,7 +49,11 @@ public class SignupService {
         EmailVerificationToken token = EmailVerificationToken.create(user, code, TOKEN_TTL_MINUTES);
         tokenRepository.save(token);
 
-        emailSender.sendVerificationCode(user.getEmail(), code);
+        try {
+            emailSender.sendVerificationCode(user.getEmail(), code);
+        } catch (Exception e) {
+            log.warn("이메일 발송 실패 — email={}, error={}", user.getEmail(), e.getMessage());
+        }
         log.info("회원가입 완료 — email={}, status={}", user.getEmail(), user.getStatus());
     }
 
@@ -84,7 +88,11 @@ public class SignupService {
         String code = generateCode();
         EmailVerificationToken token = EmailVerificationToken.create(user, code, TOKEN_TTL_MINUTES);
         tokenRepository.save(token);
-        emailSender.sendVerificationCode(email, code);
+        try {
+            emailSender.sendVerificationCode(email, code);
+        } catch (Exception e) {
+            log.warn("재발송 이메일 실패 — email={}, error={}", email, e.getMessage());
+        }
     }
 
     private void validateSignupRequest(SignupRequest request) {
