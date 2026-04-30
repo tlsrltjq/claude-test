@@ -39,7 +39,7 @@
                     <td>
                         <span th:switch="${user.role.name()}">
                             <span th:case="'ADMIN'" class="badge bg-danger">관리자</span>
-                            <span th:case="'TEAM_LEADER'" class="badge bg-warning text-dark">팀장</span>
+                            <span th:case="'SALES'" class="badge bg-primary">영업부</span>
                             <span th:case="*" class="badge bg-secondary">일반 직원</span>
                         </span>
                     </td>
@@ -64,8 +64,8 @@
         <a th:href="@{/my/folder}" class="btn btn-primary">내 폴더</a>
         <a th:href="@{/search}" class="btn btn-outline-primary">문서 검색</a>
         <a th:href="@{/my/activity}" class="btn btn-outline-secondary">내 다운로드 이력</a>
-        <a th:if="${user.role.name() == 'TEAM_LEADER' or user.role.name() == 'ADMIN'}"
-           th:href="@{/team/members}" class="btn btn-warning text-dark">팀원 관리</a>
+        <a th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}"
+           th:href="@{/sales/members}" class="btn btn-primary">전사 인력 조회</a>
         <a th:href="@{/shared/folders}" class="btn btn-info text-dark">공유 폴더</a>
         <a th:if="${user.role.name() == 'ADMIN'}" th:href="@{/admin}" class="btn btn-danger">관리자 패널</a>
         <a th:if="${user.role.name() == 'ADMIN'}" th:href="@{/admin/statistics}" class="btn btn-outline-success">통계</a>

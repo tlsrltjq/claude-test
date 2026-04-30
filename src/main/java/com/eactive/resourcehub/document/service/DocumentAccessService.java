@@ -40,15 +40,8 @@ public class DocumentAccessService {
         UserRole role = userDetails.getUser().getRole();
 
         if (role == UserRole.ADMIN) return;
+        if (role == UserRole.SALES) return;   // 영업부: 전사 read-only
         if (folder.getOwner().getId().equals(userId)) return;
-
-        if (role == UserRole.TEAM_LEADER) {
-            Long leaderTeamId = userDetails.getUser().getTeam() != null
-                    ? userDetails.getUser().getTeam().getId() : null;
-            Long ownerTeamId = folder.getOwner().getTeam() != null
-                    ? folder.getOwner().getTeam().getId() : null;
-            if (leaderTeamId != null && leaderTeamId.equals(ownerTeamId)) return;
-        }
 
         if (permissionRepository.existsByUserIdAndPermissionTypeAndTargetTypeAndTargetId(
                 userId, PermissionType.FOLDER_ACCESS,
@@ -68,6 +61,7 @@ public class DocumentAccessService {
         UserRole role = userDetails.getUser().getRole();
 
         if (role == UserRole.ADMIN) return;
+        if (role == UserRole.SALES) return;   // 영업부: 승인 상태 제한 없음
         if (version.getDocument().getFolder().getOwner().getId().equals(userId)) return;
 
         if (version.getReviewStatus() != DocumentReviewStatus.APPROVED) {
