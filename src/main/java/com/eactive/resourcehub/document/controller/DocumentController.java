@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -83,31 +82,12 @@ public class DocumentController {
                 .body(new InputStreamResource(stream));
     }
 
-    // GET /documents/{documentVersionId}/download/reason
-    @GetMapping("/documents/{documentVersionId}/download/reason")
-    public String downloadReasonForm(
+    // GET /documents/{documentVersionId}/download
+    @GetMapping("/documents/{documentVersionId}/download")
+    public ResponseEntity<InputStreamResource> download(
             @PathVariable Long documentVersionId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            Model model) {
-
-        DocumentVersion version = accessService.getVersionWithAccessCheck(documentVersionId, userDetails);
-        model.addAttribute("version", version);
-        return "document/download-reason";
-    }
-
-    // POST /documents/{documentVersionId}/download
-    @PostMapping("/documents/{documentVersionId}/download")
-    public Object download(
-            @PathVariable Long documentVersionId,
-            @RequestParam String reason,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            HttpServletRequest request,
-            RedirectAttributes redirectAttributes) throws IOException {
-
-        if (reason == null || reason.trim().length() < 2) {
-            redirectAttributes.addFlashAttribute("errorMessage", "다운로드 사유는 최소 2자 이상 입력해야 합니다.");
-            return "redirect:/documents/" + documentVersionId + "/download/reason";
-        }
+            HttpServletRequest request) throws IOException {
 
         DocumentVersion version = accessService.getVersionWithAccessCheck(documentVersionId, userDetails);
 
@@ -115,18 +95,15 @@ public class DocumentController {
         try {
             stream = fileStorage.load(version.getStoragePath());
         } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "파일을 찾을 수 없습니다.");
-            return "redirect:/my/folder";
+            return ResponseEntity.notFound().build();
         }
 
-        auditLogService.logDownload(userDetails.getUser().getId(), documentVersionId,
-                reason.trim(), request);
+        auditLogService.logDownload(userDetails.getUser().getId(), documentVersionId, null, request);
 
-        String originalName = version.getOriginalFileName();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment()
-                                .filename(originalName, StandardCharsets.UTF_8)
+                                .filename(version.getOriginalFileName(), StandardCharsets.UTF_8)
                                 .build().toString())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(new InputStreamResource(stream));

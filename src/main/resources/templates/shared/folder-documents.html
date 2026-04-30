@@ -96,7 +96,7 @@
                        th:href="@{/documents/{id}/preview(id=${doc.currentVersion.id})}"
                        target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">미리보기</a>
                     <a th:if="${doc.currentVersion != null}"
-                       th:href="@{/documents/{id}/download/reason(id=${doc.currentVersion.id})}"
+                       th:href="@{/documents/{id}/download(id=${doc.currentVersion.id})}"
                        class="btn btn-outline-secondary btn-sm flex-fill">다운로드</a>
                 </div>
             </div>

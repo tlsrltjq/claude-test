@@ -94,9 +94,15 @@
                     <small class="text-muted ms-1"
                            th:text="${doc.currentVersion != null ? #temporals.format(doc.currentVersion.createdAt, 'yyyy-MM-dd') : ''}"></small>
                 </div>
-                <div class="card-footer p-2">
+                <div class="card-footer p-2 d-flex gap-1">
                     <a th:href="@{/admin/employees/{uid}/documents/{did}(uid=${user.id},did=${doc.id})}"
-                       class="btn btn-outline-primary btn-sm w-100">상세</a>
+                       class="btn btn-outline-primary btn-sm flex-fill">상세</a>
+                    <form th:action="@{/admin/documents/{id}/delete(id=${doc.id})}" method="post"
+                          onsubmit="return confirm('문서 \'' + this.dataset.title + '\' 를 영구 삭제하시겠습니까?')"
+                          th:data-title="${doc.title}" class="d-inline">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>
+                    </form>
                 </div>
             </div>
         </div>

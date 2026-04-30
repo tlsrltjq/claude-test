@@ -90,7 +90,7 @@
                     </table>
                 </div>
                 <div class="card-footer d-flex gap-1 flex-wrap" th:if="${currentVersion != null}">
-                    <a th:href="@{/documents/{id}/download/reason(id=${currentVersion.id})}"
+                    <a th:href="@{/documents/{id}/download(id=${currentVersion.id})}"
                        class="btn btn-primary btn-sm flex-fill">다운로드</a>
                     <!-- 본인 문서이므로 썸네일 재생성 항상 허용 -->
                     <form th:action="@{/documents/{id}/thumbnail/regenerate(id=${currentVersion.id})}"

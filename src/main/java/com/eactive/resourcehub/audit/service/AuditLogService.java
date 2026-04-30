@@ -81,6 +81,13 @@ public class AuditLogService {
                 documentVersionId, "반려: " + reason, request);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logDeleteDocument(Long actorUserId, Long documentId, String detail,
+                                  HttpServletRequest request) {
+        record(actorUserId, AuditActionType.DELETE_DOCUMENT, AuditTargetType.DOCUMENT,
+                documentId, detail, request);
+    }
+
     private void record(Long userId, AuditActionType action, AuditTargetType targetType,
                         Long targetId, String reason, HttpServletRequest request) {
         try {

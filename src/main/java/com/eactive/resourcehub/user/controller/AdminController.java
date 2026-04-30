@@ -12,6 +12,7 @@ import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
+import com.eactive.resourcehub.document.service.DocumentDeleteService;
 import com.eactive.resourcehub.document.service.DocumentReviewService;
 import com.eactive.resourcehub.permission.entity.Permission;
 import com.eactive.resourcehub.permission.entity.PermissionTargetType;
@@ -58,6 +59,7 @@ public class AdminController {
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
     private final DocumentReviewService documentReviewService;
+    private final DocumentDeleteService documentDeleteService;
     private final PermissionRepository permissionRepository;
     private final StatisticsService statisticsService;
     private final AuditLogRepository auditLogRepository;
@@ -177,6 +179,24 @@ public class AdminController {
         model.addAttribute("versions", versions);
         model.addAttribute("previewType", resolvePreviewType(currentVersion));
         return "admin/employee-document-detail";
+    }
+
+    // ── 문서 삭제: /admin/documents/{documentId}/delete ──────────
+    @PostMapping("/documents/{documentId}/delete")
+    public String deleteDocument(@PathVariable Long documentId,
+                                 @AuthenticationPrincipal CustomUserDetails actor,
+                                 HttpServletRequest request,
+                                 RedirectAttributes ra) {
+        try {
+            documentDeleteService.deleteDocument(documentId, actor, request);
+            ra.addFlashAttribute("successMessage", "문서가 삭제되었습니다.");
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            ra.addFlashAttribute("errorMessage", e.getReason());
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "문서 삭제 중 오류가 발생했습니다.");
+        }
+        return "redirect:" + (request.getHeader("Referer") != null
+                ? request.getHeader("Referer") : "/admin");
     }
 
     // ── 역할 변경: /admin/users/{userId}/role ──────────────────

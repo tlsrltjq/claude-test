@@ -134,7 +134,7 @@
                            th:href="@{/documents/{id}/preview(id=${lv.id})}"
                            target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">미리보기</a>
                         <a th:if="${lv != null}"
-                           th:href="@{/documents/{id}/download/reason(id=${lv.id})}"
+                           th:href="@{/documents/{id}/download(id=${lv.id})}"
                            class="btn btn-outline-secondary btn-sm flex-fill">다운로드</a>
                         <a th:href="@{/my/folder/documents/{id}(id=${doc.id})}"
                            class="btn btn-outline-primary btn-sm flex-fill">상세</a>
