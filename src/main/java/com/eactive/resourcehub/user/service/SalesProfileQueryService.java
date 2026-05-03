@@ -1,0 +1,73 @@
+package com.eactive.resourcehub.user.service;
+
+import com.eactive.resourcehub.document.entity.Document;
+import com.eactive.resourcehub.document.entity.DocumentType;
+import com.eactive.resourcehub.document.entity.DocumentVersion;
+import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.repository.DocumentRepository;
+import com.eactive.resourcehub.document.repository.FolderRepository;
+import com.eactive.resourcehub.employee.entity.EmployeeProfile;
+import com.eactive.resourcehub.employee.repository.EmployeeProfileRepository;
+import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.entity.UserStatus;
+import com.eactive.resourcehub.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class SalesProfileQueryService {
+
+    private final UserRepository userRepository;
+    private final FolderRepository folderRepository;
+    private final DocumentRepository documentRepository;
+    private final EmployeeProfileRepository employeeProfileRepository;
+
+    public List<ProfileRow> findAllProfiles() {
+        // 1. 활성 사용자 전체 (팀 페치)
+        List<User> users = userRepository.findByStatusWithTeam(UserStatus.ACTIVE);
+        if (users.isEmpty()) return Collections.emptyList();
+
+        List<Long> userIds = users.stream().map(User::getId).toList();
+
+        // 2. 폴더 배치 조회 (userId → folderId)
+        Map<Long, Long> userToFolder = folderRepository.findByOwnerIdIn(userIds)
+                .stream().collect(Collectors.toMap(f -> f.getOwner().getId(), Folder::getId));
+
+        // 3. 문서 배치 조회 (folderId → documents with currentVersion)
+        Map<Long, Map<DocumentType, DocumentVersion>> userDocMap = new HashMap<>();
+        List<Long> folderIds = List.copyOf(userToFolder.values());
+        if (!folderIds.isEmpty()) {
+            List<Document> docs = documentRepository.findActiveWithVersionByFolderIds(folderIds);
+            // folderId → userId 역매핑
+            Map<Long, Long> folderToUser = userToFolder.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+            for (Document doc : docs) {
+                if (doc.getCurrentVersion() == null) continue;
+                Long userId = folderToUser.get(doc.getFolder().getId());
+                if (userId == null) continue;
+                userDocMap.computeIfAbsent(userId, k -> new EnumMap<>(DocumentType.class))
+                        .putIfAbsent(doc.getDocumentType(), doc.getCurrentVersion());
+            }
+        }
+
+        // 4. EmployeeProfile 배치 조회
+        Map<Long, EmployeeProfile> profileMap = employeeProfileRepository.findByUserIdIn(userIds)
+                .stream().collect(Collectors.toMap(ep -> ep.getUser().getId(), ep -> ep));
+
+        // 5. 조합
+        return users.stream()
+                .map(u -> new ProfileRow(u, profileMap.get(u.getId()),
+                        userDocMap.getOrDefault(u.getId(), Collections.emptyMap())))
+                .toList();
+    }
+}

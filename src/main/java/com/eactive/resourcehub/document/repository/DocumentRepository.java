@@ -90,6 +90,11 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
                              @Param("typeFilter") DocumentType typeFilter,
                              @Param("tagName") String tagName);
 
+    // 프로필 표용: folder_ids 배치 조회, ACTIVE 문서 + currentVersion (reviewStatus 무관)
+    @Query("SELECT d FROM Document d JOIN FETCH d.currentVersion " +
+           "WHERE d.folder.id IN :folderIds AND d.status = 'ACTIVE'")
+    List<Document> findActiveWithVersionByFolderIds(@Param("folderIds") List<Long> folderIds);
+
     // 본인 문서 태그 포함 조회 (detail용)
     @Query("SELECT d FROM Document d " +
            "JOIN FETCH d.folder f JOIN FETCH f.owner " +

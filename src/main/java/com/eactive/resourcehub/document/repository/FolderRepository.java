@@ -28,4 +28,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     @Query("SELECT f FROM Folder f JOIN FETCH f.owner u LEFT JOIN FETCH u.team WHERE u.team.id = :teamId")
     List<Folder> findByOwnerTeamIdWithOwner(@Param("teamId") Long teamId);
+
+    @Query("SELECT f FROM Folder f WHERE f.owner.id IN :ownerIds")
+    List<Folder> findByOwnerIdIn(@Param("ownerIds") List<Long> ownerIds);
 }

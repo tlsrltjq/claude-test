@@ -66,6 +66,8 @@
         <a th:href="@{/my/activity}" class="btn btn-outline-secondary">내 다운로드 이력</a>
         <a th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}"
            th:href="@{/sales/members}" class="btn btn-primary">전사 인력 조회</a>
+        <a th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}"
+           th:href="@{/sales/profiles}" class="btn btn-outline-primary">인력 표</a>
         <a th:href="@{/shared/folders}" class="btn btn-info text-dark">공유 폴더</a>
         <a th:if="${user.role.name() == 'ADMIN'}" th:href="@{/admin}" class="btn btn-danger">관리자 패널</a>
         <a th:if="${user.role.name() == 'ADMIN'}" th:href="@{/admin/statistics}" class="btn btn-outline-success">통계</a>
