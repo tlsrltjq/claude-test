@@ -88,6 +88,18 @@ public class AuditLogService {
                 documentId, detail, request);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logUploadResumeTemplate(Long actorUserId, Long templateId, HttpServletRequest request) {
+        record(actorUserId, AuditActionType.UPLOAD_RESUME_TEMPLATE, AuditTargetType.RESUME_TEMPLATE,
+                templateId, null, request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logDownloadResumeTemplate(Long actorUserId, Long templateId, HttpServletRequest request) {
+        record(actorUserId, AuditActionType.DOWNLOAD_RESUME_TEMPLATE, AuditTargetType.RESUME_TEMPLATE,
+                templateId, null, request);
+    }
+
     private void record(Long userId, AuditActionType action, AuditTargetType targetType,
                         Long targetId, String reason, HttpServletRequest request) {
         try {

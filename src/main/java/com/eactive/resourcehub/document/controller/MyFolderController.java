@@ -12,6 +12,7 @@ import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
 import com.eactive.resourcehub.document.service.TagService;
+import com.eactive.resourcehub.template.service.ResumeTemplateService;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ public class MyFolderController {
     private final DocumentVersionRepository documentVersionRepository;
     private final DocumentUploadService documentUploadService;
     private final TagService tagService;
+    private final ResumeTemplateService resumeTemplateService;
 
     @GetMapping
     public String myFolder(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -60,6 +62,7 @@ public class MyFolderController {
         model.addAttribute("folder", folder);
         model.addAttribute("documents", documents);
         model.addAttribute("latestVersions", latestVersions);
+        model.addAttribute("activeResumeTemplate", resumeTemplateService.getActive().orElse(null));
         return "my/folder";
     }
 

@@ -35,6 +35,13 @@
     </div>
 
     <div th:if="${folder != null}">
+        <!-- 양식 이력서 다운로드 배너 -->
+        <div th:if="${activeResumeTemplate != null}"
+             class="alert alert-info d-flex justify-content-between align-items-center mb-3 py-2">
+            <span class="small">양식 이력서 <strong th:text="${activeResumeTemplate.fileName}"></strong> 가 등록되어 있습니다.</span>
+            <a th:href="@{/my/folder/resume-template/download}" class="btn btn-outline-primary btn-sm ms-2">양식 이력서 다운로드</a>
+        </div>
+
         <!-- 상단 정보 -->
         <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
