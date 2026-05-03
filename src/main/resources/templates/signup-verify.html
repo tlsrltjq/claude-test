@@ -11,28 +11,24 @@
     <div class="card shadow-sm" style="width:100%;max-width:420px;">
         <div class="card-body p-4">
             <h1 class="h4 text-center mb-2">이메일 인증</h1>
+            <p class="text-center text-muted small mb-1">
+                <strong th:text="${pendingEmail}"></strong> 으로<br>
+                6자리 인증 코드를 전송했습니다.
+            </p>
             <p class="text-center text-muted small mb-4">
-                입력하신 이메일로 6자리 인증 코드를 전송했습니다.<br>
                 (로컬 개발 중에는 서버 로그를 확인하세요.)
             </p>
 
-            <div th:if="${errorMessage}" class="alert alert-danger" role="alert"
-                 th:text="${errorMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
             <form th:action="@{/signup/verify}" th:object="${verifyCodeRequest}" method="post">
-                <div class="mb-3">
-                    <label for="email" class="form-label">이메일</label>
-                    <input type="email" id="email" th:field="*{email}"
-                           class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
-                           th:value="${pendingEmail}" required>
-                    <div class="invalid-feedback" th:errors="*{email}"></div>
-                </div>
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <div class="mb-3">
                     <label for="code" class="form-label">인증 코드 (6자리)</label>
                     <input type="text" id="code" th:field="*{code}"
-                           class="form-control text-center fs-4 letter-spacing-wide"
+                           class="form-control text-center fs-4"
                            th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
-                           maxlength="6" placeholder="000000" required>
+                           maxlength="6" placeholder="000000" required inputmode="numeric">
                     <div class="invalid-feedback" th:errors="*{code}"></div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">인증하기</button>

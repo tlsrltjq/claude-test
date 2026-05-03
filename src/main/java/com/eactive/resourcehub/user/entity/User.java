@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -33,8 +35,15 @@ public class User extends BaseEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
-    @Column(length = 100)
-    private String position;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private Position position;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(length = 20)
+    private String phone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
@@ -48,14 +57,17 @@ public class User extends BaseEntity {
     private boolean emailVerified;
 
     public static User create(String loginId, String encodedPassword, String name,
-                               String email, Team team, String position) {
+                               String email, Team team, Position position,
+                               LocalDate birthDate, String phone) {
         User user = new User();
         user.loginId = loginId;
         user.password = encodedPassword;
         user.name = name;
         user.email = email;
         user.team = team;
-        user.position = position;
+        user.position = position != null ? position : Position.STAFF;
+        user.birthDate = birthDate;
+        user.phone = phone != null ? phone : "";
         user.role = UserRole.EMPLOYEE;
         user.status = UserStatus.PENDING_EMAIL_VERIFICATION;
         user.emailVerified = false;
@@ -87,7 +99,7 @@ public class User extends BaseEntity {
         this.team = team;
     }
 
-    public void changePosition(String position) {
+    public void changePosition(Position position) {
         this.position = position;
     }
 

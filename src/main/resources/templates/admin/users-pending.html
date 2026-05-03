@@ -47,7 +47,10 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <input type="text" name="position" class="form-control form-control-sm" placeholder="직급">
+                            <select name="position" class="form-select form-select-sm">
+                                <option th:each="p : ${positions}" th:value="${p}" th:text="${p.displayName}"
+                                        th:selected="${p == user.position}"></option>
+                            </select>
                         </div>
                         <div class="col-12 mt-1">
                             <button type="submit" class="btn btn-success btn-sm w-100">승인</button>

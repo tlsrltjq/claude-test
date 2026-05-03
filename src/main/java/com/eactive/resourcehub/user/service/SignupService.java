@@ -31,17 +31,20 @@ public class SignupService {
     private static final int TOKEN_TTL_MINUTES = 10;
 
     @Transactional
-    public void signup(SignupRequest request) {
-        validateSignupRequest(request);
+    public String signup(SignupRequest request) {
+        String email = request.getEmailPrefix() + "@" + companyEmailDomain;
+        validateSignupRequest(request, email);
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         User user = User.create(
-                request.getEmail(),
+                email,
                 encodedPassword,
                 request.getName(),
-                request.getEmail(),
+                email,
                 null,
-                null
+                request.getPosition(),
+                request.getBirthDate(),
+                request.getPhone()
         );
         userRepository.save(user);
 
@@ -50,11 +53,12 @@ public class SignupService {
         tokenRepository.save(token);
 
         try {
-            emailSender.sendVerificationCode(user.getEmail(), code);
+            emailSender.sendVerificationCode(email, code);
         } catch (Exception e) {
-            log.warn("이메일 발송 실패 — email={}, error={}", user.getEmail(), e.getMessage());
+            log.warn("이메일 발송 실패 — email={}, error={}", email, e.getMessage());
         }
-        log.info("회원가입 완료 — email={}, status={}", user.getEmail(), user.getStatus());
+        log.info("회원가입 완료 — email={}, status={}", email, user.getStatus());
+        return email;
     }
 
     @Transactional
@@ -77,7 +81,7 @@ public class SignupService {
 
         token.markVerified();
         user.verifyEmail();
-        log.info("이메일 인증 완료 — email={}, status={}", user.getEmail(), user.getStatus());
+        log.info("이메일 인증 완료 — email={}, status={}", email, user.getStatus());
     }
 
     @Transactional
@@ -95,15 +99,27 @@ public class SignupService {
         }
     }
 
-    private void validateSignupRequest(SignupRequest request) {
-        if (!request.getEmail().endsWith("@" + companyEmailDomain)) {
-            throw new IllegalArgumentException("회사 이메일(@" + companyEmailDomain + ")만 가입할 수 있습니다.");
+    private void validateSignupRequest(SignupRequest request, String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        validatePasswordComplexity(request.getPassword());
+    }
+
+    // 영문/숫자/특수문자 중 3종류 이상 + 8자 이상
+    private void validatePasswordComplexity(String password) {
+        if (password == null || password.length() < 8) {
+            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
+        }
+        int types = 0;
+        if (password.matches(".*[a-zA-Z].*")) types++;
+        if (password.matches(".*[0-9].*")) types++;
+        if (password.matches(".*[^a-zA-Z0-9].*")) types++;
+        if (types < 3) {
+            throw new IllegalArgumentException("비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.");
         }
     }
 

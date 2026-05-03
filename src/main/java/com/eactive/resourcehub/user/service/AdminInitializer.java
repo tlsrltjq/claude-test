@@ -1,8 +1,8 @@
 package com.eactive.resourcehub.user.service;
 
+import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
-import com.eactive.resourcehub.user.entity.UserStatus;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,9 @@ public class AdminInitializer {
                 "관리자",
                 adminEmail,
                 null,
-                null
+                Position.REPRESENTATIVE,
+                java.time.LocalDate.of(1970, 1, 1),
+                ""
         );
         admin.changeRole(UserRole.ADMIN);
         admin.verifyEmail();   // emailVerified=true, status=PENDING_ADMIN_APPROVAL

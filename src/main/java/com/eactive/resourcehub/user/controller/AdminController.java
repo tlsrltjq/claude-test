@@ -19,6 +19,7 @@ import com.eactive.resourcehub.permission.entity.PermissionTargetType;
 import com.eactive.resourcehub.permission.entity.PermissionType;
 import com.eactive.resourcehub.permission.repository.PermissionRepository;
 import com.eactive.resourcehub.permission.service.FolderPermissionService;
+import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.service.UserRoleService;
 import org.springframework.data.domain.Page;
@@ -81,6 +82,7 @@ public class AdminController {
     public String pendingUsers(Model model) {
         model.addAttribute("pendingUsers", approvalService.findPendingUsers());
         model.addAttribute("teams", teamRepository.findAll());
+        model.addAttribute("positions", Position.values());
         return "admin/users-pending";
     }
 

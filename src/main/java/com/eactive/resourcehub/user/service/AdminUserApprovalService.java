@@ -6,6 +6,7 @@ import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.service.FolderService;
 import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.team.repository.TeamRepository;
+import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserStatus;
 import com.eactive.resourcehub.user.repository.UserRepository;
@@ -33,7 +34,7 @@ public class AdminUserApprovalService {
     }
 
     @Transactional
-    public void approve(Long userId, Long teamId, String position,
+    public void approve(Long userId, Long teamId, Position position,
                         Long actorUserId, HttpServletRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -50,7 +51,7 @@ public class AdminUserApprovalService {
                     .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
             user.changeTeam(team);
         }
-        if (position != null && !position.isBlank()) {
+        if (position != null) {
             user.changePosition(position);
         }
         user.activate();

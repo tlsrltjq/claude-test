@@ -1,5 +1,6 @@
 package com.eactive.resourcehub.user.dto;
 
+import com.eactive.resourcehub.user.entity.Position;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,5 +8,5 @@ import lombok.Setter;
 @Setter
 public class ApproveUserRequest {
     private Long teamId;
-    private String position;
+    private Position position;
 }
