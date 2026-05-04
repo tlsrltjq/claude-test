@@ -1,10 +1,8 @@
 package com.eactive.resourcehub.common.email;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
 public class ConsoleEmailSender implements EmailSender {
 
     @Override

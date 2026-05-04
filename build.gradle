@@ -45,6 +45,9 @@ dependencies {
     // Image thumbnail
     implementation 'net.coobird:thumbnailator:0.4.20'
 
+    // Email (SMTP)
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
