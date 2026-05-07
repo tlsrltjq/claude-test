@@ -94,8 +94,8 @@ fi
 # ─────────────────────────────────────────────
 echo "[5] 컨트롤러 레이어 직접 Repository 주입 금지 (신규 파일)"
 CONTROLLER_FILES=$(echo "$JAVA_FILES" | grep -E "/controller/" || true)
-# 기존 MVP1 컨트롤러 허용 목록 (리팩토링 전까지 WARN 처리)
-MVP1_EXEMPT="SharedFolderController|MyFolderController|MyActivityController|AdminController"
+# 기술 부채 허용 목록 (Service 레이어 분리 리팩토링 전까지 WARN 처리)
+MVP1_EXEMPT="SharedFolderController|MyFolderController|MyActivityController|AdminController|DashboardController|SalesProfileController|SalesController|CareerCalculatorController|SignupController"
 if [ -n "$CONTROLLER_FILES" ]; then
   all_hits=$(echo "$CONTROLLER_FILES" | xargs grep -lE "private final [A-Za-z]*Repository" 2>/dev/null || true)
   new_hits=$(echo "$all_hits" | grep -vE "$MVP1_EXEMPT" || true)

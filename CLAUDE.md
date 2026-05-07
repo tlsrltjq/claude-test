@@ -6,116 +6,70 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 ai_eactive_hub/
-├─ eactive-resource-hub/   # Spring Boot 코드 (이 폴더)
-├─ mvp1/                   # 1차 MVP 동결본 — 수정 금지
-└─ mvp2/                   # 2차 MVP 작업 공간 (docs/, harness/)
+├─ eactive-resource-hub/   # Spring Boot 소스 (이 폴더)
+│  ├─ docs/                # 스펙·마이그레이션·보안 정책 (색인 아래 참조)
+│  └─ harness/mvp1~3/      # 단계별 자동 검증 스크립트
+├─ mvp1~3/docs/            # 각 MVP 원본 스펙·결정사항
 ```
-
-- **MVP1** (stages 01~13): 회원가입·인증·문서 업로드·썸네일·검토·권한·검색·배포
-- **MVP2** (stages 01~10): SALES 역할·다운로드 정책·프로필 확장·인력 표·검색·양식 이력서·경력 계산기·엑셀 export
-- Flyway 마이그레이션: V1–V6 = MVP1, V100~ = MVP2
 
 ## 빌드 / 실행
 
 ```bash
-# 로컬 개발 (PostgreSQL이 localhost:5432에 있어야 함)
-./gradlew bootRun
+./gradlew bootRun                                    # 로컬 (PostgreSQL localhost:5432)
+docker compose up -d --build                         # Docker 전체 스택
 
-# 테스트 없이 JAR 빌드
-./gradlew bootJar -x test
-
-# Docker 전체 스택 (postgres + app)
-docker compose up -d --build
-
-# 앱만 재빌드
-docker compose up -d --build app
-
-# 하네스 전체 검증
-./harness/run_all.sh
-
-# MVP2 단계별 검증
-bash mvp2/harness/scripts/verify.sh 01   # 단계 번호로 지정
-bash mvp2/harness/scripts/status.sh      # 전체 진행 상태
+bash harness/mvp3/scripts/verify.sh M3-01            # 단계 검증
+bash harness/mvp3/scripts/verify.sh all --with-mvp2  # MVP3 + MVP2 회귀
+bash harness/mvp3/scripts/status.sh                  # 진행 상태
 ```
 
 ## 기술 스택
 
-- Java 21, Spring Boot 3.5.x, Gradle
-- PostgreSQL 18 + Flyway (DDL-auto: `validate` — Flyway만 스키마 변경)
+- Java 21, Spring Boot 3.5.x, Gradle, PostgreSQL 18 + Flyway
 - Thymeleaf + Bootstrap 5, `thymeleaf-extras-springsecurity6`
-- Spring Security (세션 기반, `RESOURCEHUB_SESSION` 쿠키, 30분 타임아웃)
-- `spring-boot-starter-mail` (SMTP 미설정 시 `ConsoleEmailSender` 폴백)
-
-## 패키지 구조
-
-```
-com.eactive.resourcehub
-├─ audit/          — AuditLog, AuditLogService, StatisticsService
-├─ common/
-│  ├─ config/      — JpaAuditingConfig
-│  ├─ email/       — EmailSender (인터페이스), SmtpEmailSender, ConsoleEmailSender
-│  ├─ file/        — FileStorage (인터페이스), LocalFileStorage
-│  ├─ security/    — SecurityConfig, CustomUserDetails, CustomUserDetailsService
-│  └─ service/     — AuditService (횡단 감사 로그)
-├─ document/       — Document, DocumentVersion, Folder, Tag, 관련 서비스·컨트롤러
-├─ employee/       — EmployeeProfile
-├─ permission/     — Permission, FolderPermissionService
-├─ team/           — Team, TeamService (MVP1 레거시)
-└─ user/           — User, UserRole, 회원가입·인증·관리자 서비스
-```
+- Spring Security — 세션 기반, `RESOURCEHUB_SESSION` 쿠키, 30분 타임아웃
+- Flyway 번호: V1–V6 = MVP1 / V100–V2xx = MVP2 / V300~ = MVP3
 
 ## 핵심 설계 규칙
 
-### 보안 (모든 단계 공통 — 절대 변경 금지)
-- **JWT 사용 금지** — Spring Security 세션만 사용
-- **Remember-me 금지**, CSRF 항상 활성화
-- **파일 직접 노출 금지** — 모든 파일 접근은 컨트롤러 경유
-- 저장 파일명은 **UUID**, DB에 원본 파일명 별도 보관
-- **권한 검사는 Service 레이어**에서 수행 (컨트롤러에서 직접 쿼리 금지)
+보안·권한 상세 → `docs/security-policy.md`
 
-### JPA / 트랜잭션
-- `@Enumerated(EnumType.STRING)` — 모든 enum 컬럼
-- LazyInitializationException 방지: `LEFT JOIN FETCH` 사용, 컬렉션 필터는 `EXISTS` 서브쿼리
-- 감사 로그는 `Propagation.REQUIRES_NEW` (메인 트랜잭션 롤백과 독립)
-- `ddl-auto: validate` — 스키마 변경은 반드시 Flyway 마이그레이션으로
+- **JWT 사용 금지** — Spring Security 세션만, Remember-me 금지, CSRF 항상 활성화
+- **파일 직접 노출 금지** — 컨트롤러 경유, UUID 파일명, DB에 원본명 보관
+- **권한 검사는 Service** — `DocumentAccessService` / `FolderAccessService` 경유
+- `ddl-auto: validate`, 스키마 변경은 Flyway만, 감사 로그는 `REQUIRES_NEW`
 
-### 이메일
-- `EmailSender` 인터페이스 — `@ConditionalOnProperty(name = "spring.mail.host")`로 `SmtpEmailSender` 활성화, 없으면 `ConsoleEmailSender` 폴백
-- 메일 발송 실패는 try/catch로 격리 — 비즈니스 트랜잭션 롤백 금지
+## 역할 구조
 
-### MVP2 추가 역할 구조
 | 역할 | 접근 범위 |
 |------|----------|
 | `ADMIN` | 전체 관리 + 파일 삭제 + 바로 다운로드 |
-| `SALES` | 전사 인력 표 조회 + 바로 다운로드 + 경력 계산기 |
+| `SALES` | 전사 인력 표 조회 + 다운로드 + 경력 계산기 |
 | `EMPLOYEE` | 본인 폴더만 |
-| `TEAM_LEADER` | `@Deprecated` — 신규 부여 차단, DB에만 잔존 |
+| `TEAM_LEADER` | `@Deprecated` — 신규 부여 차단 |
 
-### Flyway 마이그레이션 번호 정책
-- V1–V6: MVP1
-- V100–V106+: MVP2 (신규 마이그레이션은 V107부터)
-
-## 환경변수 (.env)
+## 환경변수
 
 | 변수 | 설명 |
 |------|------|
 | `POSTGRES_PASSWORD` | DB 비밀번호 |
-| `RESOURCEHUB_COMPANY_EMAIL_DOMAIN` | 회원가입 허용 도메인 (기본: `eactive.co.kr`) |
-| `RESOURCEHUB_ADMIN_EMAIL` / `RESOURCEHUB_ADMIN_PASSWORD` | 초기 관리자 계정 |
-| `SPRING_MAIL_HOST/PORT/USERNAME/PASSWORD` | SMTP 설정 (미설정 시 콘솔 출력) |
-| `APP_PORT` | 호스트 바인딩 포트 (기본: 8080) |
+| `RESOURCEHUB_COMPANY_EMAIL_DOMAIN` | 허용 도메인 (기본: `eactive.co.kr`) |
+| `RESOURCEHUB_ADMIN_EMAIL` / `_PASSWORD` | 초기 관리자 계정 |
+| `SPRING_MAIL_HOST/PORT/USERNAME/PASSWORD` | SMTP (미설정 시 콘솔 출력) |
 
 ## 테스트 계정 (로컬)
 
 | 이메일 | 비밀번호 | 역할 |
 |--------|---------|------|
 | `admin@eactive.co.kr` | `Admin1234!` | ADMIN |
-| `test@eactive.co.kr` | `Test1234!` | TEAM_LEADER (→ SALES in MVP2) |
+| `test@eactive.co.kr` | `Test1234!` | SALES |
 | `user2@eactive.co.kr` | `User1234!` | EMPLOYEE |
 
-## 하네스
+## docs/ 색인
 
-- `harness/lib/common.sh` — curl/psql 공용 헬퍼 (`check`, `login`, `get_status`, `get_body`, `post_form`, `post_form_status`, `db_query`, `wait_for_app`)
-- `harness/stages/{01~13}/verify.sh` — MVP1 단계별 자동 검증
-- `mvp2/harness/stages/{01~10}/` — MVP2 단계별 prompt/acceptance/deliverables/verify
-- `mvp2/harness/state/progress.json` — MVP2 진행 상태 SSOT
+- `mvp1-spec.md` — MVP1 전체 스펙
+- `mvp2-spec.md` / `mvp2-migration.md` — MVP2 스펙·마이그레이션
+- `mvp3-spec.md` / `mvp3-migration.md` — MVP3 4축 요약·마이그레이션
+- `mvp3-decisions.md` — D-01~D-12 결정 사항
+- `mvp3-requirements.md` / `mvp3-stage-plan.md` — 상세 요구사항·단계 계획
+- `security-policy.md` — 파일·권한·로그 보안 정책 + 미구현 TODO

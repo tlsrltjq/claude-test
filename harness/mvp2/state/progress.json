@@ -1,0 +1,192 @@
+{
+  "project": "eactive-resource-hub",
+  "track": "mvp2",
+  "currentStage": "14-security-policy",
+  "createdAt": "2026-04-29T00:00:00Z",
+  "stages": [
+    {
+      "id": "01-permissions",
+      "title": "권한 단순화 (TEAM_LEADER → SALES)",
+      "phase": "1차",
+      "status": "verified",
+      "startedAt": "2026-04-30T10:00:00Z",
+      "completedAt": "2026-04-30T10:41:38Z",
+      "verifiedAt": "2026-04-30T10:41:38Z",
+      "verifyResult": "pass",
+      "notes": [
+        {
+          "at": "2026-04-30T10:41:38Z",
+          "note": "11/11 pass. SALES enum 추가, TEAM_LEADER @Deprecated, V100 마이그레이션, /sales/** SecurityConfig, SalesController, TeamController 리다이렉트, DocumentAccessService/FolderAccessService SALES 전사 read-only, UserRoleService TEAM_LEADER 부여 차단, templates/sales/ 생성, employees.html/employee-detail.html TEAM_LEADER 배지 제거"
+        }
+      ]
+    },
+    {
+      "id": "02-download-policy",
+      "title": "다운로드 정책 변경 + 관리자 파일 삭제",
+      "phase": "1차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-04-30T10:54:17.922150Z",
+      "verifiedAt": "2026-04-30T10:54:17.922150Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "03-profile-fields",
+      "title": "회원가입/프로필 입력 확장",
+      "phase": "1차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-03T03:32:03.916269Z",
+      "verifiedAt": "2026-05-03T03:32:03.916269Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "04-sales-profiles",
+      "title": "영업부 인력 프로필 표 (기본)",
+      "phase": "1차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-03T03:39:30.292447Z",
+      "verifiedAt": "2026-05-03T03:39:30.292447Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "05-search-filter-sort",
+      "title": "검색·필터·정렬·컬럼 토글",
+      "phase": "1차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-03T03:48:54.862726Z",
+      "verifiedAt": "2026-05-03T03:48:54.862726Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "06-resume-template",
+      "title": "양식 이력서 기능",
+      "phase": "1차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-03T23:33:31.914208Z",
+      "verifiedAt": "2026-05-03T23:33:31.914208Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "07-career-calculator",
+      "title": "경력 계산기 (단독)",
+      "phase": "1차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-03T23:38:41.402081Z",
+      "verifiedAt": "2026-05-03T23:38:41.402081Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "08-excel-export",
+      "title": "엑셀 내보내기",
+      "phase": "2차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-07T00:54:43.031195Z",
+      "verifiedAt": "2026-05-07T00:54:43.031195Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "09-career-save",
+      "title": "경력 계산기 → 프로필 저장 연동",
+      "phase": "2차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-07T00:54:47.151712Z",
+      "verifiedAt": "2026-05-07T00:54:47.151712Z",
+      "verifyResult": "pass",
+      "notes": []
+    },
+    {
+      "id": "10-bundle-template",
+      "title": "투입인력서 묶음 / 동적 컬럼",
+      "phase": "2차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-07T00:54:47.233249Z",
+      "verifiedAt": "2026-05-07T00:54:47.233249Z",
+      "verifyResult": "pass",
+      "notes": [
+        {
+          "at": "2026-05-07T00:54:47Z",
+          "note": "ZIP 번들 대신 POST /sales/profiles/export + selectedIds 체크박스 선택 → 엑셀 방식으로 구현. EXPORT_PROFILES 감사 로그 포함."
+        }
+      ]
+    },
+    {
+      "id": "11-column-preset",
+      "title": "컬럼 프리셋 + 경력 표시 토글 + 등급 위젯",
+      "phase": "3차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-07T00:00:00Z",
+      "verifiedAt": "2026-05-07T00:58:00Z",
+      "verifyResult": "pass",
+      "notes": [
+        {
+          "at": "2026-05-07T00:58:00Z",
+          "note": "17/17 pass. V204(career_total_days 백필), V205(column_view_preferences), ColumnViewPreference 엔티티·서비스, /sales/profiles/preset 저장·삭제, careerDisplay 3-way 토글(ymd/m/d), getGradeCountsFromRows 미설정 버킷 포함, profiles.html 프리셋 드롭다운·등급 위젯 반영."
+        }
+      ]
+    },
+    {
+      "id": "12-account-toggle",
+      "title": "계정 활성/비활성 토글 + 즉시 세션 무효화",
+      "phase": "3차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-07T00:29:00Z",
+      "verifiedAt": "2026-05-07T00:59:00Z",
+      "verifyResult": "pass",
+      "notes": [
+        {
+          "at": "2026-05-07T00:59:00Z",
+          "note": "18/18 pass. SessionRegistry·HttpSessionEventPublisher 빈, maximumSessions(-1)·expiredUrl 설정, POST /admin/employees/{id}/toggle-status, SessionInformation.expireNow(), DISABLE_USER·ENABLE_USER 감사 로그, findByStatusInWithTeam(ACTIVE+DISABLED), employees.html·employee-detail.html 토글 버튼, login.html ?expired 메시지."
+        }
+      ]
+    },
+    {
+      "id": "13-signup-validation",
+      "title": "회원가입 폼 빈칸 안내",
+      "phase": "3차",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-07T00:49:00Z",
+      "verifiedAt": "2026-05-07T01:17:15.709747Z",
+      "verifyResult": "pass",
+      "notes": [
+        {
+          "at": "2026-05-07T01:00:00Z",
+          "note": "15/15 pass. birthDateStr @NotBlank+@Pattern, isPasswordComplex 컨트롤러 필드 검증, passwordConfirm 불일치 bindingResult.rejectValue, novalidate+was-validated JS, th:if/th:unless 이중 invalid-feedback, has-validation input-group."
+        }
+      ]
+    },
+    {
+      "id": "14-security-policy",
+      "title": "권한·보안 정책 감사",
+      "phase": "3차",
+      "status": "blocked",
+      "startedAt": "2026-05-07T01:10:00Z",
+      "completedAt": null,
+      "verifiedAt": "2026-05-07T01:17:16.528703Z",
+      "verifyResult": "fail",
+      "notes": [
+        {
+          "at": "2026-05-07T01:10:00Z",
+          "note": "32/37 pass. FAIL 5건: (1) Document 엔티티에 deletedAt/deletedBy 없음 — hard delete 사용 중, (2) DocumentDeleteService.deleteDocument() documentRepository.delete() 즉시 물리 삭제, (3) LocalFileStorage:28 log.debug(toAbsolutePath()) 절대 경로 로그 노출, (4) application.yml:53 RESOURCEHUB_ADMIN_PASSWORD 하드코딩 기본값(Admin1234!). 해결 과제: soft delete 마이그레이션(deleted_at/deleted_by 컬럼 추가) + Document 엔티티 @SQLDelete/@Where 적용, LocalFileStorage 절대경로 로그 제거, 관리자 초기 비밀번호 하드코딩 기본값 제거."
+        }
+      ]
+    }
+  ]
+}

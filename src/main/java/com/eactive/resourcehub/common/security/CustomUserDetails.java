@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.common.security;
 
 import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -52,5 +53,9 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    public boolean isAdmin() {
+        return user.getRole() == UserRole.ADMIN;
     }
 }

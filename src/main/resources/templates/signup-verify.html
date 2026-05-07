@@ -15,30 +15,65 @@
                 <strong th:text="${pendingEmail}"></strong> 으로<br>
                 6자리 인증 코드를 전송했습니다.
             </p>
-            <p class="text-center text-muted small mb-4">
+            <p class="text-center text-muted small mb-2">
                 (로컬 개발 중에는 서버 로그를 확인하세요.)
             </p>
 
-            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <div class="text-center mb-3">
+                <span class="fw-bold fs-5" id="timerDisplay" th:data-expire-at="${expireAt}">5:00</span>
+                <span class="text-muted small ms-1">남음</span>
+            </div>
 
-            <form th:action="@{/signup/verify}" th:object="${verifyCodeRequest}" method="post">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <div th:if="${infoMessage}" class="alert alert-info" th:text="${infoMessage}"></div>
+
+            <form th:action="@{/signup/verify}" method="post" id="verifyForm">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <div class="mb-3">
                     <label for="code" class="form-label">인증 코드 (6자리)</label>
-                    <input type="text" id="code" th:field="*{code}"
+                    <input type="text" id="code" name="code"
                            class="form-control text-center fs-4"
-                           th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
                            maxlength="6" placeholder="000000" required inputmode="numeric">
-                    <div class="invalid-feedback" th:errors="*{code}"></div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">인증하기</button>
+                <button type="submit" id="verifyBtn" class="btn btn-primary w-100">인증하기</button>
             </form>
 
             <hr>
-            <p class="text-center mb-0 small">
-                코드를 받지 못하셨나요? <a th:href="@{/signup}">다시 가입 시도</a>
-            </p>
+            <form th:action="@{/signup/resend}" method="post" class="text-center">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <button type="submit" id="resendBtn" class="btn btn-link btn-sm p-0" disabled>
+                    코드를 받지 못하셨나요? 재발송
+                </button>
+            </form>
         </div>
+
+<script>
+(function() {
+    var timerEl = document.getElementById('timerDisplay');
+    var expireAt = parseInt(timerEl.dataset.expireAt || '0');
+    var resendBtn = document.getElementById('resendBtn');
+
+    function tick() {
+        var remain = (expireAt - Date.now()) / 1000;
+        if (remain <= 0) {
+            timerEl.textContent = '만료됨';
+            timerEl.classList.add('text-danger');
+            resendBtn.disabled = false;
+            return;
+        }
+        var m = Math.floor(remain / 60);
+        var s = Math.floor(remain % 60);
+        timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+        if (remain < 60) {
+            timerEl.classList.add('text-danger');
+        } else {
+            timerEl.classList.remove('text-danger');
+        }
+        setTimeout(tick, 250);
+    }
+    tick();
+})();
+</script>
     </div>
 </div>
 </body>

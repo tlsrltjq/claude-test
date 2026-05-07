@@ -34,13 +34,65 @@
 </nav>
 
 <div class="container-fluid mt-3">
-    <h2 class="mb-2 h5">인력 표</h2>
+    <h2 class="mb-3 h5">인력 표</h2>
+
+    <!-- 플래시 메시지 -->
+    <div th:if="${presetSuccess}" class="alert alert-success alert-dismissible py-2 mb-2">
+        <span th:text="${presetSuccess}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${presetError}" class="alert alert-danger alert-dismissible py-2 mb-2">
+        <span th:text="${presetError}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- 등급별 현황 (현재 필터 결과 반영) -->
+    <div class="row g-2 mb-3">
+        <div th:each="entry : ${gradeCounts}" class="col-6 col-sm-2">
+            <div class="card text-center py-2 px-1"
+                 th:classappend="${entry.key == '특급'} ? 'border-danger' :
+                                  (${entry.key == '고급'} ? 'border-warning' :
+                                  (${entry.key == '중급'} ? 'border-primary' :
+                                  (${entry.key == '초급'} ? 'border-secondary' : 'border-light')))">
+                <div class="fw-bold fs-4 mb-0"
+                     th:classappend="${entry.key == '특급'} ? 'text-danger' :
+                                      (${entry.key == '고급'} ? 'text-warning' :
+                                      (${entry.key == '중급'} ? 'text-primary' :
+                                      (${entry.key == '초급'} ? 'text-secondary' : 'text-muted')))"
+                     th:text="${entry.value}"></div>
+                <div class="small text-muted" th:text="${entry.key}"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- 검색/필터 폼 -->
-    <form method="get" th:action="@{/sales/profiles}" class="row g-2 mb-2 align-items-center">
-        <div class="col-auto">
+    <form id="filterForm" method="get" th:action="@{/sales/profiles}" class="row g-2 mb-2 align-items-center">
+        <div class="col-sm-3">
             <input type="text" name="q" class="form-control form-control-sm"
-                   placeholder="이름/이메일" th:value="${query.q}">
+                   placeholder="이름 또는 이메일 검색" th:value="${query.q}">
+        </div>
+        <!-- 팀 다중 선택 드롭다운 -->
+        <div class="col-auto">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" data-bs-auto-close="outside" id="teamDropdownBtn">
+                    <span id="teamFilterLabel">전체 팀</span>
+                </button>
+                <ul class="dropdown-menu p-2" style="min-width:140px">
+                    <li th:each="team : ${teams}">
+                        <div class="form-check">
+                            <input class="form-check-input team-chk" type="checkbox"
+                                   name="teamIds" th:value="${team.id}"
+                                   th:id="'chk-team-' + ${team.id}"
+                                   th:checked="${query.teamIds != null and #lists.contains(query.teamIds, team.id)}"
+                                   onchange="updateTeamLabel()">
+                            <label class="form-check-label small"
+                                   th:for="'chk-team-' + ${team.id}"
+                                   th:text="${team.name}"></label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="col-auto">
             <select name="position" class="form-select form-select-sm">
@@ -51,24 +103,75 @@
                         th:selected="${query.position != null and query.position == pos.name()}"></option>
             </select>
         </div>
+        <!-- 개발자 등급 다중 선택 드롭다운 -->
         <div class="col-auto">
-            <input type="text" name="developerGrade" class="form-control form-control-sm"
-                   placeholder="개발자 등급" th:value="${query.developerGrade}">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                    <span id="gradeFilterLabel">전체 등급</span>
+                </button>
+                <ul class="dropdown-menu p-2" style="min-width:120px">
+                    <li th:each="grade : ${ {'특급','고급','중급','초급'} }">
+                        <div class="form-check">
+                            <input class="form-check-input grade-chk" type="checkbox"
+                                   name="developerGrades" th:value="${grade}"
+                                   th:id="'chk-grade-' + ${grade}"
+                                   th:checked="${query.developerGrades != null and #lists.contains(query.developerGrades, grade)}"
+                                   onchange="updateGradeLabel()">
+                            <label class="form-check-label small"
+                                   th:for="'chk-grade-' + ${grade}"
+                                   th:text="${grade}"></label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- 경력 표시 방식 -->
+        <div class="col-auto">
+            <select name="careerDisplay" class="form-select form-select-sm" id="careerDisplaySel"
+                    onchange="this.form.submit()">
+                <option value="ymd" th:selected="${query.careerDisplay == 'ymd'}">년월일</option>
+                <option value="m"   th:selected="${query.careerDisplay == 'm'}">개월</option>
+                <option value="d"   th:selected="${query.careerDisplay == 'd'}">일</option>
+            </select>
         </div>
         <input type="hidden" name="sort" th:value="${query.sort}">
         <input type="hidden" name="direction" th:value="${query.direction}">
         <div class="col-auto">
             <button type="submit" class="btn btn-primary btn-sm">검색</button>
-            <a th:href="@{/sales/profiles}" class="btn btn-outline-secondary btn-sm ms-1">초기화</a>
+            <button type="button" class="btn btn-outline-danger btn-sm ms-1" onclick="resetAll()">초기화</button>
         </div>
     </form>
 
-    <!-- 컬럼 설정 -->
-    <div class="mb-2">
+    <!-- 컬럼 설정 + 프리셋 + 엑셀 다운로드 -->
+    <div class="mb-2 d-flex gap-2 align-items-start flex-wrap">
         <button class="btn btn-outline-secondary btn-sm" type="button"
                 data-bs-toggle="collapse" data-bs-target="#column-toggle">컬럼 설정</button>
-        <div class="collapse border rounded p-2 mt-1" id="column-toggle">
+        <button type="button" class="btn btn-outline-success btn-sm" onclick="downloadExcel()">
+            전체 엑셀
+        </button>
+        <button type="button" class="btn btn-success btn-sm" id="exportSelectedBtn"
+                disabled onclick="submitSelectedExport()">
+            선택 엑셀 (<span id="selectedCount">0</span>명)
+        </button>
+        <!-- 프리셋 -->
+        <div class="d-flex gap-1 align-items-center">
+            <select id="presetSelect" class="form-select form-select-sm" style="min-width:130px"
+                    onchange="applyPreset(this.value)">
+                <option value="">프리셋 선택</option>
+                <option th:each="p : ${presets}"
+                        th:value="${p.id}"
+                        th:data-cols="${p.columnsJson}"
+                        th:data-sort="${p.sortJson}"
+                        th:data-career="${p.careerDisplay}"
+                        th:text="${p.name}"></option>
+            </select>
+            <button class="btn btn-outline-primary btn-sm" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#preset-save-panel">저장</button>
+        </div>
+        <div class="collapse border rounded p-2 mt-1 w-100" id="column-toggle">
             <div class="d-flex flex-wrap gap-3 small">
+                <label class="mb-0"><input type="checkbox" id="chk-team" onchange="toggleCol('team',this.checked)"> 팀</label>
                 <label class="mb-0"><input type="checkbox" id="chk-position" onchange="toggleCol('position',this.checked)"> 직급</label>
                 <label class="mb-0"><input type="checkbox" id="chk-age" onchange="toggleCol('age',this.checked)"> 나이</label>
                 <label class="mb-0"><input type="checkbox" id="chk-birthDate" onchange="toggleCol('birthDate',this.checked)"> 생년월일</label>
@@ -78,15 +181,56 @@
                 <label class="mb-0"><input type="checkbox" id="chk-career" onchange="toggleCol('career',this.checked)"> 경력</label>
                 <label class="mb-0"><input type="checkbox" id="chk-resume" onchange="toggleCol('resume',this.checked)"> 이력서</label>
                 <label class="mb-0"><input type="checkbox" id="chk-careerDescription" onchange="toggleCol('careerDescription',this.checked)"> 경력기술서</label>
-                <label class="mb-0"><input type="checkbox" id="chk-license" onchange="toggleCol('license',this.checked)"> 자격증</label>
+                <label class="mb-0"><input type="checkbox" id="chk-license" onchange="toggleCol('license',this.checked)"> 정보처리기사</label>
                 <label class="mb-0"><input type="checkbox" id="chk-graduationCertificate" onchange="toggleCol('graduationCertificate',this.checked)"> 졸업증명서</label>
                 <label class="mb-0"><input type="checkbox" id="chk-healthInsuranceProof" onchange="toggleCol('healthInsuranceProof',this.checked)"> 건강보험득실</label>
-                <label class="mb-0"><input type="checkbox" id="chk-employmentCertificate" onchange="toggleCol('employmentCertificate',this.checked)"> 재직증명서</label>
                 <label class="mb-0"><input type="checkbox" id="chk-etc" onchange="toggleCol('etc',this.checked)"> 기타자료</label>
                 <label class="mb-0"><input type="checkbox" id="chk-updatedAt" onchange="toggleCol('updatedAt',this.checked)"> 업데이트</label>
             </div>
         </div>
+        <!-- 프리셋 저장 패널 -->
+        <div class="collapse border rounded p-2 mt-1 w-100" id="preset-save-panel">
+            <form th:action="@{/sales/profiles/preset}" method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <input type="hidden" id="preset-cols-input" name="columnsJson" value="[]">
+                <input type="hidden" id="preset-sort-input" name="sortJson" th:value="${'{&quot;sort&quot;:&quot;' + query.sort + '&quot;,&quot;direction&quot;:&quot;' + query.direction + '&quot;}'}">
+                <input type="hidden" name="careerDisplay" th:value="${query.careerDisplay}">
+                <input type="text" name="presetName" class="form-control form-control-sm" style="max-width:180px"
+                       placeholder="프리셋 이름" required>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="captureColsForPreset()">저장</button>
+                <small class="text-muted">현재 컬럼 설정·정렬·경력표시가 저장됩니다.</small>
+            </form>
+            <!-- 프리셋 삭제 -->
+            <div th:if="${!#lists.isEmpty(presets)}" class="mt-2 d-flex flex-wrap gap-1">
+                <form th:each="p : ${presets}"
+                      th:action="@{/sales/profiles/preset/{id}/delete(id=${p.id})}"
+                      method="post" class="d-inline"
+                      onsubmit="return confirm('프리셋을 삭제하시겠습니까?')">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <button type="submit" class="btn btn-outline-danger btn-xs"
+                            th:text="'✕ ' + ${p.name}"></button>
+                </form>
+            </div>
+        </div>
     </div>
+
+    <!-- 선택 엑셀 POST 폼 (숨김) -->
+    <form id="exportSelectedForm" method="post" th:action="@{/sales/profiles/export}" style="display:none">
+        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+        <input type="hidden" name="q" th:value="${query.q}">
+        <input type="hidden" name="position" th:value="${query.position}">
+        <input type="hidden" name="sort" th:value="${query.sort}">
+        <input type="hidden" name="direction" th:value="${query.direction}">
+        <input type="hidden" name="careerDisplay" th:value="${query.careerDisplay}">
+        <span th:each="g : ${query.developerGrades}">
+            <input type="hidden" name="developerGrades" th:value="${g}">
+        </span>
+        <span th:each="tid : ${query.teamIds}">
+            <input type="hidden" name="teamIds" th:value="${tid}">
+        </span>
+        <input type="hidden" id="exportColumnsJson" name="columnsJson" value="[]">
+        <!-- selectedIds는 JS로 동적 추가 -->
+    </form>
 
     <div th:if="${#lists.isEmpty(rows)}" class="alert alert-info">조건에 맞는 직원이 없습니다.</div>
 
@@ -94,38 +238,52 @@
         <table class="table table-bordered table-hover profiles-table mb-0">
             <thead>
             <tr>
+                <th style="width:36px;text-align:center">
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)">
+                </th>
+                <th data-col="team">
+                    <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='team',direction=${query.sort == 'team' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
+                       class="sort-link">팀<span th:if="${query.sort == 'team'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
+                </th>
                 <th data-col="position">
-                    <a th:href="@{/sales/profiles(q=${query.q},position=${query.position},developerGrade=${query.developerGrade},sort='position',direction=${query.sort == 'position' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
+                    <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='position',direction=${query.sort == 'position' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
                        class="sort-link">직급<span th:if="${query.sort == 'position'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
                 </th>
                 <th>
-                    <a th:href="@{/sales/profiles(q=${query.q},position=${query.position},developerGrade=${query.developerGrade},sort='name',direction=${query.sort == 'name' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
+                    <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='name',direction=${query.sort == 'name' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
                        class="sort-link">이름<span th:if="${query.sort == 'name'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
                 </th>
                 <th data-col="age">
-                    <a th:href="@{/sales/profiles(q=${query.q},position=${query.position},developerGrade=${query.developerGrade},sort='age',direction=${query.sort == 'age' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
+                    <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='age',direction=${query.sort == 'age' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
                        class="sort-link">나이<span th:if="${query.sort == 'age'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
                 </th>
                 <th data-col="birthDate">생년월일</th>
                 <th data-col="phone">연락처</th>
                 <th data-col="email">이메일</th>
-                <th data-col="developerGrade">개발자 등급</th>
+                <th data-col="developerGrade">
+                    <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='developerGrade',direction=${query.sort == 'developerGrade' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
+                       class="sort-link">개발자 등급<span th:if="${query.sort == 'developerGrade'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
+                </th>
                 <th data-col="career">
-                    <a th:href="@{/sales/profiles(q=${query.q},position=${query.position},developerGrade=${query.developerGrade},sort='career',direction=${query.sort == 'career' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'desc'})}"
+                    <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='career',direction=${query.sort == 'career' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'desc'})}"
                        class="sort-link">경력<span th:if="${query.sort == 'career'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
                 </th>
                 <th class="doc-cell" data-col="resume">이력서</th>
                 <th class="doc-cell" data-col="careerDescription">경력기술서</th>
-                <th class="doc-cell" data-col="license">자격증</th>
+                <th class="doc-cell" data-col="license">정보처리기사</th>
                 <th class="doc-cell" data-col="graduationCertificate">졸업증명서</th>
                 <th class="doc-cell" data-col="healthInsuranceProof">건강보험득실</th>
-                <th class="doc-cell" data-col="employmentCertificate">재직증명서</th>
                 <th class="doc-cell" data-col="etc">기타자료</th>
                 <th data-col="updatedAt">업데이트</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="row : ${rows}">
+                <td style="text-align:center">
+                    <input type="checkbox" class="row-chk"
+                           th:value="${row.user.id}" onchange="updateSelectedCount()">
+                </td>
+                <td data-col="team" th:text="${row.user.team != null ? row.user.team.name : '-'}"></td>
                 <td data-col="position" th:text="${row.user.position != null ? row.user.position.displayName : '-'}"></td>
                 <td>
                     <a sec:authorize="hasRole('ADMIN')"
@@ -141,9 +299,21 @@
                 <td data-col="email" th:text="${row.user.email}"></td>
                 <td data-col="developerGrade" th:text="${row.developerGrade != null ? row.developerGrade : '-'}"></td>
                 <td data-col="career">
-                    <span th:if="${row.careerMonths > 0}"
-                          th:text="${row.careerYears + '년 ' + row.careerRemainMonths + '개월'}"></span>
-                    <span th:if="${row.careerMonths == 0}" class="text-muted">-</span>
+                    <!-- ymd -->
+                    <span th:if="${query.careerDisplay == 'ymd' or query.careerDisplay == null}">
+                        <span th:if="${row.careerTotalDays > 0}" th:text="${row.careerYmd}"></span>
+                        <span th:if="${row.careerTotalDays <= 0}" class="text-muted">-</span>
+                    </span>
+                    <!-- m -->
+                    <span th:if="${query.careerDisplay == 'm'}">
+                        <span th:if="${row.careerMonthsFromDays > 0}" th:text="${row.careerMonthsFromDays + '개월'}"></span>
+                        <span th:if="${row.careerMonthsFromDays <= 0}" class="text-muted">-</span>
+                    </span>
+                    <!-- d -->
+                    <span th:if="${query.careerDisplay == 'd'}">
+                        <span th:if="${row.careerTotalDays > 0}" th:text="${row.careerTotalDays + '일'}"></span>
+                        <span th:if="${row.careerTotalDays <= 0}" class="text-muted">-</span>
+                    </span>
                 </td>
 
                 <!-- 이력서 -->
@@ -172,7 +342,7 @@
                     </td>
                 </th:block>
 
-                <!-- 자격증 -->
+                <!-- 정보처리기사 -->
                 <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).LICENSE)}">
                     <td class="doc-cell" data-col="license">
                         <span th:if="${dv == null}" class="text-muted small">없음</span>
@@ -211,19 +381,6 @@
                     </td>
                 </th:block>
 
-                <!-- 재직증명서 -->
-                <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).EMPLOYMENT_CERTIFICATE)}">
-                    <td class="doc-cell" data-col="employmentCertificate">
-                        <span th:if="${dv == null}" class="text-muted small">없음</span>
-                        <span th:if="${dv != null}" class="d-flex gap-1 flex-wrap">
-                            <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank"
-                               class="btn btn-outline-secondary btn-xs">보기</a>
-                            <a th:href="@{/documents/{id}/download(id=${dv.id})}"
-                               class="btn btn-outline-primary btn-xs">다운</a>
-                        </span>
-                    </td>
-                </th:block>
-
                 <!-- 기타자료 -->
                 <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).ETC)}">
                     <td class="doc-cell" data-col="etc">
@@ -246,9 +403,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const COLS = ['position','age','birthDate','phone','email','developerGrade','career',
+const COLS = ['team','position','age','birthDate','phone','email','developerGrade','career',
     'resume','careerDescription','license','graduationCertificate',
-    'healthInsuranceProof','employmentCertificate','etc','updatedAt'];
+    'healthInsuranceProof','etc','updatedAt'];
 
 function getHidden() {
     try { return JSON.parse(localStorage.getItem('profiles_hidden_cols') || '[]'); } catch(e) { return []; }
@@ -271,7 +428,103 @@ function toggleCol(col, visible) {
     applyColVisibility();
 }
 
-document.addEventListener('DOMContentLoaded', applyColVisibility);
+function updateTeamLabel() {
+    const checked = document.querySelectorAll('.team-chk:checked');
+    document.getElementById('teamFilterLabel').textContent =
+        checked.length === 0 ? '전체 팀' : checked.length + '개 팀 선택';
+}
+
+function updateGradeLabel() {
+    const checked = document.querySelectorAll('.grade-chk:checked');
+    document.getElementById('gradeFilterLabel').textContent =
+        checked.length === 0 ? '전체 등급' : [...checked].map(c => c.value).join('·');
+}
+
+function downloadExcel() {
+    const form = document.getElementById('filterForm');
+    const params = new URLSearchParams(new FormData(form));
+    const hidden = getHidden();
+    COLS.filter(c => !hidden.includes(c)).forEach(c => params.append('cols', c));
+    window.location.href = '/sales/profiles/export?' + params.toString();
+}
+
+function captureColsForPreset() {
+    const hidden = getHidden();
+    const visible = COLS.filter(c => !hidden.includes(c));
+    document.getElementById('preset-cols-input').value = JSON.stringify(visible);
+}
+
+function applyPreset(presetId) {
+    if (!presetId) return;
+    const opt = document.querySelector('#presetSelect option[value="' + presetId + '"]');
+    if (!opt) return;
+    // 컬럼 적용
+    try {
+        const cols = JSON.parse(opt.dataset.cols || '[]');
+        const hidden = COLS.filter(c => !cols.includes(c));
+        localStorage.setItem('profiles_hidden_cols', JSON.stringify(hidden));
+        applyColVisibility();
+    } catch(e) {}
+    // 경력 표시 + 정렬 적용 → 폼 submit
+    try {
+        const career = opt.dataset.career || 'ymd';
+        document.getElementById('careerDisplaySel').value = career;
+        const sort = JSON.parse(opt.dataset.sort || '{}');
+        if (sort.sort) {
+            document.querySelector('[name="sort"]').value = sort.sort;
+            document.querySelector('[name="direction"]').value = sort.direction || 'asc';
+        }
+    } catch(e) {}
+    document.getElementById('filterForm').submit();
+}
+
+function resetAll() {
+    localStorage.removeItem('profiles_hidden_cols');
+    window.location.href = '/sales/profiles';
+}
+
+function toggleSelectAll(checked) {
+    document.querySelectorAll('.row-chk').forEach(cb => cb.checked = checked);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checked = document.querySelectorAll('.row-chk:checked');
+    document.getElementById('selectedCount').textContent = checked.length;
+    document.getElementById('exportSelectedBtn').disabled = checked.length === 0;
+    // 전체선택 체크박스 indeterminate 처리
+    const all = document.querySelectorAll('.row-chk');
+    const sa = document.getElementById('selectAll');
+    if (sa) {
+        sa.checked = all.length > 0 && checked.length === all.length;
+        sa.indeterminate = checked.length > 0 && checked.length < all.length;
+    }
+}
+
+function submitSelectedExport() {
+    const checked = document.querySelectorAll('.row-chk:checked');
+    if (checked.length === 0) { alert('선택된 인원이 없습니다.'); return; }
+    const form = document.getElementById('exportSelectedForm');
+    // 이전에 추가된 selectedIds hidden 제거
+    form.querySelectorAll('[name="selectedIds"]').forEach(el => el.remove());
+    // 현재 선택 추가
+    checked.forEach(cb => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = 'selectedIds'; inp.value = cb.value;
+        form.appendChild(inp);
+    });
+    // 현재 보이는 컬럼 캡처
+    document.getElementById('exportColumnsJson').value = JSON.stringify(
+        COLS.filter(c => !getHidden().includes(c))
+    );
+    form.submit();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    applyColVisibility();
+    updateTeamLabel();
+    updateGradeLabel();
+});
 </script>
 </body>
 </html>

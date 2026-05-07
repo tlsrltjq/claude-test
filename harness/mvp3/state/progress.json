@@ -1,0 +1,138 @@
+{
+  "project": "eactive-resource-hub",
+  "track": "mvp3",
+  "currentStage": "M3-01",
+  "createdAt": "2026-05-04T00:00:00Z",
+  "stages": [
+    {
+      "id": "M3-01",
+      "title": "직급·권한 네이밍 + 한글화 (상무 추가)",
+      "status": "blocked",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": "2026-05-07T01:22:34.705288Z",
+      "verifyResult": "fail",
+      "notes": []
+    },
+    {
+      "id": "M3-02",
+      "title": "로그인 UX (ID 저장 + 비번 찾기 + 5분 인증 타이머)",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-03",
+      "title": "/signup 폼 정비 (순서·8자 생년월일·이메일 오류 시 비번 유지)",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-04",
+      "title": "/dashboard 내 정보 보강 (등급·생년월일·팀)",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-05",
+      "title": "DocumentType 정비 + 태그 표시 제거 + ppt/pptx 허용",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-06",
+      "title": "/myfolder 본인 문서 삭제",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-07",
+      "title": "/shared/folders/public 전 사원 공용 폴더",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-08",
+      "title": "/search 통합 검색 화면 (본인 권한 모든 문서 + 필터)",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-09",
+      "title": "/sales/members 정렬 + /admin/employees 검색·정리",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-10",
+      "title": "/sales/profiles 본격 정비 (등급 위젯·프리셋·경력 표시)",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-11",
+      "title": "/sales/profiles 체크 후 엑셀 (mvp2 08 흡수)",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-12",
+      "title": "/sales/career-calculator 검색 동작 복구 (버튼 + Enter)",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    },
+    {
+      "id": "M3-13",
+      "title": "계정 활성/비활성 토글 + 즉시 세션 무효화",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": null,
+      "verifyResult": null,
+      "notes": []
+    }
+  ]
+}
