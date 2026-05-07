@@ -8,8 +8,14 @@
     <style>
         .doc-card { transition: box-shadow .2s; cursor: default; }
         .doc-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.15); }
-        .doc-thumbnail { width:100%; height:160px; object-fit:cover; background:#f0f0f0; }
-        .doc-thumbnail-placeholder { width:100%; height:160px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; color:#aaa; font-size:2.5rem; }
+        .doc-preview { width:100%; height:160px; object-fit:cover; background:#f0f0f0; display:block; }
+        .doc-icon-area { width:100%; height:160px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; border-bottom:1px solid #e9ecef; }
+        .doc-ext-label { font-size:1rem; font-weight:700; padding:.4em .8em; border-radius:.4rem; letter-spacing:.05em; }
+        .ext-pdf  { background:#ff4444; color:#fff; }
+        .ext-img  { background:#0d6efd; color:#fff; }
+        .ext-word { background:#2b579a; color:#fff; }
+        .ext-hwp  { background:#1e7e34; color:#fff; }
+        .ext-etc  { background:#6c757d; color:#fff; }
     </style>
 </head>
 <body>
@@ -86,32 +92,35 @@
             <div th:each="doc : ${documents}" class="col doc-card-col"
                  th:with="lv=${latestVersions[doc.id]}"
                  th:data-type="${doc.documentType.name()}"
-                 th:data-label="${doc.documentType.name() == 'RESUME' ? '이력서' :
-                                 doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                                 doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                                 doc.documentType.name() == 'LICENSE' ? '자격증' :
-                                 doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
+                 th:data-label="${doc.documentType.displayName}"
                  th:data-title="${doc.title}"
                  th:data-filename="${lv != null ? lv.originalFileName : ''}"
                  th:data-date="${lv != null ? lv.createdAt : ''}">
-                <div class="card h-100 doc-card">
-                    <!-- 썸네일 -->
-                    <div th:if="${lv != null and lv.thumbnailStoragePath != null}">
-                        <img th:src="@{/documents/{id}/thumbnail(id=${lv.id})}"
-                             class="card-img-top doc-thumbnail" alt="썸네일"
+                <div class="card h-100 doc-card"
+                     th:with="ext=${lv != null ? lv.originalFileName.substring(lv.originalFileName.lastIndexOf('.')+1).toLowerCase() : 'etc'}">
+                    <!-- 썸네일 또는 파일 형식 배지 -->
+                    <a th:if="${lv != null}"
+                       th:href="@{/documents/{id}/preview(id=${lv.id})}"
+                       target="_blank" class="text-decoration-none">
+                        <!-- 썸네일 있으면 이미지 표시 -->
+                        <img th:if="${lv.thumbnailStoragePath != null}"
+                             th:src="@{/documents/{id}/thumbnail(id=${lv.id})}"
+                             class="doc-preview" alt="미리보기"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                        <div class="doc-thumbnail-placeholder" style="display:none;">📄</div>
+                        <!-- 썸네일 없으면 파일 형식 배지 -->
+                        <div th:classappend="${lv.thumbnailStoragePath != null} ? 'd-none'"
+                             class="doc-icon-area">
+                            <div th:class="'doc-ext-label ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                                 th:text="${ext.toUpperCase()}"></div>
+                        </div>
+                    </a>
+                    <div th:if="${lv == null}" class="doc-icon-area">
+                        <span class="doc-ext-label ext-etc">?</span>
                     </div>
-                    <div th:if="${lv == null or lv.thumbnailStoragePath == null}"
-                         class="doc-thumbnail-placeholder">📄</div>
 
                     <div class="card-body p-2">
                         <div class="d-flex gap-1 flex-wrap mb-1">
-                            <span th:text="${doc.documentType.name() == 'RESUME' ? '이력서' :
-                                             doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                                             doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                                             doc.documentType.name() == 'LICENSE' ? '자격증' :
-                                             doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
+                            <span th:text="${doc.documentType.displayName}"
                                   class="badge bg-secondary"></span>
                             <!-- 검토 상태 배지 -->
                             <span th:if="${lv != null and lv.reviewStatus.name() == 'PENDING_REVIEW'}"
@@ -137,9 +146,6 @@
                                th:text="${lv != null ? #temporals.format(lv.createdAt, 'yyyy-MM-dd') : ''}"></small>
                     </div>
                     <div class="card-footer p-2 d-flex gap-1 flex-wrap">
-                        <a th:if="${lv != null}"
-                           th:href="@{/documents/{id}/preview(id=${lv.id})}"
-                           target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">미리보기</a>
                         <a th:if="${lv != null}"
                            th:href="@{/documents/{id}/download(id=${lv.id})}"
                            class="btn btn-outline-secondary btn-sm flex-fill">다운로드</a>

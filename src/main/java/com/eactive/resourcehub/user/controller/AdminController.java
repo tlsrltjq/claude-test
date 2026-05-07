@@ -4,46 +4,45 @@ import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditLog;
 import com.eactive.resourcehub.audit.repository.AuditLogRepository;
 import com.eactive.resourcehub.audit.service.StatisticsService;
-import com.eactive.resourcehub.document.service.DocumentExpiryService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
-import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
 import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
+import com.eactive.resourcehub.document.entity.FolderType;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.document.service.DocumentDeleteService;
+import com.eactive.resourcehub.document.service.DocumentExpiryService;
 import com.eactive.resourcehub.document.service.DocumentReviewService;
 import com.eactive.resourcehub.permission.entity.Permission;
-import com.eactive.resourcehub.permission.entity.PermissionTargetType;
-import com.eactive.resourcehub.permission.entity.PermissionType;
 import com.eactive.resourcehub.permission.repository.PermissionRepository;
 import com.eactive.resourcehub.permission.service.FolderPermissionService;
-import com.eactive.resourcehub.user.entity.Position;
-import com.eactive.resourcehub.user.entity.UserRole;
-import com.eactive.resourcehub.user.service.UserRoleService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-
-import java.util.Set;
 import com.eactive.resourcehub.team.repository.TeamRepository;
 import com.eactive.resourcehub.user.dto.ApproveUserRequest;
 import com.eactive.resourcehub.user.dto.RejectUserRequest;
+import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import com.eactive.resourcehub.user.service.AdminUserApprovalService;
 import com.eactive.resourcehub.user.service.EmployeeManagementService;
+import com.eactive.resourcehub.user.service.UserRoleService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/admin")
@@ -65,6 +64,7 @@ public class AdminController {
     private final StatisticsService statisticsService;
     private final AuditLogRepository auditLogRepository;
     private final DocumentExpiryService documentExpiryService;
+    private final SessionRegistry sessionRegistry;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -119,19 +119,80 @@ public class AdminController {
 
     // ── 직원 목록 ─────────────────────────────
     @GetMapping("/employees")
-    public String employees(Model model) {
-        List<User> employees = employeeService.findAllActive();
-        model.addAttribute("employees", employees);
+    public String employees(@RequestParam(required = false) String q,
+                            @RequestParam(required = false) String position,
+                            @RequestParam(required = false) String role,
+                            @RequestParam(required = false) Long teamId,
+                            Model model) {
+        model.addAttribute("employees", employeeService.findActiveFiltered(q, position, role, teamId));
+        model.addAttribute("positions", Position.values());
+        model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
+                .filter(r -> r != UserRole.TEAM_LEADER).toList());
+        model.addAttribute("teams", teamRepository.findAll());
+        model.addAttribute("q", q);
+        model.addAttribute("position", position);
+        model.addAttribute("role", role);
+        model.addAttribute("teamId", teamId);
         return "admin/employees";
     }
 
     @GetMapping("/employees/{userId}")
-    public String employeeDetail(@PathVariable Long userId, Model model) {
+    public String employeeDetail(@PathVariable Long userId,
+                                 @RequestParam(defaultValue = "info") String tab,
+                                 Model model) {
+        model.addAttribute("activeTab", tab);
         User user = employeeService.findById(userId);
         model.addAttribute("user", user);
         model.addAttribute("teams", teamRepository.findAll());
         model.addAttribute("hasFolder", employeeService.hasPersonalFolder(userId));
+
+        // 역할 목록
+        model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
+                .filter(r -> r != UserRole.TEAM_LEADER).toList());
+
+        // 문서 목록
+        folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).ifPresent(folder ->
+                model.addAttribute("documents",
+                        documentRepository.findByFolderIdAndStatusWithVersion(folder.getId(), DocumentStatus.ACTIVE)));
+
+        // 권한 목록
+        List<Permission> permissions = folderPermissionService.findPermissionsByUser(userId);
+        List<Long> grantedFolderIds = permissions.stream().map(Permission::getTargetId).toList();
+        var grantableFolders = folderRepository.findAllWithOwner().stream()
+                .filter(f -> !f.getOwner().getId().equals(userId))
+                .filter(f -> !grantedFolderIds.contains(f.getId()))
+                .toList();
+        model.addAttribute("permissions", permissions);
+        model.addAttribute("grantableFolders", grantableFolders);
+
         return "admin/employee-detail";
+    }
+
+    @PostMapping("/employees/{userId}/toggle-status")
+    public String toggleStatus(@PathVariable Long userId,
+                               @AuthenticationPrincipal CustomUserDetails actor,
+                               HttpServletRequest request,
+                               RedirectAttributes ra) {
+        try {
+            UserStatus newStatus = employeeService.toggleStatus(userId, actor.getUser().getId(), request);
+            if (newStatus == UserStatus.DISABLED) {
+                // 해당 사용자의 모든 세션을 즉시 만료
+                for (Object principal : sessionRegistry.getAllPrincipals()) {
+                    if (principal instanceof CustomUserDetails cud
+                            && cud.getUser().getId().equals(userId)) {
+                        sessionRegistry.getAllSessions(principal, false)
+                                .forEach(SessionInformation::expireNow);
+                        break;
+                    }
+                }
+                ra.addFlashAttribute("successMessage", "계정을 비활성화하고 세션을 종료했습니다.");
+            } else {
+                ra.addFlashAttribute("successMessage", "계정을 활성화했습니다.");
+            }
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/employees/" + userId + "?tab=info";
     }
 
     @PostMapping("/employees/{userId}/change-team")
@@ -146,7 +207,7 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/admin/employees/" + userId;
+        return "redirect:/admin/employees/" + userId + "?tab=team";
     }
 
     // ── 직원 문서 목록: /admin/employees/{userId}/documents ──
@@ -154,7 +215,7 @@ public class AdminController {
     public String employeeDocuments(@PathVariable Long userId, Model model) {
         User user = employeeService.findById(userId);
         model.addAttribute("user", user);
-        folderRepository.findByOwnerId(userId).ifPresent(folder -> {
+        folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).ifPresent(folder -> {
             model.addAttribute("documents",
                     documentRepository.findByFolderIdAndStatusWithVersion(folder.getId(), DocumentStatus.ACTIVE));
         });
@@ -224,7 +285,7 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/admin/employees/" + userId;
+        return "redirect:/admin/employees/" + userId + "?tab=role";
     }
 
     // ── 권한 관리: /admin/users/{userId}/permissions ────────────
@@ -260,7 +321,7 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/admin/users/" + userId + "/permissions";
+        return "redirect:/admin/employees/" + userId + "?tab=permissions";
     }
 
     @PostMapping("/users/{userId}/permissions/revoke")
@@ -275,7 +336,7 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/admin/users/" + userId + "/permissions";
+        return "redirect:/admin/employees/" + userId + "?tab=permissions";
     }
 
     // ── 문서 검토: /admin/documents/review ──────────────────────

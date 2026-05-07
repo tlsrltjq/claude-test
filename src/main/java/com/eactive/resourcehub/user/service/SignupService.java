@@ -1,10 +1,10 @@
 package com.eactive.resourcehub.user.service;
 
 import com.eactive.resourcehub.common.email.EmailSender;
+import com.eactive.resourcehub.team.entity.Team;
+import com.eactive.resourcehub.team.repository.TeamRepository;
 import com.eactive.resourcehub.user.dto.SignupRequest;
-import com.eactive.resourcehub.user.entity.EmailVerificationToken;
 import com.eactive.resourcehub.user.entity.User;
-import com.eactive.resourcehub.user.repository.EmailVerificationTokenRepository;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Random;
 
 @Slf4j
@@ -20,83 +23,59 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class SignupService {
 
+    private static final DateTimeFormatter BIRTH_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+
     private final UserRepository userRepository;
-    private final EmailVerificationTokenRepository tokenRepository;
+    private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
 
     @Value("${resourcehub.company-email-domain}")
     private String companyEmailDomain;
 
-    private static final int TOKEN_TTL_MINUTES = 10;
+    public String buildEmail(String prefix) {
+        return prefix + "@" + companyEmailDomain;
+    }
 
-    @Transactional
-    public String signup(SignupRequest request) {
-        String email = request.getEmailPrefix() + "@" + companyEmailDomain;
+    /**
+     * 1단계: 폼 유효성 검증 + 인증 코드 발송. DB에 저장하지 않음.
+     * @return 생성된 6자리 인증 코드
+     */
+    @Transactional(readOnly = true)
+    public String initiateSignup(SignupRequest request) {
+        String email = buildEmail(request.getEmailPrefix());
+        parseBirthDate(request.getBirthDateStr());
         validateSignupRequest(request, email);
 
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        User user = User.create(
-                email,
-                encodedPassword,
-                request.getName(),
-                email,
-                null,
-                request.getPosition(),
-                request.getBirthDate(),
-                request.getPhone()
-        );
-        userRepository.save(user);
-
         String code = generateCode();
-        EmailVerificationToken token = EmailVerificationToken.create(user, code, TOKEN_TTL_MINUTES);
-        tokenRepository.save(token);
-
         try {
             emailSender.sendVerificationCode(email, code);
         } catch (Exception e) {
             log.warn("이메일 발송 실패 — email={}, error={}", email, e.getMessage());
         }
-        log.info("회원가입 완료 — email={}, status={}", email, user.getStatus());
-        return email;
+        log.info("인증 코드 발송 — email={}", email);
+        return code;
     }
 
+    /**
+     * 2단계: 이메일 인증 완료 후 DB에 유저 저장. status = PENDING_ADMIN_APPROVAL.
+     */
     @Transactional
-    public void verifyEmail(String email, String code) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
-
-        EmailVerificationToken token = tokenRepository.findTopByEmailOrderByCreatedAtDesc(email)
-                .orElseThrow(() -> new IllegalArgumentException("인증 코드를 찾을 수 없습니다."));
-
-        if (token.isVerified()) {
-            throw new IllegalArgumentException("이미 인증이 완료된 코드입니다.");
+    public void completeSignup(SignupRequest request) {
+        String email = buildEmail(request.getEmailPrefix());
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalStateException("이미 사용 중인 이메일입니다.");
         }
-        if (token.isExpired()) {
-            throw new IllegalArgumentException("인증 코드가 만료되었습니다. 다시 요청해주세요.");
-        }
-        if (!token.getToken().equals(code)) {
-            throw new IllegalArgumentException("인증 코드가 올바르지 않습니다.");
-        }
-
-        token.markVerified();
+        LocalDate birthDate = parseBirthDate(request.getBirthDateStr());
+        Team team = (request.getTeamId() != null)
+                ? teamRepository.findById(request.getTeamId()).orElse(null)
+                : null;
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        User user = User.create(email, encodedPassword, request.getName(), email, team,
+                request.getPosition(), birthDate, request.getPhone());
         user.verifyEmail();
-        log.info("이메일 인증 완료 — email={}, status={}", email, user.getStatus());
-    }
-
-    @Transactional
-    public void resendCode(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
-
-        String code = generateCode();
-        EmailVerificationToken token = EmailVerificationToken.create(user, code, TOKEN_TTL_MINUTES);
-        tokenRepository.save(token);
-        try {
-            emailSender.sendVerificationCode(email, code);
-        } catch (Exception e) {
-            log.warn("재발송 이메일 실패 — email={}, error={}", email, e.getMessage());
-        }
+        userRepository.save(user);
+        log.info("회원가입 완료 (이메일 인증 후 저장) — email={}", email);
     }
 
     private void validateSignupRequest(SignupRequest request, String email) {
@@ -109,7 +88,6 @@ public class SignupService {
         validatePasswordComplexity(request.getPassword());
     }
 
-    // 영문/숫자/특수문자 중 3종류 이상 + 8자 이상
     private void validatePasswordComplexity(String password) {
         if (password == null || password.length() < 8) {
             throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
@@ -120,6 +98,21 @@ public class SignupService {
         if (password.matches(".*[^a-zA-Z0-9].*")) types++;
         if (types < 3) {
             throw new IllegalArgumentException("비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.");
+        }
+    }
+
+    private LocalDate parseBirthDate(String birthDateStr) {
+        if (birthDateStr == null || birthDateStr.isBlank())
+            throw new IllegalArgumentException("생년월일을 입력해주세요.");
+        if (!birthDateStr.matches("\\d{8}"))
+            throw new IllegalArgumentException("생년월일은 8자 숫자로 입력하세요. 예: 20010904");
+        try {
+            LocalDate date = LocalDate.parse(birthDateStr, BIRTH_FMT);
+            if (date.isBefore(LocalDate.of(1900, 1, 1)) || date.isAfter(LocalDate.now()))
+                throw new IllegalArgumentException("유효하지 않은 생년월일입니다.");
+            return date;
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("생년월일은 8자 숫자로 입력하세요. 예: 20010904");
         }
     }
 

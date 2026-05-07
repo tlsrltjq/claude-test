@@ -19,37 +19,89 @@
 </nav>
 
 <div class="container mt-4">
-    <h2 class="mb-4">직원 목록 (활성)</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">직원 목록</h2>
+        <small class="text-muted" th:text="'총 ' + ${#lists.size(employees)} + '명'"></small>
+    </div>
+
+    <!-- 검색 폼 -->
+    <form method="get" th:action="@{/admin/employees}" class="row g-2 mb-3 align-items-center">
+        <div class="col-sm-3">
+            <input type="text" name="q" class="form-control form-control-sm"
+                   placeholder="이름 또는 이메일" th:value="${q}">
+        </div>
+        <div class="col-auto">
+            <select name="position" class="form-select form-select-sm">
+                <option value="">전체 직급</option>
+                <option th:each="pos : ${positions}"
+                        th:value="${pos.name()}"
+                        th:text="${pos.displayName}"
+                        th:selected="${pos.name() == position}"></option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="role" class="form-select form-select-sm">
+                <option value="">전체 권한</option>
+                <option th:each="r : ${roles}"
+                        th:value="${r.name()}"
+                        th:text="${r.displayName}"
+                        th:selected="${r.name() == role}"></option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="teamId" class="form-select form-select-sm">
+                <option value="">전체 팀</option>
+                <option th:each="team : ${teams}"
+                        th:value="${team.id}"
+                        th:text="${team.name}"
+                        th:selected="${teamId != null and teamId == team.id}"></option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-sm">검색</button>
+            <a th:href="@{/admin/employees}" class="btn btn-outline-secondary btn-sm ms-1">초기화</a>
+        </div>
+    </form>
 
     <table class="table table-hover table-bordered">
         <thead class="table-dark">
         <tr>
-            <th>이름</th><th>이메일</th><th>팀</th><th>직급</th><th>권한</th><th>개인 폴더</th><th></th>
+            <th>이름</th><th>이메일</th><th>팀</th><th>직급</th><th>권한</th><th>상태</th><th></th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="emp : ${employees}">
+        <tr th:each="emp : ${employees}"
+            th:classappend="${emp.status.name() == 'DISABLED'} ? 'table-secondary text-muted'">
             <td th:text="${emp.name}"></td>
             <td th:text="${emp.email}"></td>
             <td th:text="${emp.team != null ? emp.team.name : '-'}"></td>
-            <td th:text="${emp.position != null ? emp.position : '-'}"></td>
+            <td th:text="${emp.position != null ? emp.position.displayName : '-'}"></td>
             <td>
-                <span th:switch="${emp.role.name()}">
-                    <span th:case="'ADMIN'" class="badge bg-danger">관리자</span>
-                    <span th:case="'SALES'" class="badge bg-primary">영업부</span>
-                    <span th:case="*" class="badge bg-secondary">직원</span>
-                </span>
+                <span th:text="${emp.role.displayName}"
+                      th:classappend="${emp.role.name() == 'ADMIN'} ? 'bg-danger' : (${emp.role.name() == 'SALES'} ? 'bg-primary' : 'bg-secondary')"
+                      class="badge"></span>
             </td>
             <td>
-                <span th:if="${emp.status.name() == 'ACTIVE'}" class="text-success">&#10003;</span>
+                <span th:text="${emp.status.name() == 'ACTIVE'} ? '활성' : '비활성'"
+                      th:classappend="${emp.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                      class="badge"></span>
             </td>
-            <td>
+            <td class="text-nowrap">
                 <a th:href="@{/admin/employees/{id}(id=${emp.id})}"
                    class="btn btn-outline-primary btn-sm">상세</a>
+                <form th:if="${emp.role.name() != 'ADMIN'}" method="post"
+                      th:action="@{/admin/employees/{id}/toggle-status(id=${emp.id})}"
+                      class="d-inline">
+                    <button type="submit" class="btn btn-sm ms-1"
+                            th:classappend="${emp.status.name() == 'ACTIVE'} ? 'btn-outline-danger' : 'btn-outline-success'"
+                            th:text="${emp.status.name() == 'ACTIVE'} ? '비활성화' : '활성화'"
+                            th:attr="data-name=${emp.name},data-active=${emp.status.name() == 'ACTIVE'}"
+                            onclick="if(this.dataset.active==='true' && !confirm(this.dataset.name+' 계정을 비활성화하시겠습니까?')) return false;"></button>
+                </form>
             </td>
         </tr>
         <tr th:if="${#lists.isEmpty(employees)}">
-            <td colspan="7" class="text-center text-muted">활성 직원이 없습니다.</td>
+            <td colspan="7" class="text-center text-muted">조건에 맞는 직원이 없습니다.</td>
         </tr>
         </tbody>
     </table>

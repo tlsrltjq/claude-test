@@ -36,6 +36,9 @@ public class EmployeeProfile extends BaseEntity {
     @Column(nullable = false)
     private int careerMonths;
 
+    @Column(nullable = false)
+    private int careerTotalDays;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private AvailableStatus availableStatus;
@@ -53,9 +56,10 @@ public class EmployeeProfile extends BaseEntity {
         this.skills = skills;
     }
 
-    public void updateCareer(String developerGrade, int careerMonths) {
+    public void updateCareer(String developerGrade, int careerMonths, int careerTotalDays) {
         this.developerGrade = developerGrade;
         this.careerMonths = careerMonths;
+        this.careerTotalDays = careerTotalDays;
     }
 
     public void changeAvailableStatus(AvailableStatus status) {

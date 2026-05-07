@@ -45,27 +45,19 @@ public class DocumentController {
 
         DocumentVersion version = accessService.getVersionWithAccessCheck(documentVersionId, userDetails);
 
-        String storagePath;
-        MediaType mediaType;
+        String storagePath = version.getStoragePath();
         String filename = version.getOriginalFileName();
-
         String ext = extension(filename).toLowerCase();
 
-        if (OFFICE_EXTS.contains(ext)) {
-            if (version.getPreviewStoragePath() == null) {
-                return ResponseEntity.status(415)
-                        .body(null);
-            }
-            storagePath = version.getPreviewStoragePath();
+        MediaType mediaType;
+        if ("pdf".equals(ext)) {
             mediaType = MediaType.APPLICATION_PDF;
-        } else if ("pdf".equals(ext)) {
-            storagePath = version.getStoragePath();
-            mediaType = MediaType.APPLICATION_PDF;
+        } else if ("png".equals(ext)) {
+            mediaType = MediaType.IMAGE_PNG;
         } else if (IMAGE_EXTS.contains(ext)) {
-            storagePath = version.getStoragePath();
-            mediaType = "png".equals(ext) ? MediaType.IMAGE_PNG : MediaType.IMAGE_JPEG;
+            mediaType = MediaType.IMAGE_JPEG;
         } else {
-            return ResponseEntity.status(415).body(null);
+            mediaType = MediaType.APPLICATION_OCTET_STREAM;
         }
 
         InputStream stream;
@@ -79,6 +71,10 @@ public class DocumentController {
 
         return ResponseEntity.ok()
                 .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline()
+                                .filename(filename, StandardCharsets.UTF_8)
+                                .build().toString())
                 .body(new InputStreamResource(stream));
     }
 

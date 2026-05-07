@@ -25,6 +25,7 @@ spring:
     enabled: true
     baseline-on-migrate: true
     out-of-order: true
+    ignore-migration-patterns: "*:Missing"
     locations: classpath:db/migration
 
   thymeleaf:
@@ -45,7 +46,7 @@ server:
 resourcehub:
   upload:
     base-dir: ${RESOURCEHUB_UPLOAD_BASE_DIR:./storage/uploads}
-    allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx
+    allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx,ppt,pptx
   company-email-domain: ${RESOURCEHUB_COMPANY_EMAIL_DOMAIN:eactive.co.kr}
   admin:
     email: ${RESOURCEHUB_ADMIN_EMAIL:admin@eactive.co.kr}

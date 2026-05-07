@@ -22,7 +22,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     Optional<Document> findByFolderIdAndDocumentTypeAndTitle(
             Long folderId, DocumentType documentType, String title);
 
-    @Query("SELECT d FROM Document d LEFT JOIN FETCH d.currentVersion WHERE d.folder.id = :folderId AND d.status = :status")
+    @Query("SELECT d FROM Document d LEFT JOIN FETCH d.currentVersion v LEFT JOIN FETCH v.uploadedBy WHERE d.folder.id = :folderId AND d.status = :status")
     List<Document> findByFolderIdAndStatusWithVersion(
             @Param("folderId") Long folderId, @Param("status") DocumentStatus status);
 
@@ -48,47 +48,47 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findExpiringSoon(@Param("today") LocalDate today,
                                     @Param("threshold") LocalDate threshold);
 
-    // 본인 문서 검색 — 태그 FETCH, 태그 필터는 EXISTS 서브쿼리
+    // 본인 개인 폴더 문서 검색 — 제목·파일명 키워드, 종류 필터
     @Query("SELECT DISTINCT d FROM Document d " +
            "JOIN FETCH d.folder f JOIN FETCH f.owner " +
-           "LEFT JOIN FETCH d.tags " +
+           "LEFT JOIN FETCH d.currentVersion cv " +
+           "LEFT JOIN FETCH cv.uploadedBy uploader " +
            "WHERE f.owner.id = :ownerId AND d.status = 'ACTIVE' " +
-           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword) " +
+           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword " +
+           "     OR (cv IS NOT NULL AND LOWER(cv.originalFileName) LIKE :keyword)) " +
            "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
-           "AND (:tagName IS NULL OR EXISTS (SELECT t FROM d.tags t WHERE LOWER(t.name) = :tagName)) " +
            "ORDER BY d.createdAt DESC")
     List<Document> searchOwn(@Param("ownerId") Long ownerId,
                              @Param("keyword") String keyword,
-                             @Param("typeFilter") DocumentType typeFilter,
-                             @Param("tagName") String tagName);
+                             @Param("typeFilter") DocumentType typeFilter);
 
-    // 공유 폴더 문서 검색
+    // 특정 폴더 목록 문서 검색 (공유·공용 폴더)
     @Query("SELECT DISTINCT d FROM Document d " +
            "JOIN FETCH d.folder f JOIN FETCH f.owner " +
-           "LEFT JOIN FETCH d.tags " +
-           "WHERE f.id IN :folderIds AND d.status = 'ACTIVE' AND d.currentVersion IS NOT NULL " +
-           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword) " +
+           "LEFT JOIN FETCH d.currentVersion cv " +
+           "LEFT JOIN FETCH cv.uploadedBy uploader " +
+           "WHERE f.id IN :folderIds AND d.status = 'ACTIVE' " +
+           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword " +
+           "     OR (cv IS NOT NULL AND LOWER(cv.originalFileName) LIKE :keyword)) " +
            "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
-           "AND (:tagName IS NULL OR EXISTS (SELECT t FROM d.tags t WHERE LOWER(t.name) = :tagName)) " +
            "ORDER BY d.createdAt DESC")
     List<Document> searchInFolders(@Param("folderIds") List<Long> folderIds,
                                    @Param("keyword") String keyword,
-                                   @Param("typeFilter") DocumentType typeFilter,
-                                   @Param("tagName") String tagName);
+                                   @Param("typeFilter") DocumentType typeFilter);
 
     // 관리자: 전체 문서 검색
     @Query("SELECT DISTINCT d FROM Document d " +
            "JOIN FETCH d.folder f JOIN FETCH f.owner u " +
            "LEFT JOIN FETCH u.team " +
-           "LEFT JOIN FETCH d.tags " +
+           "LEFT JOIN FETCH d.currentVersion cv " +
+           "LEFT JOIN FETCH cv.uploadedBy uploader " +
            "WHERE d.status = 'ACTIVE' " +
-           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword) " +
+           "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword " +
+           "     OR (cv IS NOT NULL AND LOWER(cv.originalFileName) LIKE :keyword)) " +
            "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
-           "AND (:tagName IS NULL OR EXISTS (SELECT t FROM d.tags t WHERE LOWER(t.name) = :tagName)) " +
            "ORDER BY d.createdAt DESC")
     List<Document> searchAll(@Param("keyword") String keyword,
-                             @Param("typeFilter") DocumentType typeFilter,
-                             @Param("tagName") String tagName);
+                             @Param("typeFilter") DocumentType typeFilter);
 
     // 프로필 표용: folder_ids 배치 조회, ACTIVE 문서 + currentVersion (reviewStatus 무관)
     @Query("SELECT d FROM Document d JOIN FETCH d.currentVersion " +

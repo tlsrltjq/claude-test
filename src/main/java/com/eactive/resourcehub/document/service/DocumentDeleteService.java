@@ -8,6 +8,7 @@ import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.user.entity.UserRole;
+import com.eactive.resourcehub.document.entity.Folder;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,76 @@ public class DocumentDeleteService {
 
         log.info("문서 삭제 완료 — documentId={}, title={}, adminId={}",
                 documentId, title, actor.getUser().getId());
+    }
+
+    /** 본인 문서 삭제 — owner 확인 후 물리 파일 + DB 행 삭제 */
+    @Transactional
+    public void deleteOwnDocument(Long documentId, Long userId, HttpServletRequest request) {
+        Document document = documentRepository.findByIdForDetail(documentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
+
+        if (!document.getFolder().getOwner().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 문서만 삭제할 수 있습니다.");
+        }
+
+        String title = document.getTitle();
+        List<DocumentVersion> versions = documentVersionRepository.findByDocumentIdOrderByVersionNoDesc(documentId);
+
+        document.setCurrentVersion(null);
+        documentRepository.save(document);
+
+        for (DocumentVersion v : versions) {
+            deleteFileSilently(v.getStoragePath());
+            deleteFileSilently(v.getPreviewStoragePath());
+            deleteFileSilently(v.getThumbnailStoragePath());
+        }
+
+        documentVersionRepository.deleteAll(versions);
+        documentRepository.delete(document);
+
+        auditLogService.logDeleteDocument(userId, documentId,
+                "본인 문서 삭제: " + title, request);
+
+        log.info("본인 문서 삭제 완료 — documentId={}, title={}, userId={}", documentId, title, userId);
+    }
+
+    /** 공용 폴더 문서 삭제 — 최초 업로더 또는 ADMIN만 허용 */
+    @Transactional
+    public void deletePublicFolderDocument(Long documentId, Long actorId, UserRole actorRole,
+                                           HttpServletRequest request) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
+
+        List<DocumentVersion> versions = documentVersionRepository
+                .findByDocumentIdOrderByVersionNoDesc(documentId);
+
+        if (actorRole != UserRole.ADMIN) {
+            // 버전 목록은 desc 정렬 → 맨 마지막이 version 1 (최초 업로더)
+            Long originalUploaderId = versions.isEmpty()
+                    ? null
+                    : versions.get(versions.size() - 1).getUploadedBy().getId();
+            if (!actorId.equals(originalUploaderId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 업로드한 문서만 삭제할 수 있습니다.");
+            }
+        }
+
+        String title = document.getTitle();
+        document.setCurrentVersion(null);
+        documentRepository.save(document);
+
+        for (DocumentVersion v : versions) {
+            deleteFileSilently(v.getStoragePath());
+            deleteFileSilently(v.getPreviewStoragePath());
+            deleteFileSilently(v.getThumbnailStoragePath());
+        }
+
+        documentVersionRepository.deleteAll(versions);
+        documentRepository.delete(document);
+
+        auditLogService.logDeleteDocument(actorId, documentId,
+                "공용 폴더 문서 삭제: " + title, request);
+
+        log.info("공용 폴더 문서 삭제 완료 — documentId={}, title={}, actorId={}", documentId, title, actorId);
     }
 
     private void deleteFileSilently(String storagePath) {

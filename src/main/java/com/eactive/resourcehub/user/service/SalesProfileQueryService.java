@@ -4,6 +4,7 @@ import com.eactive.resourcehub.document.entity.Document;
 import com.eactive.resourcehub.document.entity.DocumentType;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.entity.FolderType;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.employee.entity.EmployeeProfile;
@@ -11,6 +12,7 @@ import com.eactive.resourcehub.employee.repository.EmployeeProfileRepository;
 import com.eactive.resourcehub.user.dto.SalesProfileQuery;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +46,7 @@ public class SalesProfileQueryService {
         List<Long> userIds = users.stream().map(User::getId).toList();
 
         // 2. 폴더 배치 조회 (userId → folderId)
-        Map<Long, Long> userToFolder = folderRepository.findByOwnerIdIn(userIds)
+        Map<Long, Long> userToFolder = folderRepository.findByOwnerIdInAndType(userIds, FolderType.PERSONAL)
                 .stream().collect(Collectors.toMap(f -> f.getOwner().getId(), Folder::getId));
 
         // 3. 문서 배치 조회 (folderId → documents with currentVersion)
@@ -67,8 +69,9 @@ public class SalesProfileQueryService {
         Map<Long, EmployeeProfile> profileMap = employeeProfileRepository.findByUserIdIn(userIds)
                 .stream().collect(Collectors.toMap(ep -> ep.getUser().getId(), ep -> ep));
 
-        // 5. 조합 + 필터 + 정렬
+        // 5. 조합 + 필터 + 정렬 (ADMIN 역할 제외)
         List<ProfileRow> rows = users.stream()
+                .filter(u -> u.getRole() != UserRole.ADMIN)
                 .map(u -> new ProfileRow(u, profileMap.get(u.getId()),
                         userDocMap.getOrDefault(u.getId(), Collections.emptyMap())))
                 .filter(r -> matches(r, query))
@@ -76,6 +79,24 @@ public class SalesProfileQueryService {
 
         rows.sort(buildComparator(query));
         return rows;
+    }
+
+    public Map<String, Long> getGradeCountsFromRows(List<ProfileRow> rows) {
+        Map<String, Long> counts = new java.util.LinkedHashMap<>();
+        counts.put("특급", 0L);
+        counts.put("고급", 0L);
+        counts.put("중급", 0L);
+        counts.put("초급", 0L);
+        counts.put("미설정", 0L);
+        for (ProfileRow row : rows) {
+            String g = row.getDeveloperGrade();
+            if (g != null && counts.containsKey(g.trim())) {
+                counts.merge(g.trim(), 1L, Long::sum);
+            } else {
+                counts.merge("미설정", 1L, Long::sum);
+            }
+        }
+        return counts;
     }
 
     private boolean matches(ProfileRow row, SalesProfileQuery query) {
@@ -87,12 +108,18 @@ public class SalesProfileQueryService {
         }
         Position pos = query.positionEnum();
         if (pos != null && pos != row.getUser().getPosition()) return false;
-        if (query.getDeveloperGrade() != null && !query.getDeveloperGrade().isBlank()) {
+        if (query.getDeveloperGrades() != null && !query.getDeveloperGrades().isEmpty()) {
             String grade = row.getDeveloperGrade();
-            if (grade == null || !grade.equalsIgnoreCase(query.getDeveloperGrade().trim())) return false;
+            if (grade == null || !query.getDeveloperGrades().contains(grade.trim())) return false;
+        }
+        if (query.getTeamIds() != null && !query.getTeamIds().isEmpty()) {
+            var team = row.getUser().getTeam();
+            if (team == null || !query.getTeamIds().contains(team.getId())) return false;
         }
         return true;
     }
+
+    private static final List<String> GRADE_ORDER = List.of("특급", "고급", "중급", "초급");
 
     private Comparator<ProfileRow> buildComparator(SalesProfileQuery query) {
         String sort = query.getSort() != null ? query.getSort() : "name";
@@ -106,6 +133,14 @@ public class SalesProfileQueryService {
             comp = Comparator.comparingInt(ProfileRow::getCareerMonths);
         } else if ("age".equals(sort)) {
             comp = Comparator.comparingInt(ProfileRow::getAge);
+        } else if ("team".equals(sort)) {
+            comp = Comparator.comparing(r ->
+                    r.getUser().getTeam() != null ? r.getUser().getTeam().getName() : "");
+        } else if ("developerGrade".equals(sort)) {
+            comp = Comparator.comparingInt(r -> {
+                int idx = r.getDeveloperGrade() != null ? GRADE_ORDER.indexOf(r.getDeveloperGrade()) : -1;
+                return idx < 0 ? Integer.MAX_VALUE : idx;
+            });
         } else {
             comp = Comparator.comparing(r -> r.getUser().getName() != null ? r.getUser().getName() : "");
         }

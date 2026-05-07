@@ -39,16 +39,7 @@
         <tr th:each="doc : ${expiredDocuments}">
             <td th:text="${doc.folder.owner.name}"></td>
             <td th:text="${doc.folder.owner.team != null ? doc.folder.owner.team.name : '-'}"></td>
-            <td>
-                <span th:switch="${doc.documentType.name()}">
-                    <span th:case="'RESUME'">이력서</span>
-                    <span th:case="'CAREER_DESCRIPTION'">경력기술서</span>
-                    <span th:case="'GRADUATION_CERTIFICATE'">졸업증명서</span>
-                    <span th:case="'LICENSE'">자격증</span>
-                    <span th:case="'EMPLOYMENT_CERTIFICATE'">재직증명서</span>
-                    <span th:case="*">기타</span>
-                </span>
-            </td>
+            <td th:text="${doc.documentType.displayName}"></td>
             <td th:text="${doc.title}"></td>
             <td class="text-danger fw-bold" th:text="${#temporals.format(doc.expiresAt, 'yyyy-MM-dd')}"></td>
             <td class="text-danger small"
@@ -77,16 +68,7 @@
         <tr th:each="doc : ${expiringSoonDocuments}">
             <td th:text="${doc.folder.owner.name}"></td>
             <td th:text="${doc.folder.owner.team != null ? doc.folder.owner.team.name : '-'}"></td>
-            <td>
-                <span th:switch="${doc.documentType.name()}">
-                    <span th:case="'RESUME'">이력서</span>
-                    <span th:case="'CAREER_DESCRIPTION'">경력기술서</span>
-                    <span th:case="'GRADUATION_CERTIFICATE'">졸업증명서</span>
-                    <span th:case="'LICENSE'">자격증</span>
-                    <span th:case="'EMPLOYMENT_CERTIFICATE'">재직증명서</span>
-                    <span th:case="*">기타</span>
-                </span>
-            </td>
+            <td th:text="${doc.documentType.displayName}"></td>
             <td th:text="${doc.title}"></td>
             <td class="fw-bold" th:text="${#temporals.format(doc.expiresAt, 'yyyy-MM-dd')}"></td>
             <td class="text-warning fw-bold small"

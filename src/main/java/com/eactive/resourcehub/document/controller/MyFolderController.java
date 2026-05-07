@@ -6,16 +6,18 @@ import com.eactive.resourcehub.document.entity.Document;
 import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentType;
 import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.entity.FolderType;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
+import com.eactive.resourcehub.document.service.DocumentDeleteService;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
-import com.eactive.resourcehub.document.service.TagService;
 import com.eactive.resourcehub.template.service.ResumeTemplateService;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -40,13 +42,13 @@ public class MyFolderController {
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
     private final DocumentUploadService documentUploadService;
-    private final TagService tagService;
+    private final DocumentDeleteService documentDeleteService;
     private final ResumeTemplateService resumeTemplateService;
 
     @GetMapping
     public String myFolder(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Long userId = userDetails.getUser().getId();
-        Folder folder = folderRepository.findByOwnerId(userId).orElse(null);
+        Folder folder = folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).orElse(null);
         if (folder == null) {
             model.addAttribute("errorMessage", "개인 폴더가 없습니다. 관리자에게 문의하세요.");
             return "my/folder";
@@ -69,10 +71,11 @@ public class MyFolderController {
     @GetMapping("/documents/upload")
     public String uploadForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Long userId = userDetails.getUser().getId();
-        if (folderRepository.findByOwnerId(userId).isEmpty()) {
+        if (folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).isEmpty()) {
             return "redirect:/my/folder";
         }
-        model.addAttribute("documentTypes", DocumentType.values());
+        model.addAttribute("documentTypes", Arrays.stream(DocumentType.values())
+                .filter(DocumentType::isActive).toArray());
         model.addAttribute("uploadRequest", new DocumentUploadRequest());
         return "my/upload";
     }
@@ -117,7 +120,6 @@ public class MyFolderController {
         model.addAttribute("currentVersion", currentVersion);
         model.addAttribute("versions", versions);
         model.addAttribute("previewType", resolvePreviewType(currentVersion));
-        model.addAttribute("allTags", tagService.findAll());
         return "my/document-detail";
     }
 
@@ -134,30 +136,6 @@ public class MyFolderController {
     private static String extension(String filename) {
         if (filename == null || !filename.contains(".")) return "";
         return filename.substring(filename.lastIndexOf('.') + 1);
-    }
-
-    @PostMapping("/documents/{documentId}/tags")
-    public String addTag(@PathVariable Long documentId,
-                         @RequestParam String tagName,
-                         @AuthenticationPrincipal CustomUserDetails userDetails,
-                         RedirectAttributes ra) {
-        try {
-            tagService.addTag(documentId, tagName, userDetails.getUser().getId());
-            ra.addFlashAttribute("successMessage", "태그가 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/my/folder/documents/" + documentId;
-    }
-
-    @PostMapping("/documents/{documentId}/tags/{tagId}/remove")
-    public String removeTag(@PathVariable Long documentId,
-                            @PathVariable Long tagId,
-                            @AuthenticationPrincipal CustomUserDetails userDetails,
-                            RedirectAttributes ra) {
-        tagService.removeTag(documentId, tagId, userDetails.getUser().getId());
-        ra.addFlashAttribute("successMessage", "태그가 제거되었습니다.");
-        return "redirect:/my/folder/documents/" + documentId;
     }
 
     @PostMapping("/documents/{documentId}/expiry")
@@ -177,6 +155,20 @@ public class MyFolderController {
         documentRepository.save(document);
         redirectAttributes.addFlashAttribute("successMessage", "만료일이 수정되었습니다.");
         return "redirect:/my/folder/documents/" + documentId;
+    }
+
+    @PostMapping("/documents/{documentId}/delete")
+    public String deleteOwnDocument(@PathVariable Long documentId,
+                                    @AuthenticationPrincipal CustomUserDetails userDetails,
+                                    HttpServletRequest request,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            documentDeleteService.deleteOwnDocument(documentId, userDetails.getUser().getId(), request);
+            redirectAttributes.addFlashAttribute("successMessage", "문서가 삭제되었습니다.");
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getReason());
+        }
+        return "redirect:/my/folder";
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

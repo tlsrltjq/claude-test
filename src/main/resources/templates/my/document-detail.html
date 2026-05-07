@@ -28,16 +28,7 @@
                     <table class="table table-sm mb-0">
                         <tr>
                             <th class="text-muted fw-normal" style="width:90px;">문서 종류</th>
-                            <td>
-                                <span th:switch="${document.documentType.name()}">
-                                    <span th:case="'RESUME'">이력서</span>
-                                    <span th:case="'CAREER_DESCRIPTION'">경력기술서</span>
-                                    <span th:case="'GRADUATION_CERTIFICATE'">졸업증명서</span>
-                                    <span th:case="'LICENSE'">자격증</span>
-                                    <span th:case="'EMPLOYMENT_CERTIFICATE'">재직증명서</span>
-                                    <span th:case="*">기타</span>
-                                </span>
-                            </td>
+                            <td th:text="${document.documentType.displayName}"></td>
                         </tr>
                         <tr th:if="${currentVersion != null}">
                             <th class="text-muted fw-normal">현재 버전</th>
@@ -99,36 +90,11 @@
                         <button type="submit" class="btn btn-outline-secondary btn-sm w-100">썸네일 재생성</button>
                     </form>
                 </div>
-            </div>
-
-            <!-- 태그 -->
-            <div class="card mb-3">
-                <div class="card-header fw-bold small">태그</div>
-                <div class="card-body">
-                    <!-- 현재 태그 -->
-                    <div class="mb-2">
-                        <span th:if="${document.tags.isEmpty()}" class="text-muted small">태그 없음</span>
-                        <span th:each="t : ${document.tags}" class="me-1 mb-1 d-inline-flex align-items-center">
-                            <span class="badge rounded-pill bg-light text-secondary border" th:text="${'#' + t.name}"></span>
-                            <form th:action="@{/my/folder/documents/{id}/tags/{tid}/remove(id=${document.id},tid=${t.id})}"
-                                  method="post" class="d-inline ms-1">
-                                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                                <button type="submit" class="btn-close btn-close-sm"
-                                        style="font-size:0.55rem;" aria-label="제거"
-                                        onclick="return confirm('태그를 제거하시겠습니까?')"></button>
-                            </form>
-                        </span>
-                    </div>
-                    <!-- 태그 추가 -->
-                    <form th:action="@{/my/folder/documents/{id}/tags(id=${document.id})}" method="post"
-                          class="d-flex gap-2">
+                <div class="card-footer">
+                    <form th:action="@{/my/folder/documents/{id}/delete(id=${document.id})}" method="post"
+                          onsubmit="return confirm('문서를 삭제하시겠습니까? 모든 버전과 파일이 영구 삭제됩니다.')">
                         <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                        <input type="text" name="tagName" class="form-control form-control-sm"
-                               placeholder="태그 입력" list="tagSuggestions" maxlength="50">
-                        <datalist id="tagSuggestions">
-                            <option th:each="t : ${allTags}" th:value="${t.name}"></option>
-                        </datalist>
-                        <button type="submit" class="btn btn-outline-secondary btn-sm text-nowrap">추가</button>
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">문서 삭제</button>
                     </form>
                 </div>
             </div>

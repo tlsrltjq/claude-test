@@ -6,7 +6,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -18,11 +21,22 @@ public class SecurityConfig {
     }
 
     @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/login", "/signup", "/signup/**",
+                        "/login", "/login/forgot", "/login/forgot/verify",
+                        "/signup", "/signup/**",
                         "/health", "/css/**", "/js/**", "/images/**"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -32,7 +46,7 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .successHandler(new LoginSuccessHandler("/dashboard"))
                 .failureUrl("/login?error")
                 .permitAll()
             )
@@ -43,10 +57,13 @@ public class SecurityConfig {
                 .deleteCookies("RESOURCEHUB_SESSION")
                 .permitAll()
             )
-            .sessionManagement(session -> session
-                .sessionFixation().changeSessionId()
-                .invalidSessionUrl("/login")
-            );
+            .sessionManagement(session -> {
+                session.sessionFixation().changeSessionId();
+                session.invalidSessionUrl("/login");
+                session.maximumSessions(-1)
+                        .sessionRegistry(sessionRegistry())
+                        .expiredUrl("/login?expired");
+            });
 
         return http.build();
     }

@@ -18,8 +18,14 @@
             <div th:if="${param.logout}" class="alert alert-success" role="alert">
                 로그아웃되었습니다.
             </div>
+            <div th:if="${param.reset}" class="alert alert-success" role="alert">
+                비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해 주세요.
+            </div>
+            <div th:if="${param.expired}" class="alert alert-warning" role="alert">
+                관리자에 의해 계정이 비활성화되어 세션이 종료되었습니다.
+            </div>
 
-            <form th:action="@{/login}" method="post">
+            <form th:action="@{/login}" method="post" id="loginForm">
                 <div class="mb-3">
                     <label for="username" class="form-label">이메일</label>
                     <input type="email" id="username" name="username"
@@ -30,13 +36,31 @@
                     <input type="password" id="password" name="password"
                            class="form-control" required>
                 </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberEmail" name="rememberEmail" value="on">
+                    <label class="form-check-label small text-muted" for="rememberEmail">이메일 기억하기</label>
+                </div>
                 <button type="submit" class="btn btn-primary w-100">로그인</button>
             </form>
 
             <hr>
+            <p class="text-center mb-1 small">
+                <a th:href="@{/login/forgot}" class="text-muted">비밀번호를 잊으셨나요?</a>
+            </p>
             <p class="text-center mb-0 small">
                 계정이 없으신가요? <a th:href="@{/signup}">회원가입</a>
             </p>
+
+<script>
+(function() {
+    var em = document.cookie.split('; ').find(function(r){ return r.startsWith('RESOURCEHUB_LAST_EMAIL='); });
+    if (em) {
+        document.getElementById('username').value = decodeURIComponent(em.split('=')[1]);
+        document.getElementById('rememberEmail').checked = true;
+        document.getElementById('password').focus();
+    }
+})();
+</script>
         </div>
     </div>
 </div>

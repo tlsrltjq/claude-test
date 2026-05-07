@@ -43,16 +43,7 @@
         <tr th:each="v : ${pendingVersions}">
             <td th:text="${v.document.folder.owner.name}"></td>
             <td th:text="${v.document.folder.owner.team != null ? v.document.folder.owner.team.name : '-'}"></td>
-            <td>
-                <span th:switch="${v.document.documentType.name()}">
-                    <span th:case="'RESUME'">이력서</span>
-                    <span th:case="'CAREER_DESCRIPTION'">경력기술서</span>
-                    <span th:case="'GRADUATION_CERTIFICATE'">졸업증명서</span>
-                    <span th:case="'LICENSE'">자격증</span>
-                    <span th:case="'EMPLOYMENT_CERTIFICATE'">재직증명서</span>
-                    <span th:case="*">기타</span>
-                </span>
-            </td>
+            <td th:text="${v.document.documentType.displayName}"></td>
             <td th:text="${v.document.title}"></td>
             <td th:text="${v.originalFileName}" class="small text-truncate" style="max-width:150px;"></td>
             <td th:text="'v' + ${v.versionNo}"></td>

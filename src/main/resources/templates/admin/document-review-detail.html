@@ -36,16 +36,7 @@
                         </tr>
                         <tr>
                             <th class="text-muted fw-normal">종류</th>
-                            <td>
-                                <span th:switch="${version.document.documentType.name()}">
-                                    <span th:case="'RESUME'">이력서</span>
-                                    <span th:case="'CAREER_DESCRIPTION'">경력기술서</span>
-                                    <span th:case="'GRADUATION_CERTIFICATE'">졸업증명서</span>
-                                    <span th:case="'LICENSE'">자격증</span>
-                                    <span th:case="'EMPLOYMENT_CERTIFICATE'">재직증명서</span>
-                                    <span th:case="*">기타</span>
-                                </span>
-                            </td>
+                            <td th:text="${version.document.documentType.displayName}"></td>
                         </tr>
                         <tr>
                             <th class="text-muted fw-normal">제목</th>

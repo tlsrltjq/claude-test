@@ -24,10 +24,27 @@ public class Folder extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String folderName;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private FolderType type = FolderType.PERSONAL;
+
     public static Folder create(User owner, String folderName) {
         Folder folder = new Folder();
         folder.owner = owner;
         folder.folderName = folderName;
+        folder.type = FolderType.PERSONAL;
         return folder;
+    }
+
+    public static Folder createPublic(User owner, String folderName) {
+        Folder folder = new Folder();
+        folder.owner = owner;
+        folder.folderName = folderName;
+        folder.type = FolderType.SHARED_PUBLIC;
+        return folder;
+    }
+
+    public boolean isPublic() {
+        return type == FolderType.SHARED_PUBLIC;
     }
 }

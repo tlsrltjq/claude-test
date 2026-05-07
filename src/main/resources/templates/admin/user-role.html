@@ -24,7 +24,9 @@
             <p class="mb-1"><strong>이름:</strong> <span th:text="${user.name}"></span></p>
             <p class="mb-1"><strong>이메일:</strong> <span th:text="${user.email}"></span></p>
             <p class="mb-0"><strong>현재 역할:</strong>
-                <span class="badge bg-secondary" th:text="${user.role}"></span>
+                <span th:text="${user.role.displayName}"
+                      th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-primary' : 'bg-secondary')"
+                      class="badge"></span>
             </p>
         </div>
     </div>
@@ -39,9 +41,8 @@
             <label class="form-label fw-semibold">새 역할</label>
             <select name="role" class="form-select" id="roleSelect" onchange="checkAdmin(this)">
                 <option th:each="r : ${roles}"
-                        th:if="${r.name() != 'TEAM_LEADER'}"
                         th:value="${r}"
-                        th:text="${r.name() == 'ADMIN' ? '관리자 (ADMIN)' : r.name() == 'SALES' ? '영업부 (SALES)' : '일반 직원 (EMPLOYEE)'}"
+                        th:text="${r.displayName}"
                         th:selected="${r == user.role}"></option>
             </select>
         </div>

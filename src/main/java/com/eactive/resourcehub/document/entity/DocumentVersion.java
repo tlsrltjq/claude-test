@@ -109,6 +109,11 @@ public class DocumentVersion extends BaseEntity {
         this.thumbnailGeneratedAt = LocalDateTime.now();
     }
 
+    public void autoApprove() {
+        this.reviewStatus = DocumentReviewStatus.APPROVED;
+        this.reviewedAt = LocalDateTime.now();
+    }
+
     public void approve(com.eactive.resourcehub.user.entity.User reviewer) {
         this.reviewStatus = DocumentReviewStatus.APPROVED;
         this.reviewedBy = reviewer;

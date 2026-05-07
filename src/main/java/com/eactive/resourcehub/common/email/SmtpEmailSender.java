@@ -47,6 +47,12 @@ public class SmtpEmailSender implements EmailSender {
                 ownerName + "님, 안녕하세요.\n\n문서 '" + documentTitle + "'의 유효기간이 만료되었습니다(" + expiresAt + ").\n\n최신 문서로 갱신해 주세요.");
     }
 
+    @Override
+    public void sendPasswordResetCode(String toEmail, String code) {
+        send(toEmail, "[eActive Resource Hub] 비밀번호 재설정 인증코드",
+                "비밀번호 재설정 인증코드: " + code + "\n\n유효시간: 5분\n\n본인이 요청하지 않았다면 이 메일을 무시해 주세요.");
+    }
+
     private void send(String to, String subject, String text) {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();

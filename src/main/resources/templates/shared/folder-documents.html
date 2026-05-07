@@ -61,11 +61,7 @@
     <div id="cardGrid" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3"
          th:if="${!#lists.isEmpty(documents)}">
         <div th:each="doc : ${documents}" class="col doc-card-col"
-             th:data-label="${doc.documentType.name() == 'RESUME' ? '이력서' :
-                              doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                              doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                              doc.documentType.name() == 'LICENSE' ? '자격증' :
-                              doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
+             th:data-label="${doc.documentType.displayName}"
              th:data-title="${doc.title}"
              th:data-filename="${doc.currentVersion != null ? doc.currentVersion.originalFileName : ''}"
              th:data-date="${doc.currentVersion != null ? doc.currentVersion.createdAt : ''}">
@@ -79,11 +75,7 @@
                 <div th:if="${doc.currentVersion == null or doc.currentVersion.thumbnailStoragePath == null}"
                      class="doc-thumbnail-placeholder">📄</div>
                 <div class="card-body p-2">
-                    <span th:text="${doc.documentType.name() == 'RESUME' ? '이력서' :
-                                     doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                                     doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                                     doc.documentType.name() == 'LICENSE' ? '자격증' :
-                                     doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
+                    <span th:text="${doc.documentType.displayName}"
                           class="badge bg-secondary mb-1"></span>
                     <h6 class="card-title mb-1 text-truncate" th:text="${doc.title}"></h6>
                     <small class="text-muted d-block text-truncate"

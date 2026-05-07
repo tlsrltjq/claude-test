@@ -14,67 +14,103 @@
 
             <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-            <form th:action="@{/signup}" th:object="${signupRequest}" method="post">
+            <form th:action="@{/signup}" th:object="${signupRequest}" method="post"
+                  novalidate id="signupForm">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
 
+                <!-- 이름 -->
                 <div class="mb-3">
                     <label for="name" class="form-label">이름 <span class="text-danger">*</span></label>
                     <input type="text" id="name" th:field="*{name}"
-                           class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required>
-                    <div class="invalid-feedback" th:errors="*{name}"></div>
+                           class="form-control"
+                           th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                           required>
+                    <div th:if="${#fields.hasErrors('name')}" class="invalid-feedback" th:errors="*{name}"></div>
+                    <div th:unless="${#fields.hasErrors('name')}" class="invalid-feedback">이름을 입력해주세요.</div>
                 </div>
 
+                <!-- 생년월일 -->
                 <div class="mb-3">
-                    <label for="position" class="form-label">직급 <span class="text-danger">*</span></label>
-                    <select id="position" th:field="*{position}"
-                            class="form-select" th:classappend="${#fields.hasErrors('position')} ? 'is-invalid'" required>
-                        <option value="">직급 선택</option>
-                        <option th:each="p : ${positions}" th:value="${p}" th:text="${p.displayName}"></option>
-                    </select>
-                    <div class="invalid-feedback" th:errors="*{position}"></div>
+                    <label for="birthDateStr" class="form-label">생년월일 <span class="text-danger">*</span></label>
+                    <input type="text" id="birthDateStr" th:field="*{birthDateStr}"
+                           class="form-control"
+                           th:classappend="${#fields.hasErrors('birthDateStr')} ? 'is-invalid'"
+                           pattern="\d{8}" maxlength="8"
+                           placeholder="20010904" required inputmode="numeric">
+                    <div th:if="${#fields.hasErrors('birthDateStr')}" class="invalid-feedback" th:errors="*{birthDateStr}"></div>
+                    <div th:unless="${#fields.hasErrors('birthDateStr')}" class="invalid-feedback">생년월일을 숫자 8자로 입력해주세요. (예: 20010904)</div>
+                    <div class="form-text text-muted">숫자 8자로 입력 (예: 20010904)</div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="birthDate" class="form-label">생년월일 <span class="text-danger">*</span></label>
-                    <input type="date" id="birthDate" th:field="*{birthDate}"
-                           class="form-control" th:classappend="${#fields.hasErrors('birthDate')} ? 'is-invalid'" required>
-                    <div class="invalid-feedback" th:errors="*{birthDate}"></div>
-                </div>
-
+                <!-- 연락처 -->
                 <div class="mb-3">
                     <label for="phone" class="form-label">연락처 <span class="text-danger">*</span></label>
                     <input type="tel" id="phone" th:field="*{phone}"
-                           class="form-control" th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                           class="form-control"
+                           th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
                            placeholder="010-0000-0000" required>
-                    <div class="invalid-feedback" th:errors="*{phone}"></div>
+                    <div th:if="${#fields.hasErrors('phone')}" class="invalid-feedback" th:errors="*{phone}"></div>
+                    <div th:unless="${#fields.hasErrors('phone')}" class="invalid-feedback">연락처를 입력해주세요.</div>
                 </div>
 
+                <!-- 회사 이메일 -->
                 <div class="mb-3">
                     <label for="emailPrefix" class="form-label">회사 이메일 <span class="text-danger">*</span></label>
-                    <div class="input-group">
+                    <div class="input-group has-validation">
                         <input type="text" id="emailPrefix" th:field="*{emailPrefix}"
-                               class="form-control" th:classappend="${#fields.hasErrors('emailPrefix')} ? 'is-invalid'"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('emailPrefix')} ? 'is-invalid'"
                                placeholder="이름" required>
                         <span class="input-group-text" th:text="'@' + ${emailDomain}"></span>
+                        <div th:if="${#fields.hasErrors('emailPrefix')}" class="invalid-feedback" th:errors="*{emailPrefix}"></div>
+                        <div th:unless="${#fields.hasErrors('emailPrefix')}" class="invalid-feedback">이메일 앞부분을 입력해주세요.</div>
                     </div>
-                    <div class="invalid-feedback d-block" th:errors="*{emailPrefix}"></div>
                 </div>
 
+                <!-- 팀 선택 (선택) -->
+                <div class="mb-3">
+                    <label for="teamId" class="form-label">팀 <span class="text-muted small">(선택)</span></label>
+                    <select id="teamId" th:field="*{teamId}" class="form-select">
+                        <option value="">팀 선택 안함</option>
+                        <option th:each="t : ${teams}" th:value="${t.id}" th:text="${t.name}"></option>
+                    </select>
+                </div>
+
+                <!-- 직급 -->
+                <div class="mb-3">
+                    <label for="position" class="form-label">직급 <span class="text-danger">*</span></label>
+                    <select id="position" th:field="*{position}"
+                            class="form-select"
+                            th:classappend="${#fields.hasErrors('position')} ? 'is-invalid'"
+                            required>
+                        <option value="">직급 선택</option>
+                        <option th:each="p : ${positions}" th:value="${p}" th:text="${p.displayName}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('position')}" class="invalid-feedback" th:errors="*{position}"></div>
+                    <div th:unless="${#fields.hasErrors('position')}" class="invalid-feedback">직급을 선택해주세요.</div>
+                </div>
+
+                <!-- 비밀번호 -->
                 <div class="mb-3">
                     <label for="password" class="form-label">비밀번호 <span class="text-danger">*</span></label>
                     <input type="password" id="password" th:field="*{password}"
-                           class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                           class="form-control"
+                           th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
                            placeholder="영문·숫자·특수문자 포함 8자 이상" required>
-                    <div class="invalid-feedback" th:errors="*{password}"></div>
+                    <div th:if="${#fields.hasErrors('password')}" class="invalid-feedback" th:errors="*{password}"></div>
+                    <div th:unless="${#fields.hasErrors('password')}" class="invalid-feedback">비밀번호를 입력해주세요.</div>
                     <div class="form-text">영문, 숫자, 특수문자를 모두 포함하여 8자 이상 입력해주세요.</div>
                 </div>
 
+                <!-- 비밀번호 확인 -->
                 <div class="mb-4">
                     <label for="passwordConfirm" class="form-label">비밀번호 확인 <span class="text-danger">*</span></label>
                     <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}"
-                           class="form-control" th:classappend="${#fields.hasErrors('passwordConfirm')} ? 'is-invalid'"
+                           class="form-control"
+                           th:classappend="${#fields.hasErrors('passwordConfirm')} ? 'is-invalid'"
                            required>
-                    <div class="invalid-feedback" th:errors="*{passwordConfirm}"></div>
+                    <div th:if="${#fields.hasErrors('passwordConfirm')}" class="invalid-feedback" th:errors="*{passwordConfirm}"></div>
+                    <div th:unless="${#fields.hasErrors('passwordConfirm')}" class="invalid-feedback">비밀번호 확인을 입력해주세요.</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100">가입 신청</button>
@@ -87,5 +123,14 @@
         </div>
     </div>
 </div>
+<script>
+document.getElementById('signupForm').addEventListener('submit', function (e) {
+    if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    this.classList.add('was-validated');
+});
+</script>
 </body>
 </html>

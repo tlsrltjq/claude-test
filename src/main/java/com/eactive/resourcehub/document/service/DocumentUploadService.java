@@ -7,9 +7,9 @@ import com.eactive.resourcehub.audit.service.AuditLogService;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.dto.DocumentUploadRequest;
 import com.eactive.resourcehub.document.entity.Document;
-import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.entity.FolderType;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
@@ -38,6 +38,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DocumentUploadService {
 
+    private static final long LARGE_FILE_THRESHOLD = 10L * 1024 * 1024; // 10 MB
+
     private final FileStorage fileStorage;
     private final FolderRepository folderRepository;
     private final DocumentRepository documentRepository;
@@ -52,16 +54,10 @@ public class DocumentUploadService {
 
     @Transactional
     public Document upload(Long ownerId, DocumentUploadRequest req, HttpServletRequest httpRequest) {
-        Folder folder = folderRepository.findByOwnerId(ownerId)
+        Folder folder = folderRepository.findByOwnerIdAndType(ownerId, FolderType.PERSONAL)
                 .orElseThrow(() -> new IllegalStateException("개인 폴더가 없습니다."));
 
-        validateFile(req.getFile(), false);
-
-        MultipartFile previewPdf = req.getPreviewPdf();
-        boolean hasPreview = previewPdf != null && !previewPdf.isEmpty();
-        if (hasPreview) {
-            validatePreviewPdf(previewPdf);
-        }
+        validateFile(req.getFile());
 
         Optional<Document> existing = documentRepository
                 .findByFolderIdAndDocumentTypeAndTitle(folder.getId(), req.getDocumentType(), req.getTitle());
@@ -81,13 +77,11 @@ public class DocumentUploadService {
             isNew = true;
         }
 
-        // 만료일 설정/갱신 (null이면 기존 값 유지)
         if (req.getExpiresAt() != null) {
             document.updateExpiresAt(req.getExpiresAt());
         }
 
         String subPath = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
-
         String storedFileName = UUID.randomUUID() + "." + extension(req.getFile().getOriginalFilename());
         String storagePath = storeFile(req.getFile(), subPath, storedFileName);
 
@@ -106,38 +100,31 @@ public class DocumentUploadService {
                 uploader
         );
 
-        if (hasPreview) {
-            String previewStored = UUID.randomUUID() + ".pdf";
-            String previewPath;
-            try {
-                previewPath = fileStorage.store(previewPdf, subPath, previewStored);
-            } catch (IOException e) {
-                deleteSilently(storagePath);
-                throw new RuntimeException("미리보기 파일 저장 실패", e);
-            }
-            version.setPreview(previewPdf.getOriginalFilename(), previewPath);
-        }
-
         try {
             documentVersionRepository.save(version);
         } catch (Exception e) {
             deleteSilently(storagePath);
-            if (version.getPreviewStoragePath() != null) {
-                deleteSilently(version.getPreviewStoragePath());
-            }
             throw e;
         }
 
-        // current_version_id는 승인 시에만 갱신 — 여기서 갱신하지 않음
+        boolean requiresApproval = req.getFile().getSize() >= LARGE_FILE_THRESHOLD;
+
+        if (!requiresApproval) {
+            version.autoApprove();
+            document.setCurrentVersion(version);
+        }
 
         AuditActionType action = isNew ? AuditActionType.UPLOAD : AuditActionType.UPDATE_DOCUMENT;
         auditService.log(ownerId, action, AuditTargetType.DOCUMENT, document.getId(),
                 "버전 " + versionNo + " 업로드", httpRequest);
-        auditLogService.logSubmitReview(ownerId, version.getId(), httpRequest);
 
-        log.info("문서 업로드 — ownerId={}, docId={}, version={}", ownerId, document.getId(), versionNo);
+        if (requiresApproval) {
+            auditLogService.logSubmitReview(ownerId, version.getId(), httpRequest);
+        }
 
-        // 썸네일 생성 (실패해도 업로드 성공 유지)
+        log.info("문서 업로드 — ownerId={}, docId={}, version={}, requiresApproval={}",
+                ownerId, document.getId(), versionNo, requiresApproval);
+
         try {
             thumbnailService.generateAndSave(version);
         } catch (Exception e) {
@@ -147,7 +134,73 @@ public class DocumentUploadService {
         return document;
     }
 
-    private void validateFile(MultipartFile file, boolean requirePdf) {
+    /** 지정 폴더에 업로드 (공용 폴더 등 특정 폴더 대상) — 업로더는 uploaderId */
+    @Transactional
+    public Document uploadToFolder(Long folderId, Long uploaderId,
+                                   DocumentUploadRequest req, HttpServletRequest httpRequest) {
+        Folder folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new IllegalStateException("폴더를 찾을 수 없습니다."));
+
+        validateFile(req.getFile());
+
+        Document document = Document.create(folder, req.getDocumentType(), req.getTitle());
+        documentRepository.saveAndFlush(document);
+
+        if (req.getExpiresAt() != null) {
+            document.updateExpiresAt(req.getExpiresAt());
+        }
+
+        String subPath = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
+        String storedFileName = UUID.randomUUID() + "." + extension(req.getFile().getOriginalFilename());
+        String storagePath = storeFile(req.getFile(), subPath, storedFileName);
+
+        User uploader = userRepository.findById(uploaderId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        String checksum = checksum(req.getFile());
+
+        DocumentVersion version = DocumentVersion.create(
+                document, 1,
+                req.getFile().getOriginalFilename(),
+                storedFileName,
+                storagePath,
+                req.getFile().getSize(),
+                req.getFile().getContentType(),
+                checksum,
+                uploader
+        );
+
+        try {
+            documentVersionRepository.save(version);
+        } catch (Exception e) {
+            deleteSilently(storagePath);
+            throw e;
+        }
+
+        boolean requiresApproval = req.getFile().getSize() >= LARGE_FILE_THRESHOLD;
+        if (!requiresApproval) {
+            version.autoApprove();
+            document.setCurrentVersion(version);
+        }
+
+        auditService.log(uploaderId, AuditActionType.UPLOAD, AuditTargetType.DOCUMENT, document.getId(),
+                "공용 폴더 업로드", httpRequest);
+
+        if (requiresApproval) {
+            auditLogService.logSubmitReview(uploaderId, version.getId(), httpRequest);
+        }
+
+        log.info("공용 폴더 업로드 — folderId={}, docId={}, uploaderId={}", folderId, document.getId(), uploaderId);
+
+        try {
+            thumbnailService.generateAndSave(version);
+        } catch (Exception e) {
+            log.warn("썸네일 생성 실패 (업로드는 성공): {}", e.getMessage());
+        }
+
+        return document;
+    }
+
+    private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어 있습니다.");
         }
@@ -155,14 +208,6 @@ public class DocumentUploadService {
         List<String> allowed = Arrays.asList(allowedExtensionsRaw.split(","));
         if (!allowed.contains(ext)) {
             throw new IllegalArgumentException("허용되지 않는 파일 형식입니다: " + ext);
-        }
-    }
-
-    private void validatePreviewPdf(MultipartFile file) {
-        if (file.isEmpty()) return;
-        String ext = extension(file.getOriginalFilename()).toLowerCase();
-        if (!"pdf".equals(ext)) {
-            throw new IllegalArgumentException("미리보기 파일은 PDF만 허용됩니다.");
         }
     }
 

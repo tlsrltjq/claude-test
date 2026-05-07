@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum Position {
     REPRESENTATIVE("대표"),
     EXECUTIVE_DIRECTOR("전무"),
+    MANAGING_DIRECTOR("상무"),
     DIRECTOR("이사"),
     GENERAL_MANAGER("부장"),
     DEPUTY_GENERAL_MANAGER("차장"),

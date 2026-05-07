@@ -3,18 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경력 계산기 — eActive Resource Hub</title>
+    <title>기술등급 산출 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .member-item { cursor:pointer; }
+        .member-item:hover { background:#f0f4ff; }
+        .member-item.selected { background:#dbeafe; border-left:3px solid #0d6efd; }
+        #memberList { max-height:200px; overflow-y:auto; border:1px solid #dee2e6; border-radius:6px; }
+        .grade-badge { font-size:2rem; font-weight:700; }
+        .overlap-warn { color:#dc3545; font-weight:600; }
+        .table-sm td, .table-sm th { font-size:0.82rem; }
+        tfoot td { font-weight:600; background:#f8f9fa; }
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" th:href="@{/dashboard}">eActive Resource Hub</a>
         <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/sales/career-calculator}" class="btn btn-outline-light btn-sm">경력 계산기</a>
-            <a th:href="@{/sales/profiles}" class="btn btn-outline-light btn-sm">인력 표</a>
-            <a th:href="@{/sales/members}" class="btn btn-outline-light btn-sm">인력 목록</a>
-            <a th:href="@{/dashboard}" class="btn btn-outline-light btn-sm">대시보드</a>
+            <a th:href="@{/sales/career-calculator}" class="btn btn-outline-light btn-sm">기술등급 산출</a>
+            <a th:href="@{/sales/profiles}"          class="btn btn-outline-light btn-sm">인력 표</a>
+            <a th:href="@{/sales/members}"            class="btn btn-outline-light btn-sm">인력 목록</a>
+            <a th:href="@{/dashboard}"                class="btn btn-outline-light btn-sm">대시보드</a>
             <form th:action="@{/logout}" method="post" class="d-inline">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <button type="submit" class="btn btn-outline-light btn-sm">로그아웃</button>
@@ -23,102 +33,494 @@
     </div>
 </nav>
 
-<div class="container mt-4" style="max-width:680px;">
-    <h2 class="mb-3 h5">경력 계산기</h2>
+<div class="container mt-4" style="max-width:900px;">
+    <h2 class="mb-1 h5">기술등급 산출</h2>
+    <p class="text-muted small mb-3">학위 또는 자격증 기준으로 경력을 계산해 기술등급을 산출합니다.</p>
 
-    <!-- 계산 결과 -->
-    <div th:if="${result != null}" class="alert alert-success mb-3">
-        <div class="fw-bold fs-5">총 경력: <span th:text="${result.displayText}"></span></div>
-        <div class="small mt-1 text-success-emphasis">
-            총 <span th:text="${result.totalMonths}"></span>개월
-            <span th:if="${removeOverlap}">
-                · 중복 제거 후 <span th:text="${result.rangeCount}"></span>개 구간
+    <!-- 플래시 메시지 -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- ① 직원 선택 -->
+    <div class="card mb-3">
+        <div class="card-header fw-semibold d-flex justify-content-between align-items-center py-2">
+            <span>직원 선택 <span class="text-muted fw-normal small">(선택 후 프로필 저장 가능)</span></span>
+            <span id="selectedBadge"
+                  th:class="${targetUserId != null} ? 'badge bg-primary' : 'text-muted small'">
+                <th:block th:if="${targetUserId != null}">
+                    <th:block th:each="m : ${members}" th:if="${m.id == targetUserId}">
+                        <span th:text="${m.name}"></span>
+                        <span th:if="${m.team != null}" class="fw-normal opacity-75"
+                              th:text="' · ' + ${m.team.name}"></span>
+                    </th:block>
+                </th:block>
+                <th:block th:if="${targetUserId == null}">선택 안 됨</th:block>
             </span>
-            <span th:unless="${removeOverlap}">
-                · <span th:text="${result.rangeCount}"></span>개 구간 합산
-            </span>
+        </div>
+        <div class="card-body py-2">
+            <div class="input-group input-group-sm mb-2">
+                <input type="text" id="memberSearch" class="form-control form-control-sm"
+                       placeholder="이름 또는 팀으로 검색..."
+                       oninput="filterMembers(this.value)"
+                       onkeydown="if(event.key==='Enter'){event.preventDefault();filterMembers(this.value);}">
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        onclick="filterMembers(document.getElementById('memberSearch').value)">검색</button>
+            </div>
+            <div id="memberList">
+                <div th:each="m : ${members}"
+                     class="member-item px-3 py-2 d-flex justify-content-between align-items-center small"
+                     th:classappend="${m.id == targetUserId} ? ' selected'"
+                     th:data-id="${m.id}" th:data-name="${m.name}"
+                     th:data-team="${m.team != null ? m.team.name : ''}"
+                     onclick="selectMember(this)">
+                    <span th:text="${m.name}"></span>
+                    <span class="text-muted" th:text="${m.team != null ? m.team.name : '-'}"></span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 오류 -->
-    <div th:if="${errors != null and !#lists.isEmpty(errors)}" class="alert alert-danger mb-3">
-        <ul class="mb-0 ps-3">
-            <li th:each="err : ${errors}" th:text="${err}"></li>
-        </ul>
-    </div>
+    <form method="post" th:action="@{/sales/career-calculator}" id="calcForm">
+        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+        <input type="hidden" name="targetUserId" id="targetUserIdField" th:value="${targetUserId}">
 
-    <!-- 안내 메시지 -->
-    <div th:if="${infoMessage != null}" class="alert alert-info mb-3" th:text="${infoMessage}"></div>
-
-    <!-- 입력 폼 -->
-    <div class="card">
-        <div class="card-body">
-            <form method="post" th:action="@{/sales/career-calculator}">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-
-                <div class="row g-2 mb-1">
-                    <div class="col"><span class="form-label small text-muted">시작일</span></div>
-                    <div class="col"><span class="form-label small text-muted">종료일</span></div>
-                    <div class="col-auto" style="width:42px;"></div>
+        <!-- ② 기본 정보 -->
+        <div class="card mb-3">
+            <div class="card-header fw-semibold py-2">기본 정보</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- 학위 -->
+                    <div class="col-sm-3">
+                        <label class="form-label small fw-semibold">학위 <span class="text-danger">*</span></label>
+                        <select name="degree" id="degreeSelect" class="form-select form-select-sm" required>
+                            <option value="">선택</option>
+                            <option th:each="d : ${degrees}"
+                                    th:value="${d.name()}"
+                                    th:text="${d.displayName}"
+                                    th:selected="${degree != null and degree == d.name()}"></option>
+                        </select>
+                    </div>
+                    <!-- 졸업일자 -->
+                    <div class="col-sm-3">
+                        <label class="form-label small fw-semibold">졸업일자 <span class="text-danger">*</span></label>
+                        <input type="date" name="gradDate" class="form-control form-control-sm"
+                               th:value="${gradDate}" required>
+                        <div class="form-text">경력 기산점</div>
+                    </div>
+                    <!-- 자격증 -->
+                    <div class="col-sm-3">
+                        <label class="form-label small fw-semibold">자격증</label>
+                        <select name="certType" id="certTypeSelect" class="form-select form-select-sm"
+                                onchange="toggleCertDate()">
+                            <option th:each="c : ${certTypes}"
+                                    th:value="${c.name()}"
+                                    th:text="${c.displayName}"
+                                    th:selected="${certType != null and certType == c.name()}"></option>
+                        </select>
+                    </div>
+                    <!-- 자격증 취득일자 -->
+                    <div class="col-sm-3" id="certDateWrap">
+                        <label class="form-label small fw-semibold">자격증 취득일자</label>
+                        <input type="date" name="certDate" id="certDateInput" class="form-control form-control-sm"
+                               th:value="${certDate}">
+                        <div class="form-text">경력 기산점</div>
+                    </div>
                 </div>
-
-                <div id="periods">
-                    <div th:each="startDate, stat : ${startDates}" class="row g-2 mb-2 period-row">
-                        <div class="col">
-                            <input type="date" name="startDates" class="form-control form-control-sm"
-                                   th:value="${startDate}">
-                        </div>
-                        <div class="col">
-                            <input type="date" name="endDates" class="form-control form-control-sm"
-                                   th:value="${endDates[stat.index]}">
-                        </div>
-                        <div class="col-auto">
-                            <button type="button" class="btn btn-outline-danger btn-sm"
-                                    onclick="removeRow(this)" title="행 삭제">−</button>
+                <!-- 등급 기준 참고표 -->
+                <div class="mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                            data-bs-toggle="collapse" data-bs-target="#gradeTable">
+                        등급 기준 참고표 ▾
+                    </button>
+                    <div class="collapse mt-2" id="gradeTable">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <table class="table table-bordered table-sm text-center mb-0">
+                                    <thead class="table-dark"><tr><th>등급</th><th>고졸</th><th>전문학사</th><th>학사</th><th>석사</th><th>박사</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="fw-bold">특급</td><td>-</td><td>15년</td><td>12년</td><td>9년</td><td>3년</td></tr>
+                                        <tr><td class="fw-bold">고급</td><td>-</td><td>12년</td><td>9년</td><td>6년</td><td>0년</td></tr>
+                                        <tr><td class="fw-bold">중급</td><td>12년</td><td>9년</td><td>6년</td><td>3년</td><td>0년</td></tr>
+                                        <tr><td class="fw-bold">초급</td><td>3년</td><td>0년</td><td>0년</td><td>0년</td><td>0년</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-3">
+                                <table class="table table-bordered table-sm text-center mb-0">
+                                    <thead class="table-dark"><tr><th>등급</th><th>기사</th><th>산업기사</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="fw-bold">특급</td><td>9년</td><td>13년</td></tr>
+                                        <tr><td class="fw-bold">고급</td><td>6년</td><td>10년</td></tr>
+                                        <tr><td class="fw-bold">중급</td><td>3년</td><td>7년</td></tr>
+                                        <tr><td class="fw-bold">초급</td><td>0년</td><td>0년</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="mb-3">
+        <!-- 입력 오류 -->
+        <div th:if="${inputError}" class="alert alert-warning py-2 small" th:text="${inputError}"></div>
+        <div th:if="${errors != null and !#lists.isEmpty(errors)}" class="alert alert-danger py-2">
+            <ul class="mb-0 ps-3 small"><li th:each="err : ${errors}" th:text="${err}"></li></ul>
+        </div>
+        <div th:if="${infoMessage}" class="alert alert-info py-2 small" th:text="${infoMessage}"></div>
+
+        <!-- ③ 경력 기간 -->
+        <div class="card mb-3">
+            <div class="card-header fw-semibold py-2 d-flex justify-content-between align-items-center">
+                <span>경력 기간 입력</span>
+                <div class="form-check form-check-inline mb-0">
+                    <input class="form-check-input" type="checkbox" id="removeOverlap"
+                           name="removeOverlap" value="true" th:checked="${removeOverlap}">
+                    <label class="form-check-label small" for="removeOverlap">중복 기간 자동 제거</label>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0" id="periodTable">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th class="text-center" style="width:40px">NO</th>
+                                <th>소속회사</th>
+                                <th style="width:130px">시작일자</th>
+                                <th style="width:130px">종료일자</th>
+                                <th class="text-center" style="width:70px">일수</th>
+                                <th class="text-center" style="width:60px">중복</th>
+                                <th class="text-center" style="width:42px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="periodBody">
+                            <tr th:each="startDate, stat : ${startDates}" class="period-row">
+                                <td class="text-center text-muted small align-middle"
+                                    th:text="${stat.index + 1}"></td>
+                                <td>
+                                    <input type="text" name="companies" class="form-control form-control-sm border-0"
+                                           placeholder="회사명"
+                                           th:value="${companies != null and stat.index < #lists.size(companies)} ? ${companies[stat.index]} : ''">
+                                </td>
+                                <td>
+                                    <input type="date" name="startDates" class="form-control form-control-sm border-0"
+                                           th:value="${startDate}" onchange="refreshRows()">
+                                </td>
+                                <td>
+                                    <input type="date" name="endDates" class="form-control form-control-sm border-0"
+                                           th:value="${endDates != null and stat.index < #lists.size(endDates)} ? ${endDates[stat.index]} : ''"
+                                           onchange="refreshRows()">
+                                </td>
+                                <td class="text-center small align-middle days-cell">-</td>
+                                <td class="text-center small align-middle overlap-cell">-</td>
+                                <td class="text-center align-middle">
+                                    <button type="button" class="btn btn-outline-danger btn-sm px-1 py-0"
+                                            onclick="removeRow(this)">−</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end small">합계</td>
+                                <td class="text-center small" id="totalDaysCell">-</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="p-2">
                     <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addRow()">
                         + 기간 추가
                     </button>
                 </div>
-
-                <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="removeOverlap"
-                           name="removeOverlap" value="true" th:checked="${removeOverlap}">
-                    <label class="form-check-label small" for="removeOverlap">
-                        중복 기간 제거 (겹치는 구간을 하나로 합산)
-                    </label>
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">계산하기</button>
-                    <a th:href="@{/sales/career-calculator}" class="btn btn-outline-secondary">초기화</a>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
 
+        <div class="d-flex gap-2 mb-4">
+            <button type="submit" class="btn btn-primary">등급 산출</button>
+            <a th:href="@{/sales/career-calculator}" class="btn btn-outline-secondary">초기화</a>
+        </div>
+    </form>
+
+    <!-- ④ 계산 결과 -->
+    <div th:if="${result != null}">
+
+        <!-- 제안등급 배너 -->
+        <div class="card mb-3 border-2"
+             th:classappend="${result.proposedGrade == '특급'} ? 'border-danger' :
+                              (${result.proposedGrade == '고급'} ? 'border-warning' :
+                              (${result.proposedGrade == '중급'} ? 'border-primary' : 'border-secondary'))">
+            <div class="card-body text-center py-3">
+                <div class="text-muted small mb-1">최종 제안등급</div>
+                <div class="grade-badge"
+                     th:classappend="${result.proposedGrade == '특급'} ? 'text-danger' :
+                                      (${result.proposedGrade == '고급'} ? 'text-warning' :
+                                      (${result.proposedGrade == '중급'} ? 'text-primary' : 'text-secondary'))"
+                     th:text="${result.proposedGrade != null ? result.proposedGrade : '등급 미달'}"></div>
+                <div class="text-muted small mt-1"
+                     th:text="${result.proposedBasis != null ? result.proposedBasis + ' 기준' : ''}"></div>
+            </div>
+        </div>
+
+        <!-- 기준별 비교 -->
+        <div class="card mb-3">
+            <div class="card-header fw-semibold py-2">기준별 경력 비교</div>
+            <div class="card-body p-0">
+                <table class="table table-bordered table-sm mb-0 text-center">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>구분</th>
+                            <th>인정일수</th>
+                            <th>경력기간</th>
+                            <th>환산경력</th>
+                            <th>적용등급</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:with="er=${result.educationResult}">
+                            <td class="fw-semibold" th:text="${er.basisLabel() + ' 기준'}"></td>
+                            <td th:text="${#numbers.formatInteger(er.totalDays(), 1, 'COMMA') + '일'}"></td>
+                            <td th:text="${er.displayText()}"></td>
+                            <td th:text="${er.summary()}"></td>
+                            <td>
+                                <span th:if="${er.grade() != null}"
+                                      class="badge"
+                                      th:classappend="${er.grade() == '특급'} ? 'bg-danger' :
+                                                       (${er.grade() == '고급'} ? 'bg-warning text-dark' :
+                                                       (${er.grade() == '중급'} ? 'bg-primary' : 'bg-secondary'))"
+                                      th:text="${er.grade()}"></span>
+                                <span th:if="${er.grade() == null}" class="text-muted small">등급 미달</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${result.certResult != null}" th:with="cr=${result.certResult}">
+                            <td class="fw-semibold" th:text="${cr.basisLabel() + ' 기준'}"></td>
+                            <td th:text="${#numbers.formatInteger(cr.totalDays(), 1, 'COMMA') + '일'}"></td>
+                            <td th:text="${cr.displayText()}"></td>
+                            <td th:text="${cr.summary()}"></td>
+                            <td>
+                                <span th:if="${cr.grade() != null}"
+                                      class="badge"
+                                      th:classappend="${cr.grade() == '특급'} ? 'bg-danger' :
+                                                       (${cr.grade() == '고급'} ? 'bg-warning text-dark' :
+                                                       (${cr.grade() == '중급'} ? 'bg-primary' : 'bg-secondary'))"
+                                      th:text="${cr.grade()}"></span>
+                                <span th:if="${cr.grade() == null}" class="text-muted small">등급 미달</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 경력 기간 상세 -->
+        <div class="card mb-3">
+            <div class="card-header fw-semibold py-2">경력 기간 상세</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0 text-center">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>NO</th>
+                                <th class="text-start">소속회사</th>
+                                <th>시작일</th>
+                                <th>종료일</th>
+                                <th>총일수</th>
+                                <th>학력인정일수</th>
+                                <th th:if="${result.certResult != null}">자격증인정일수</th>
+                                <th>중복</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="row : ${result.rows}"
+                                th:class="${row.overlap()} ? 'table-warning' : ''">
+                                <td th:text="${row.no()}"></td>
+                                <td class="text-start" th:text="${row.company() != null and !row.company().isBlank() ? row.company() : '-'}"></td>
+                                <td th:text="${row.start()}"></td>
+                                <td th:text="${row.end()}"></td>
+                                <td th:text="${#numbers.formatInteger(row.totalDays(), 1, 'COMMA')}"></td>
+                                <td th:text="${#numbers.formatInteger(row.educationDays(), 1, 'COMMA')}"></td>
+                                <td th:if="${result.certResult != null}"
+                                    th:text="${#numbers.formatInteger(row.certDays(), 1, 'COMMA')}"></td>
+                                <td th:if="${row.overlap()}" class="overlap-warn">중복</td>
+                                <td th:unless="${row.overlap()}" class="text-success small">정상</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end">합계</td>
+                                <td th:text="${#numbers.formatInteger(result.rows.stream().mapToInt(T(com.eactive.resourcehub.user.service.CareerCalculator.RowResult).totalDays).sum(), 1, 'COMMA')}"></td>
+                                <td th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA')}"></td>
+                                <td th:if="${result.certResult != null}"
+                                    th:text="${#numbers.formatInteger(result.certResult.totalDays(), 1, 'COMMA')}"></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 저장 섹션 -->
+        <div class="card mb-4">
+            <div class="card-header fw-semibold py-2">프로필 저장</div>
+            <div class="card-body">
+                <form th:action="@{/sales/career-calculator/save}" method="post"
+                      class="d-flex align-items-end gap-2 flex-wrap">
+                    <input type="hidden" name="_csrf"          th:value="${_csrf.token}">
+                    <input type="hidden" name="targetUserId"   th:value="${targetUserId}">
+                    <input type="hidden" name="careerMonths"   th:value="${result.saveMonths()}">
+                    <input type="hidden" name="careerTotalDays" th:value="${result.saveDays()}">
+                    <div>
+                        <label class="form-label small mb-1">개발자 등급 (저장)</label>
+                        <select name="developerGrade" class="form-select form-select-sm" style="width:120px">
+                            <option value="">등급 없음</option>
+                            <option th:each="g : ${grades}" th:value="${g}" th:text="${g}"
+                                    th:selected="${result.proposedGrade != null and result.proposedGrade == g}"></option>
+                        </select>
+                    </div>
+                    <div th:if="${targetUserId != null}">
+                        <button type="submit" class="btn btn-success btn-sm">프로필에 저장</button>
+                    </div>
+                    <div th:if="${targetUserId == null}" class="text-muted small align-self-center">
+                        직원을 먼저 선택해야 저장할 수 있습니다.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div><!-- /result -->
+
+</div><!-- /container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ── 직원 선택 ─────────────────────────────────────────────────────────────────
+let selectedUserId = /*[[${targetUserId}]]*/ null;
+
+function selectMember(el) {
+    document.querySelectorAll('.member-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedUserId = el.dataset.id;
+    document.getElementById('targetUserIdField').value = selectedUserId;
+    const badge = document.getElementById('selectedBadge');
+    badge.className = 'badge bg-primary';
+    const team = el.dataset.team;
+    badge.innerHTML = el.dataset.name + (team ? ' <span class="fw-normal opacity-75">· ' + team + '</span>' : '');
+}
+
+function filterMembers(q) {
+    q = (q || '').toLowerCase().trim();
+    document.querySelectorAll('.member-item').forEach(el => {
+        const name = (el.dataset.name || '').toLowerCase();
+        const team = (el.dataset.team || '').toLowerCase();
+        const show = !q || name.includes(q) || team.includes(q);
+        el.classList.toggle('d-none', !show);
+    });
+}
+
+// ── 자격증 취득일 토글 ─────────────────────────────────────────────────────────
+function toggleCertDate() {
+    const wrap = document.getElementById('certDateWrap');
+    const input = document.getElementById('certDateInput');
+    const val = document.getElementById('certTypeSelect').value;
+    const show = val && val !== 'NONE';
+    wrap.style.display = show ? '' : 'none';
+    if (!show) input.value = '';
+}
+
+// ── 경력 기간 행 관리 ──────────────────────────────────────────────────────────
 function addRow() {
-    const container = document.getElementById('periods');
-    const row = document.createElement('div');
-    row.className = 'row g-2 mb-2 period-row';
-    row.innerHTML =
-        '<div class="col"><input type="date" name="startDates" class="form-control form-control-sm"></div>' +
-        '<div class="col"><input type="date" name="endDates" class="form-control form-control-sm"></div>' +
-        '<div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)" title="행 삭제">−</button></div>';
-    container.appendChild(row);
+    const body = document.getElementById('periodBody');
+    const no = body.querySelectorAll('.period-row').length + 1;
+    const tr = document.createElement('tr');
+    tr.className = 'period-row';
+    tr.innerHTML = `
+        <td class="text-center text-muted small align-middle">${no}</td>
+        <td><input type="text" name="companies" class="form-control form-control-sm border-0" placeholder="회사명"></td>
+        <td><input type="date" name="startDates" class="form-control form-control-sm border-0" onchange="refreshRows()"></td>
+        <td><input type="date" name="endDates"   class="form-control form-control-sm border-0" onchange="refreshRows()"></td>
+        <td class="text-center small align-middle days-cell">-</td>
+        <td class="text-center small align-middle overlap-cell">-</td>
+        <td class="text-center align-middle">
+            <button type="button" class="btn btn-outline-danger btn-sm px-1 py-0" onclick="removeRow(this)">−</button>
+        </td>`;
+    body.appendChild(tr);
+    refreshRows();
 }
 
 function removeRow(btn) {
     const rows = document.querySelectorAll('.period-row');
     if (rows.length <= 1) return;
     btn.closest('.period-row').remove();
+    renumberRows();
+    refreshRows();
 }
+
+function renumberRows() {
+    document.querySelectorAll('.period-row').forEach((tr, i) => {
+        tr.querySelector('td:first-child').textContent = i + 1;
+    });
+}
+
+// 일수·중복 실시간 계산
+function refreshRows() {
+    const rows = document.querySelectorAll('.period-row');
+    const ranges = [];
+    rows.forEach(tr => {
+        const s = tr.querySelector('input[name="startDates"]').value;
+        const e = tr.querySelector('input[name="endDates"]').value;
+        ranges.push({ start: s ? new Date(s) : null, end: e ? new Date(e) : null });
+    });
+
+    // 중복 감지
+    const overlapIdx = new Set();
+    const sorted = ranges.map((r,i) => ({...r, i}))
+        .filter(r => r.start && r.end && r.end >= r.start)
+        .sort((a,b) => a.start - b.start);
+    for (let i = 0; i + 1 < sorted.length; i++) {
+        if (sorted[i].end >= sorted[i+1].start) {
+            overlapIdx.add(sorted[i].i);
+            overlapIdx.add(sorted[i+1].i);
+        }
+    }
+
+    let totalDays = 0;
+    rows.forEach((tr, i) => {
+        const r = ranges[i];
+        const daysCell = tr.querySelector('.days-cell');
+        const overlapCell = tr.querySelector('.overlap-cell');
+        if (r.start && r.end && r.end >= r.start) {
+            const days = Math.round((r.end - r.start) / 86400000);
+            daysCell.textContent = days.toLocaleString();
+            totalDays += days;
+        } else {
+            daysCell.textContent = '-';
+        }
+        if (overlapIdx.has(i)) {
+            overlapCell.innerHTML = '<span class="overlap-warn">중복</span>';
+            tr.classList.add('table-warning');
+        } else {
+            overlapCell.innerHTML = '<span class="text-success">정상</span>';
+            tr.classList.remove('table-warning');
+        }
+    });
+
+    document.getElementById('totalDaysCell').textContent =
+        totalDays > 0 ? totalDays.toLocaleString() : '-';
+}
+
+// ── 초기화 ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const selected = document.querySelector('.member-item.selected');
+    if (selected) selected.scrollIntoView({ block: 'nearest' });
+    toggleCertDate();
+    refreshRows();
+});
 </script>
 </body>
 </html>
