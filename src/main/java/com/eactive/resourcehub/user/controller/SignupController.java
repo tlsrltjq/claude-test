@@ -72,7 +72,7 @@ public class SignupController {
             String code = signupService.initiateSignup(signupRequest);
             session.setAttribute(SESSION_REQUEST, signupRequest);
             session.setAttribute(SESSION_CODE, code);
-            session.setAttribute(SESSION_EXPIRY, LocalDateTime.now().plusMinutes(5));
+            session.setAttribute(SESSION_EXPIRY, LocalDateTime.now().plusMinutes(10));
             return "redirect:/signup/verify";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
@@ -159,7 +159,7 @@ public class SignupController {
         try {
             String code = signupService.initiateSignup(pending);
             session.setAttribute(SESSION_CODE, code);
-            LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
+            LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
             session.setAttribute(SESSION_EXPIRY, expiry);
             model.addAttribute("pendingEmail", signupService.buildEmail(pending.getEmailPrefix()));
             model.addAttribute("expireAt", expiry.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());

@@ -1,6 +1,9 @@
 package com.eactive.resourcehub.user.service;
 
 import com.eactive.resourcehub.common.email.EmailSender;
+import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.entity.FolderType;
+import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.team.repository.TeamRepository;
 import com.eactive.resourcehub.user.dto.SignupRequest;
@@ -29,6 +32,7 @@ public class SignupService {
     private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
+    private final FolderRepository folderRepository;
 
     @Value("${resourcehub.company-email-domain}")
     private String companyEmailDomain;
@@ -75,6 +79,9 @@ public class SignupService {
                 request.getPosition(), birthDate, request.getPhone());
         user.verifyEmail();
         userRepository.save(user);
+        if (!folderRepository.existsByOwnerIdAndType(user.getId(), FolderType.PERSONAL)) {
+            folderRepository.save(Folder.create(user, user.getName() + " 개인 폴더"));
+        }
         log.info("회원가입 완료 (즉시 활성화) — email={}", email);
     }
 

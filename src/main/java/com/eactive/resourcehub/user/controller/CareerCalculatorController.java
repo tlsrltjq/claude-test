@@ -153,7 +153,7 @@ public class CareerCalculatorController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "저장 중 오류: " + e.getMessage());
         }
-        return "redirect:/sales/career-calculator?targetUserId=" + targetUserId;
+        return "redirect:/sales/career-calculator";
     }
 
     // ── 헬퍼 ─────────────────────────────────────────────────────────────────
