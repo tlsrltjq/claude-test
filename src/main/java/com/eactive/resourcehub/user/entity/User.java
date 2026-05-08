@@ -106,4 +106,9 @@ public class User extends BaseEntity {
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
+
+    public void updateProfile(String phone, LocalDate birthDate) {
+        if (phone != null) this.phone = phone;
+        if (birthDate != null) this.birthDate = birthDate;
+    }
 }

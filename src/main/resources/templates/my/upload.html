@@ -110,16 +110,9 @@
 
                 <div id="metaCert" class="meta-box mb-3" style="display:none">
                     <div class="meta-title"><i class="bi bi-patch-check-fill"></i> 자격증 정보</div>
+                    <input type="hidden" name="certTypeMeta" value="ENGINEER">
                     <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label">자격증 종류 <span class="req">*</span></label>
-                            <select name="certTypeMeta" id="certTypeMetaSelect" class="form-select">
-                                <option value="">선택</option>
-                                <option value="ENGINEER">기사</option>
-                                <option value="INDUSTRIAL_ENGINEER">산업기사</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
+                        <div class="col-12">
                             <label class="form-label">취득일 <span class="req">*</span></label>
                             <input type="date" name="issuedDate" id="issuedDateCert" class="form-control">
                         </div>
@@ -171,9 +164,8 @@ function onTypeChange() {
     ['degreeTypeSelect','issuedDateGrad'].forEach(id => {
         document.getElementById(id).disabled = (val !== 'GRADUATION_CERTIFICATE');
     });
-    ['certTypeMetaSelect','issuedDateCert'].forEach(id => {
-        document.getElementById(id).disabled = (val !== 'LICENSE');
-    });
+    const certDateEl = document.getElementById('issuedDateCert');
+    if (certDateEl) certDateEl.disabled = (val !== 'LICENSE');
 }
 onTypeChange(); // 초기화
 
