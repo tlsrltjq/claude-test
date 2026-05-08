@@ -209,6 +209,46 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 13. HTTP 보안 헤더 누락 (SecurityConfig)
+# ─────────────────────────────────────────────
+echo "[13] HTTP 보안 헤더 설정 확인"
+SECURITY_CONFIG=$(find "$JAVA_SRC" -name "SecurityConfig.java" | head -1)
+if [ -n "$SECURITY_CONFIG" ]; then
+  if grep -qE "\.headers\(|headersWith" "$SECURITY_CONFIG"; then
+    ok "SecurityConfig headers 블록 존재"
+  else
+    warn "SecurityConfig에 .headers() 블록 없음 — X-Frame-Options 등 HTTP 보안 헤더 미설정 (docs/security-policy.md §7 참조)"
+  fi
+else
+  warn "SecurityConfig.java 를 찾을 수 없음"
+fi
+
+# ─────────────────────────────────────────────
+# 14. 비밀번호 재설정 코드 로그 노출 금지
+# ─────────────────────────────────────────────
+echo "[14] 비밀번호 재설정 코드 로그 노출 금지"
+hits=$(echo "$JAVA_FILES" | xargs grep -nE 'log\.(info|debug|trace)\s*\(.*code=\{\}' 2>/dev/null || true)
+if [ -n "$hits" ]; then
+  err "재설정 코드를 로그에 출력하는 패턴 감지 (docs/security-policy.md §6):"
+  echo "$hits" | sed 's/^/         /'
+else
+  ok "재설정 코드 로그 노출 없음"
+fi
+
+# ─────────────────────────────────────────────
+# 15. 환경변수 기본값에 비밀번호·시크릿 하드코딩 금지
+#     변수명이 *PASSWORD / *SECRET / *KEY / *TOKEN 이고 기본값이 있는 경우만
+# ─────────────────────────────────────────────
+echo "[15] 환경변수 하드코딩 기본값 (비밀번호·시크릿) 금지"
+hits=$(grep -rn '\${[A-Z_]*\(PASSWORD\|SECRET\|KEY\|TOKEN\):[^}][^}]*}' src/main/resources/ 2>/dev/null || true)
+if [ -n "$hits" ]; then
+  err "application.yml 환경변수에 비밀번호 기본값 하드코딩 감지 (docs/security-policy.md §8):"
+  echo "$hits" | sed 's/^/         /'
+else
+  ok "환경변수 기본값 하드코딩 없음"
+fi
+
+# ─────────────────────────────────────────────
 # 결과 요약
 # ─────────────────────────────────────────────
 echo
