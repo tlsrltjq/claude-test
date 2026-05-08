@@ -5,6 +5,7 @@ spring:
 server:
   servlet:
     session:
+      timeout: 30m
       cookie:
         secure: true      # HTTPS 전용
         same-site: strict

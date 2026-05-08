@@ -20,6 +20,7 @@ docker-compose.override.yml
 
 # Runtime data — 절대 Git에 들어가면 안 됨
 storage/
+backups/
 logs/
 *.log
 
