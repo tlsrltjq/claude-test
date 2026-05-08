@@ -59,11 +59,10 @@ bash harness/mvp3/scripts/status.sh                  # 진행 상태
 
 ## 테스트 계정 (로컬)
 
-| 이메일 | 비밀번호 | 역할 |
-|--------|---------|------|
-| `admin@eactive.co.kr` | `Admin1234!` | ADMIN |
-| `test@eactive.co.kr` | `Test1234!` | SALES |
-| `user2@eactive.co.kr` | `User1234!` | EMPLOYEE |
+| 이메일 | 비밀번호 | 역할 | 비고 |
+|--------|---------|------|------|
+| `admin@eactive.co.kr` | `$RESOURCEHUB_ADMIN_PASSWORD` | ADMIN | 필수 환경변수 |
+| `test@eactive.co.kr` | `$RESOURCEHUB_SEED_TEST_PASSWORD` | SALES | 설정 시에만 생성 |
 
 ## docs/ 색인
 

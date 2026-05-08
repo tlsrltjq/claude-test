@@ -47,3 +47,31 @@
 **미준수 (수정 필요)**
 - `LocalFileStorage.java:28` — `log.debug("파일 저장: {}", target.toAbsolutePath())` → 절대 경로 제거
 - `application.yml:53` — `RESOURCEHUB_ADMIN_PASSWORD:Admin1234!` → 하드코딩 기본값 제거
+- `PasswordResetService.java:52` — `log.info("... code={}", code)` → 재설정 코드를 로그에 남기면 안 됨 (제거 필요)
+
+## 7. HTTP 보안 헤더 (TODO — 미구현)
+
+> `SecurityConfig.securityFilterChain()` 의 `.headers()` 블록으로 추가 예정.
+
+| 헤더 | 값 |
+|------|----|
+| `X-Frame-Options` | `DENY` |
+| `X-Content-Type-Options` | `nosniff` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data:; font-src 'self' cdn.jsdelivr.net` |
+
+- HSTS는 프로덕션에서만 (`secure: true` 전환 시 함께 활성화)
+- `scripts/security-lint.sh [13]` 으로 헤더 누락 여부 자동 감지
+
+## 8. 환경변수 기본값 정책
+
+- `application.yml` 에서 비밀번호·시크릿 계열 환경변수에 하드코딩 기본값 **금지**
+  - ❌ `password: ${RESOURCEHUB_ADMIN_PASSWORD:Admin1234!}`
+  - ✅ `password: ${RESOURCEHUB_ADMIN_PASSWORD}` — 미설정 시 앱 기동 실패로 명시적 오류 발생
+- `scripts/security-lint.sh [15]` 로 자동 검사
+
+## 9. 비동기 처리 정책
+
+- 썸네일 생성(`ThumbnailService.generateAndSave()`)은 업로드 응답을 지연시키지 않도록 `@Async` 필수
+- `@EnableAsync` 선언 위치: `EactiveResourceHubApplication` 또는 별도 `AsyncConfig`
+- `@Async` 메서드는 `void` 또는 `CompletableFuture` 반환 — 트랜잭션 전파 주의
