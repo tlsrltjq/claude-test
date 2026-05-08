@@ -187,13 +187,17 @@
                         <div class="form-text" style="font-size:.72rem">경력 기산점</div>
                     </div>
                     <div class="col-sm-3">
-                        <div class="field-label">자격증 종류</div>
-                        <select name="certType" id="certTypeSelect" class="form-select form-select-sm"
-                                onchange="toggleCertDate()">
-                            <option value="NONE">없음</option>
-                            <option value="ENGINEER"            th:selected="${certType == 'ENGINEER'}">기사</option>
-                            <option value="INDUSTRIAL_ENGINEER" th:selected="${certType == 'INDUSTRIAL_ENGINEER'}">산업기사</option>
-                        </select>
+                        <div class="field-label">자격증</div>
+                        <input type="hidden" name="certType" id="certTypeSelect"
+                               th:value="${certType != null and certType != 'NONE'} ? 'ENGINEER' : 'NONE'">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" id="certCheck"
+                                       onchange="toggleCertDate()"
+                                       th:checked="${certType != null and certType != 'NONE'}">
+                                <label class="form-check-label" for="certCheck" style="font-size:.83rem;">정보처리기사</label>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-sm-3" id="certDateWrap"
                          th:style="${certType != null and certType != 'NONE'} ? '' : 'display:none'">
@@ -226,12 +230,12 @@
                             </div>
                             <div class="col-md-5">
                                 <table class="table table-bordered table-sm grade-ref-table mb-0">
-                                    <thead><tr><th>등급</th><th>기사</th><th>산업기사</th></tr></thead>
+                                    <thead><tr><th>등급</th><th>정보처리기사</th></tr></thead>
                                     <tbody>
-                                        <tr><td>특급</td><td>9년</td><td>13년</td></tr>
-                                        <tr><td>고급</td><td>6년</td><td>10년</td></tr>
-                                        <tr><td>중급</td><td>3년</td><td>7년</td></tr>
-                                        <tr><td>초급</td><td>0년</td><td>0년</td></tr>
+                                        <tr><td>특급</td><td>9년</td></tr>
+                                        <tr><td>고급</td><td>6년</td></tr>
+                                        <tr><td>중급</td><td>3년</td></tr>
+                                        <tr><td>초급</td><td>0년</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -506,15 +510,10 @@ function selectMember(el) {
         .then(data => {
             if (data.degree)   document.getElementById('degreeSelect').value = data.degree;
             if (data.gradDate) document.querySelector('[name="gradDate"]').value = data.gradDate;
-            const certSel = document.getElementById('certTypeSelect');
-            if (data.certType && data.certType !== 'NONE') {
-                certSel.value = data.certType;
-                toggleCertDate();
-                if (data.certDate) document.getElementById('certDateInput').value = data.certDate;
-            } else {
-                certSel.value = 'NONE';
-                toggleCertDate();
-            }
+            const hasCert = data.certType && data.certType !== 'NONE';
+            document.getElementById('certCheck').checked = hasCert;
+            toggleCertDate();
+            if (hasCert && data.certDate) document.getElementById('certDateInput').value = data.certDate;
             if (data.degree || data.gradDate || data.certType) {
                 badge.innerHTML += ' <span class="badge bg-success" style="font-size:.7rem;border-radius:6px">문서 자동입력</span>';
             }
@@ -533,12 +532,13 @@ function filterMembers(q) {
 
 // ── 취득일자 토글 ──────────────────────────────────────────────────────────────
 function toggleCertDate() {
-    const sel   = document.getElementById('certTypeSelect');
-    const wrap  = document.getElementById('certDateWrap');
-    const input = document.getElementById('certDateInput');
-    const hasCert = sel.value !== 'NONE';
-    wrap.style.display = hasCert ? '' : 'none';
-    if (!hasCert) input.value = '';
+    const checked = document.getElementById('certCheck').checked;
+    const hidden  = document.getElementById('certTypeSelect');
+    const wrap    = document.getElementById('certDateWrap');
+    const input   = document.getElementById('certDateInput');
+    hidden.value = checked ? 'ENGINEER' : 'NONE';
+    wrap.style.display = checked ? '' : 'none';
+    if (!checked) input.value = '';
 }
 
 // ── 경력 기간 행 관리 ──────────────────────────────────────────────────────────
