@@ -80,17 +80,11 @@ public class AdminController {
                             @RequestParam(required = false) Long teamId,
                             @RequestParam(defaultValue = "0") int page,
                             Model model) {
-        List<com.eactive.resourcehub.user.entity.User> all =
-                employeeService.findActiveFiltered(q, position, role, teamId);
-        int pageSize = 20;
-        int totalPages = Math.max(1, (int) Math.ceil((double) all.size() / pageSize));
-        int safePage = Math.min(Math.max(page, 0), totalPages - 1);
-        int from = safePage * pageSize;
-        int to = Math.min(from + pageSize, all.size());
-        model.addAttribute("employees", from < all.size() ? all.subList(from, to) : List.of());
-        model.addAttribute("totalCount", all.size());
-        model.addAttribute("currentPage", safePage);
-        model.addAttribute("totalPages", totalPages);
+        var result = employeeService.findActiveFilteredPaged(q, position, role, teamId, page);
+        model.addAttribute("employees", result.getContent());
+        model.addAttribute("totalCount", result.getTotalElements());
+        model.addAttribute("currentPage", result.getNumber());
+        model.addAttribute("totalPages", Math.max(1, result.getTotalPages()));
         model.addAttribute("positions", Position.values());
         model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
                 .filter(r -> r != UserRole.TEAM_LEADER).toList());

@@ -29,16 +29,9 @@ public class SalesMemberService {
     private final DocumentRepository documentRepository;
 
     public List<User> findActiveMembers(String q, Long teamId, String sort, String direction) {
-        var stream = userRepository.findByStatusWithTeam(UserStatus.ACTIVE).stream()
-                .filter(u -> u.getRole() != UserRole.ADMIN)
-                .filter(u -> {
-                    if (q == null || q.isBlank()) return true;
-                    String keyword = q.toLowerCase();
-                    String name  = u.getName()  != null ? u.getName().toLowerCase()  : "";
-                    String email = u.getEmail() != null ? u.getEmail().toLowerCase() : "";
-                    return name.contains(keyword) || email.contains(keyword);
-                })
-                .filter(u -> teamId == null || (u.getTeam() != null && teamId.equals(u.getTeam().getId())));
+        String qLike = (q == null || q.isBlank()) ? null : "%" + q.toLowerCase() + "%";
+        List<User> users = userRepository.findActiveMembersFiltered(
+                UserStatus.ACTIVE, UserRole.ADMIN, qLike, teamId);
 
         Comparator<User> cmp = switch (sort != null ? sort : "position") {
             case "name"  -> Comparator.comparing(u -> u.getName() != null ? u.getName() : "");
@@ -49,7 +42,7 @@ public class SalesMemberService {
 
         if ("desc".equalsIgnoreCase(direction)) cmp = cmp.reversed();
 
-        return stream.sorted(cmp).toList();
+        return users.stream().sorted(cmp).toList();
     }
 
     public User findMemberById(Long userId) {

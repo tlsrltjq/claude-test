@@ -18,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import java.util.List;
 
 @Slf4j
@@ -38,28 +41,28 @@ public class EmployeeManagementService {
         return userRepository.findByStatusWithTeam(UserStatus.ACTIVE);
     }
 
+    private static final int PAGE_SIZE = 20;
+
     @Transactional(readOnly = true)
-    public List<User> findActiveFiltered(String q, String position, String role, Long teamId) {
-        return userRepository.findByStatusInWithTeam(MANAGED_STATUSES).stream()
-                .filter(u -> {
-                    if (q == null || q.isBlank()) return true;
-                    String kw = q.toLowerCase();
-                    String name  = u.getName()  != null ? u.getName().toLowerCase()  : "";
-                    String email = u.getEmail() != null ? u.getEmail().toLowerCase() : "";
-                    return name.contains(kw) || email.contains(kw);
-                })
-                .filter(u -> {
-                    if (position == null || position.isBlank()) return true;
-                    try { return u.getPosition() == Position.valueOf(position); }
-                    catch (IllegalArgumentException e) { return false; }
-                })
-                .filter(u -> {
-                    if (role == null || role.isBlank()) return true;
-                    try { return u.getRole() == UserRole.valueOf(role); }
-                    catch (IllegalArgumentException e) { return false; }
-                })
-                .filter(u -> teamId == null || (u.getTeam() != null && teamId.equals(u.getTeam().getId())))
-                .toList();
+    public Page<User> findActiveFilteredPaged(String q, String position, String role, Long teamId, int page) {
+        String qLike = (q == null || q.isBlank()) ? null : "%" + q.toLowerCase() + "%";
+        Position pos = parsePosition(position);
+        UserRole roleEnum = parseRole(role);
+        return userRepository.findFilteredPage(
+                MANAGED_STATUSES, qLike, pos, roleEnum, teamId,
+                PageRequest.of(Math.max(page, 0), PAGE_SIZE));
+    }
+
+    private Position parsePosition(String value) {
+        if (value == null || value.isBlank()) return null;
+        try { return Position.valueOf(value); }
+        catch (IllegalArgumentException e) { return null; }
+    }
+
+    private UserRole parseRole(String value) {
+        if (value == null || value.isBlank()) return null;
+        try { return UserRole.valueOf(value); }
+        catch (IllegalArgumentException e) { return null; }
     }
 
     @Transactional(readOnly = true)
