@@ -47,7 +47,7 @@ public class SalesProfileQueryService {
 
         // 2. 폴더 배치 조회 (userId → folderId)
         Map<Long, Long> userToFolder = folderRepository.findByOwnerIdInAndType(userIds, FolderType.PERSONAL)
-                .stream().collect(Collectors.toMap(f -> f.getOwner().getId(), Folder::getId));
+                .stream().collect(Collectors.toMap(f -> f.getOwner().getId(), Folder::getId, (a, b) -> a));
 
         // 3. 문서 배치 조회 (folderId → documents with currentVersion)
         Map<Long, Map<DocumentType, DocumentVersion>> userDocMap = new HashMap<>();
