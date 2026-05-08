@@ -18,6 +18,8 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import com.eactive.resourcehub.common.util.FileUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -49,6 +51,7 @@ public class ThumbnailService {
      * 업로드 직후 썸네일 생성 — 실패해도 업로드는 성공으로 유지.
      * REQUIRES_NEW 대신 호출자가 try/catch 로 감싸서 사용.
      */
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void generateAndSave(DocumentVersion version) {
         try {
@@ -104,7 +107,7 @@ public class ThumbnailService {
      * Returns thumbnail bytes, or null if unsupported / preview unavailable.
      */
     private byte[] generate(DocumentVersion version) throws Exception {
-        String ext = extension(version.getOriginalFileName()).toLowerCase();
+        String ext = FileUtils.extension(version.getOriginalFileName());
 
         if ("pdf".equals(ext)) {
             return pdfFirstPagePng(fileStorage.load(version.getStoragePath()));
@@ -135,11 +138,6 @@ public class ThumbnailService {
         Thumbnails.of(in).width(THUMBNAIL_WIDTH).outputFormat("png").toOutputStream(out);
         in.close();
         return out.toByteArray();
-    }
-
-    private static String extension(String filename) {
-        if (filename == null || !filename.contains(".")) return "";
-        return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
     /**
