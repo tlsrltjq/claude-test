@@ -65,6 +65,10 @@
                     <th class="text-muted fw-normal">생년월일</th>
                     <td th:text="${user.birthDate != null ? #temporals.format(user.birthDate, 'yyyy-MM-dd') : '-'}"></td>
                 </tr>
+                <tr>
+                    <th class="text-muted fw-normal">연락처</th>
+                    <td th:text="${user.phone != null ? user.phone : '-'}"></td>
+                </tr>
                 <tr th:if="${profile != null}">
                     <th class="text-muted fw-normal">개발자 등급</th>
                     <td th:text="${profile.developerGrade != null and !#strings.isEmpty(profile.developerGrade)} ? ${profile.developerGrade} : '-'"></td>
