@@ -9,15 +9,17 @@ check() { local d="$1"; shift; if "$@" >/dev/null 2>&1; then echo "  [PASS] $d";
 
 echo "== MVP3 M3-13 — 계정 활성/비활성 =="; echo
 
-check "/admin/employees/{id}/disable"  bash -c "grep -rE '/admin/employees/\\{[a-zA-Z]+\\}/disable' '$SRC' | grep -q ."
-check "/admin/employees/{id}/activate" bash -c "grep -rE '/admin/employees/\\{[a-zA-Z]+\\}/activate' '$SRC' | grep -q ."
-check "AdminUserStatusService"          bash -c "grep -rl 'class[[:space:]]\\+AdminUserStatusService' '$SRC' | grep -q ."
+check "/admin/employees/{id}/toggle-status 엔드포인트" \
+  bash -c "grep -rE 'PostMapping.*toggle-status' '$SRC' | grep -q ."
+check "EmployeeManagementService.toggleStatus()" \
+  bash -c "grep -rE 'toggleStatus' '$SRC' | grep -q ."
 ACT="$SRC/audit/entity/AuditActionType.java"
-[ -f "$ACT" ] && check "AuditActionType CHANGE_USER_STATUS" grep -q 'CHANGE_USER_STATUS' "$ACT"
-check "SessionRegistry expireNow trace" bash -c "grep -rE 'SessionRegistry|expireNow' '$SRC' | grep -q ."
+[ -f "$ACT" ] && check "AuditActionType DISABLE_USER"  grep -q 'DISABLE_USER'  "$ACT"
+[ -f "$ACT" ] && check "AuditActionType ENABLE_USER"   grep -q 'ENABLE_USER'   "$ACT"
+check "SessionRegistry 세션 즉시 만료" bash -c "grep -rE 'SessionRegistry|expireNow' '$SRC' | grep -q ."
 
 E="$RES/templates/admin/employee-detail.html"
-[ -f "$E" ] && check "employee-detail toggle btn" bash -c "grep -qE '비활성|활성화|disable|activate' '$E'"
+[ -f "$E" ] && check "employee-detail 토글 버튼" bash -c "grep -qE '비활성|활성화|toggle-status' '$E'"
 
 echo; echo "  passed: $PASS"; echo "  failed: $FAIL"
 [ "$FAIL" -eq 0 ]

@@ -7,12 +7,12 @@
     {
       "id": "M3-01",
       "title": "직급·권한 네이밍 + 한글화 (상무 추가)",
-      "status": "blocked",
+      "status": "verified",
       "startedAt": null,
       "completedAt": null,
-      "verifiedAt": "2026-05-07T01:22:34.705288Z",
-      "verifyResult": "fail",
-      "notes": []
+      "verifiedAt": "2026-05-08T00:00:00Z",
+      "verifyResult": "pass",
+      "notes": ["verify.sh가 리터럴 한글 grep으로 체크했으나 Thymeleaf th:text 방식이므로 displayName 표현식 사용 여부로 검증 방식 수정"]
     },
     {
       "id": "M3-02",
@@ -127,12 +127,30 @@
     {
       "id": "M3-13",
       "title": "계정 활성/비활성 토글 + 즉시 세션 무효화",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": null,
+      "verifiedAt": "2026-05-08T00:00:00Z",
+      "verifyResult": "pass",
+      "notes": ["verify.sh가 잘못된 엔드포인트(disable/activate)를 체크하고 있었음 → toggle-status 기반으로 수정"]
+    },
+    {
+      "id": "M3-14",
+      "title": "보안·성능·UX 최종 품질 (헤더·에러페이지·@Async·페이지네이션)",
       "status": "pending",
       "startedAt": null,
       "completedAt": null,
       "verifiedAt": null,
       "verifyResult": null,
-      "notes": []
+      "notes": [
+        "HTTP 보안 헤더 (CSP, X-Frame-Options, nosniff)",
+        "PasswordResetService 코드 로그 제거",
+        "application.yml 하드코딩 기본값 제거",
+        "커스텀 에러 페이지 404/403/500",
+        "GlobalExceptionHandler 확장",
+        "ThumbnailService @Async 전환",
+        "employees.html 서버사이드 페이지네이션"
+      ]
     }
   ]
 }

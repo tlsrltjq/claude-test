@@ -20,11 +20,16 @@ UR="$SRC/user/entity/UserRole.java"
 [ -f "$UR" ] && check "UserRole 영업 mapping"   grep -q '영업'   "$UR"
 [ -f "$UR" ] && check "UserRole 사원 mapping"   grep -q '사원'   "$UR"
 
-# Templates 한글 표시 흔적
-check "templates 어딘가에 '관리자'" bash -c "grep -rE '관리자' '$RES/templates' | grep -q ."
-check "templates 어딘가에 '영업'"   bash -c "grep -rE '영업'   '$RES/templates' | grep -q ."
-check "templates 어딘가에 '사원'"   bash -c "grep -rE '사원'   '$RES/templates' | grep -q ."
-check "templates 어딘가에 '상무'"   bash -c "grep -rE '상무'   '$RES/templates' | grep -q ."
+# Templates 한글 표시 — Thymeleaf th:text="${*.displayName}" 방식으로 렌더링
+# (리터럴 한글 대신 displayName 표현식 사용 여부로 검증)
+check "templates role.displayName 사용 (관리자/영업/사원)" \
+  bash -c "grep -rE 'role\.displayName|role\.getDisplayName' '$RES/templates' | grep -q ."
+check "templates position.displayName 사용 (상무 등 직급)" \
+  bash -c "grep -rE 'position\.displayName|pos\.displayName|position\.getDisplayName' '$RES/templates' | grep -q ."
+# UserRole enum에 '관리자' 리터럴 존재 (switch 매핑)
+check "UserRole enum '관리자' 리터럴" bash -c "grep -q '관리자' '$UR'"
+# Position enum에 '상무' 리터럴 존재
+check "Position enum '상무' 리터럴"   bash -c "grep -q '상무'   '$P'"
 
 echo; echo "  passed: $PASS"; echo "  failed: $FAIL"
 [ "$FAIL" -eq 0 ]
