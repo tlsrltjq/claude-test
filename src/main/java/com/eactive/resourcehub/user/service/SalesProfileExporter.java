@@ -14,7 +14,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class ProfileExcelExportService {
+public class SalesProfileExporter {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

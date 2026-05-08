@@ -11,7 +11,7 @@ import com.eactive.resourcehub.user.entity.ColumnViewPreference;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.service.ColumnViewPreferenceService;
-import com.eactive.resourcehub.user.service.ProfileExcelExportService;
+import com.eactive.resourcehub.user.service.SalesProfileExporter;
 import com.eactive.resourcehub.user.service.ProfileRow;
 import com.eactive.resourcehub.user.service.SalesMemberService;
 import com.eactive.resourcehub.user.service.SalesProfileQueryService;
@@ -44,7 +44,7 @@ public class SalesProfileController {
 
     private final SalesProfileQueryService profileQueryService;
     private final SalesMemberService salesMemberService;
-    private final ProfileExcelExportService excelExportService;
+    private final SalesProfileExporter excelExportService;
     private final ColumnViewPreferenceService presetService;
     private final AuditService auditService;
     private final TeamRepository teamRepository;
