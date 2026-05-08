@@ -10,6 +10,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
@@ -33,6 +34,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(c -> {})
+                .referrerPolicy(ref -> ref.policy(
+                    ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                    "default-src 'self'; " +
+                    "script-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
+                    "style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
+                    "img-src 'self' data:; " +
+                    "font-src 'self' cdn.jsdelivr.net"
+                ))
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/login", "/login/forgot", "/login/forgot/verify",
@@ -59,7 +73,6 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> {
                 session.sessionFixation().changeSessionId();
-                session.invalidSessionUrl("/login");
                 session.maximumSessions(-1)
                         .sessionRegistry(sessionRegistry())
                         .expiredUrl("/login?expired");
