@@ -61,7 +61,7 @@
                                class="form-control"
                                th:classappend="${#fields.hasErrors('emailPrefix')} ? 'is-invalid'"
                                placeholder="이름" required>
-                        <span class="input-group-text" th:text="'@' + ${emailDomain}"></span>
+                        <span class="input-group-text" th:text="'@' + ${emailDomain}">@eactive.co.kr</span>
                         <div th:if="${#fields.hasErrors('emailPrefix')}" class="invalid-feedback" th:errors="*{emailPrefix}"></div>
                         <div th:unless="${#fields.hasErrors('emailPrefix')}" class="invalid-feedback">이메일 앞부분을 입력해주세요.</div>
                     </div>

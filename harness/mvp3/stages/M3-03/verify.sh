@@ -16,15 +16,16 @@ if [ -f "$S" ]; then
   check "생년월일 placeholder"    bash -c "grep -qE 'placeholder=\"[0-9]{8}\"|20010904' '$S'"
   check "이메일 suffix 표기"      bash -c "grep -qE 'eactive.co.kr|company-email-domain' '$S'"
 
-  # 입력 순서 (Python이 input name 추출)
+  # 입력 순서 (Python이 input name 추출 — th:field="*{name}" 형식도 처리)
   python3 - "$S" <<'PY'
 import re, sys
 html = open(sys.argv[1]).read()
-names = re.findall(r'<input[^>]+name="([^"]+)"', html, flags=re.IGNORECASE)
-sels  = re.findall(r'<select[^>]+name="([^"]+)"', html, flags=re.IGNORECASE)
 order = []
-# 단순히 등장 순서를 모두 모은다
-for m in re.finditer(r'<(input|select)[^>]+name="([^"]+)"', html, flags=re.IGNORECASE):
+# name="..." 또는 th:field="*{name}" 형식 모두 인식
+for m in re.finditer(
+    r'<(input|select)[^>]+(?:name|th:field)="(?:\*\{)?([^"}\s]+)',
+    html, flags=re.IGNORECASE
+):
     order.append(m.group(2))
 # 의도된 순서 — 이름/생년월일/연락처/이메일/팀/직급/비밀번호 키워드 매핑
 expected = ['name','birth','phone','email','team','position','password']
