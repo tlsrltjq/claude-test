@@ -41,7 +41,7 @@
     <!-- 업로드 패널 -->
     <div id="uploadPanel" class="collapse mb-4">
         <div class="card card-body">
-            <form th:action="@{/shared/folders/public/documents}" method="post" enctype="multipart/form-data">
+            <form th:action="@{/shared/folders/public/documents}" method="post" enctype="multipart/form-data" id="publicUploadForm">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <div class="row g-2">
                     <div class="col-md-3">
@@ -61,7 +61,7 @@
                                accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx">
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary btn-sm w-100">업로드</button>
+                        <button type="submit" id="publicUploadBtn" class="btn btn-primary btn-sm w-100">업로드</button>
                     </div>
                 </div>
                 <div class="form-text mt-1">허용 형식: PDF, JPG, PNG, DOCX, HWP, HWPX, PPT, PPTX (최대 20MB)</div>
@@ -168,6 +168,16 @@ function applySort() {
     });
     cols.forEach(c => grid.appendChild(c));
 }
+(function() {
+    var form = document.getElementById('publicUploadForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            var btn = document.getElementById('publicUploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>업로드 중...';
+        });
+    }
+})();
 </script>
 </body>
 </html>
