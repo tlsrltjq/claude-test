@@ -15,7 +15,7 @@ public class SignupRequest {
     private String name;
 
     @NotBlank(message = "생년월일을 입력해주세요.")
-    @Pattern(regexp = "\\d{8}", message = "생년월일은 숫자 8자로 입력하세요. 예: 20010904")
+    @Pattern(regexp = "^(\\d{8}|\\d{4}\\.\\d{2}\\.\\d{2})$", message = "생년월일 형식이 올바르지 않습니다.")
     private String birthDateStr;
 
     @NotBlank(message = "연락처를 입력해주세요.")

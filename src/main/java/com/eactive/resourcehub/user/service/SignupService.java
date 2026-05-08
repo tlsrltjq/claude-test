@@ -111,15 +111,16 @@ public class SignupService {
     private LocalDate parseBirthDate(String birthDateStr) {
         if (birthDateStr == null || birthDateStr.isBlank())
             throw new IllegalArgumentException("생년월일을 입력해주세요.");
-        if (!birthDateStr.matches("\\d{8}"))
-            throw new IllegalArgumentException("생년월일은 8자 숫자로 입력하세요. 예: 20010904");
+        String digits = birthDateStr.replace(".", "");
+        if (!digits.matches("\\d{8}"))
+            throw new IllegalArgumentException("생년월일 형식이 올바르지 않습니다. 예: 2001.09.04");
         try {
-            LocalDate date = LocalDate.parse(birthDateStr, BIRTH_FMT);
+            LocalDate date = LocalDate.parse(digits, BIRTH_FMT);
             if (date.isBefore(LocalDate.of(1900, 1, 1)) || date.isAfter(LocalDate.now()))
                 throw new IllegalArgumentException("유효하지 않은 생년월일입니다.");
             return date;
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("생년월일은 8자 숫자로 입력하세요. 예: 20010904");
+            throw new IllegalArgumentException("생년월일 형식이 올바르지 않습니다. 예: 2001.09.04");
         }
     }
 
