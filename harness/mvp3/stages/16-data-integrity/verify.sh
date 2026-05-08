@@ -36,19 +36,27 @@ if src_accessible; then
     # [1] Collectors.toMap 머지 함수 누락
     #     2인수: toMap(key, value)  → 중복 키 시 IllegalStateException
     #     3인수: toMap(key, value, merge) → 안전
-    TOMAP_UNSAFE=$(src_grep -P '\.collect\(\s*Collectors\.toMap\([^)]+,[^)]+\)\s*\)' 2>/dev/null || true)
-    # 더 단순한 패턴으로 재시도
-    if [ -z "$TOMAP_UNSAFE" ]; then
-        # 3인수가 아닌 toMap 호출 찾기: toMap(A, B) 형태 (쉼표 2개 미만)
-        TOMAP_ALL=$(src_grep "Collectors\.toMap(" 2>/dev/null || true)
-        TOMAP_SAFE=$(src_grep "Collectors\.toMap([^)]*,[^)]*,[^)]*)" 2>/dev/null || true)
-        TOMAP_UNSAFE=""
-        while IFS= read -r line; do
-            if [ -n "$line" ] && ! echo "$line" | grep -q "toMap([^)]*,[^)]*,[^)]*)"; then
-                TOMAP_UNSAFE+="$line"$'\n'
-            fi
-        done <<< "$TOMAP_ALL"
-    fi
+    # Python으로 최상위 쉼표 수 계산 (람다 내부 괄호 오검출 방지)
+    TOMAP_UNSAFE=$(src_grep "Collectors\.toMap(" 2>/dev/null | python3 -c "
+import sys, re
+for line in sys.stdin:
+    m = re.search(r'toMap\((.+)', line.rstrip())
+    if not m:
+        continue
+    tail = m.group(1)
+    depth = 1; commas = 0
+    for ch in tail:
+        if ch == '(':
+            depth += 1
+        elif ch == ')':
+            depth -= 1
+            if depth == 0:
+                break
+        elif ch == ',' and depth == 1:
+            commas += 1
+    if commas < 2:
+        print(line.rstrip())
+" 2>/dev/null || true)
 
     if [ -n "$TOMAP_UNSAFE" ]; then
         f "[1] Collectors.toMap() 2인수 호출 발견 — 머지 함수 없으면 중복 키 시 런타임 예외:"

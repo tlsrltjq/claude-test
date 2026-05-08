@@ -52,7 +52,7 @@ public class StatisticsService {
 
         List<DocumentVersion> versions = documentVersionRepository.findByIdInWithOwnerAndTeam(versionIds);
         Map<Long, DocumentVersion> versionMap = versions.stream()
-                .collect(Collectors.toMap(DocumentVersion::getId, v -> v));
+                .collect(Collectors.toMap(DocumentVersion::getId, v -> v, (a, b) -> a));
 
         List<TopDocumentDto> result = new ArrayList<>();
         for (Object[] row : rows) {

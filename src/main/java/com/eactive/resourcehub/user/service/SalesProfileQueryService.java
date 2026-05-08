@@ -55,7 +55,7 @@ public class SalesProfileQueryService {
         if (!folderIds.isEmpty()) {
             List<Document> docs = documentRepository.findActiveWithVersionByFolderIds(folderIds);
             Map<Long, Long> folderToUser = userToFolder.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+                    .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (a, b) -> a));
             for (Document doc : docs) {
                 if (doc.getCurrentVersion() == null) continue;
                 Long userId = folderToUser.get(doc.getFolder().getId());
@@ -67,7 +67,7 @@ public class SalesProfileQueryService {
 
         // 4. EmployeeProfile 배치 조회
         Map<Long, EmployeeProfile> profileMap = employeeProfileRepository.findByUserIdIn(userIds)
-                .stream().collect(Collectors.toMap(ep -> ep.getUser().getId(), ep -> ep));
+                .stream().collect(Collectors.toMap(ep -> ep.getUser().getId(), ep -> ep, (a, b) -> a));
 
         // 5. 조합 + 필터 + 정렬 (ADMIN 역할 제외)
         List<ProfileRow> rows = users.stream()
