@@ -176,11 +176,11 @@
       "id": "14-security-policy",
       "title": "권한·보안 정책 감사",
       "phase": "3차",
-      "status": "blocked",
+      "status": "verified",
       "startedAt": "2026-05-07T01:10:00Z",
-      "completedAt": null,
-      "verifiedAt": "2026-05-07T01:17:16.528703Z",
-      "verifyResult": "fail",
+      "completedAt": "2026-05-08T04:50:29.630072Z",
+      "verifiedAt": "2026-05-08T04:50:29.630072Z",
+      "verifyResult": "pass",
       "notes": [
         {
           "at": "2026-05-07T01:10:00Z",
