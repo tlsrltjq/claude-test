@@ -9,7 +9,7 @@
       "status": "verified",
       "startedAt": null,
       "completedAt": "2026-04-28T07:14:57.497062Z",
-      "verifiedAt": "2026-04-29T23:38:53.153766Z",
+      "verifiedAt": "2026-05-08T05:21:39.469816Z",
       "verifyResult": "pass",
       "notes": [
         {
@@ -32,7 +32,7 @@
       "status": "verified",
       "startedAt": "2026-04-28T08:00:00Z",
       "completedAt": "2026-04-28T08:30:00Z",
-      "verifiedAt": "2026-04-29T23:38:53.239310Z",
+      "verifiedAt": "2026-05-08T05:21:39.599315Z",
       "verifyResult": "pass",
       "notes": [
         {
@@ -47,7 +47,7 @@
       "status": "verified",
       "startedAt": "2026-04-28T09:00:00Z",
       "completedAt": "2026-04-28T12:00:00Z",
-      "verifiedAt": "2026-04-29T23:38:53.498561Z",
+      "verifiedAt": "2026-05-08T05:21:39.735709Z",
       "verifyResult": "pass",
       "notes": [
         {
@@ -62,7 +62,7 @@
       "status": "verified",
       "startedAt": "2026-04-28T12:30:00Z",
       "completedAt": "2026-04-28T14:00:00Z",
-      "verifiedAt": "2026-04-29T23:38:53.885997Z",
+      "verifiedAt": "2026-05-08T05:21:39.905234Z",
       "verifyResult": "pass",
       "notes": [
         {
@@ -77,7 +77,7 @@
       "status": "verified",
       "startedAt": null,
       "completedAt": "2026-04-29T23:38:53.999666Z",
-      "verifiedAt": "2026-04-29T23:38:53.999666Z",
+      "verifiedAt": "2026-05-08T05:21:40.002976Z",
       "verifyResult": "pass",
       "notes": []
     },
@@ -87,7 +87,7 @@
       "status": "verified",
       "startedAt": null,
       "completedAt": "2026-04-29T23:38:54.239814Z",
-      "verifiedAt": "2026-04-29T23:38:54.239814Z",
+      "verifiedAt": "2026-05-08T05:21:40.122766Z",
       "verifyResult": "pass",
       "notes": []
     },
@@ -97,7 +97,7 @@
       "status": "verified",
       "startedAt": null,
       "completedAt": "2026-04-29T23:38:54.448258Z",
-      "verifiedAt": "2026-04-29T23:38:54.448258Z",
+      "verifiedAt": "2026-05-08T05:21:40.218284Z",
       "verifyResult": "pass",
       "notes": []
     },
@@ -107,7 +107,7 @@
       "status": "verified",
       "startedAt": null,
       "completedAt": "2026-04-29T23:38:54.588861Z",
-      "verifiedAt": "2026-04-29T23:38:54.588861Z",
+      "verifiedAt": "2026-05-08T05:21:40.304765Z",
       "verifyResult": "pass",
       "notes": []
     },
@@ -117,18 +117,18 @@
       "status": "verified",
       "startedAt": null,
       "completedAt": "2026-04-29T23:38:54.731903Z",
-      "verifiedAt": "2026-04-29T23:38:54.731903Z",
+      "verifiedAt": "2026-05-08T05:21:40.407574Z",
       "verifyResult": "pass",
       "notes": []
     },
     {
       "id": "10-deploy",
       "title": "보안/배포/백업",
-      "status": "blocked",
+      "status": "verified",
       "startedAt": null,
-      "completedAt": null,
-      "verifiedAt": "2026-04-29T23:38:54.760142Z",
-      "verifyResult": "fail",
+      "completedAt": "2026-05-08T05:19:38.453077Z",
+      "verifiedAt": "2026-05-08T05:21:40.476989Z",
+      "verifyResult": "pass",
       "notes": []
     }
   ]
