@@ -49,7 +49,7 @@ public class PasswordResetService {
         } catch (Exception e) {
             log.warn("비번 재설정 메일 발송 실패: {}", e.getMessage());
         }
-        log.info("[PASSWORD_RESET] 코드 발급 — email={}, code={}", email, code);
+        log.info("[PASSWORD_RESET] 코드 발급 — email={}", email);
     }
 
     /**
