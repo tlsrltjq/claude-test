@@ -1,97 +1,254 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대시보드 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+
+        /* ── 네비바 ── */
+        .topnav { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: .6rem 0; }
+        .topnav .brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; letter-spacing: -.01em; }
+        .topnav .brand i { opacity: .85; }
+        .user-chip { display: flex; align-items: center; gap: .5rem; background: rgba(255,255,255,.15); border-radius: 50px; padding: .3rem .75rem .3rem .4rem; }
+        .user-chip .avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; font-size: .85rem; color: #fff; font-weight: 700; }
+        .user-chip .uname { color: #fff; font-size: .85rem; font-weight: 600; }
+        .user-chip .ubadge { font-size: .7rem; padding: .15rem .4rem; border-radius: 4px; font-weight: 600; }
+        .btn-logout { border-color: rgba(255,255,255,.5); color: #fff; font-size: .8rem; padding: .3rem .75rem; border-radius: 6px; }
+        .btn-logout:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+        /* ── 환영 배너 ── */
+        .welcome-banner { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border-radius: 16px; padding: 1.75rem 2rem; color: #fff; margin-bottom: 1.5rem; }
+        .welcome-banner .greeting { font-size: 1.35rem; font-weight: 700; }
+        .welcome-banner .sub { font-size: .9rem; opacity: .8; margin-top: .25rem; }
+        .welcome-banner .meta-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
+        .meta-chip { background: rgba(255,255,255,.18); border-radius: 50px; padding: .25rem .75rem; font-size: .78rem; color: #fff; display: flex; align-items: center; gap: .3rem; }
+
+        /* ── 프로필 카드 ── */
+        .profile-card { background: #fff; border-radius: 14px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,.07); height: 100%; }
+        .profile-card .card-title { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; margin-bottom: 1rem; display: flex; align-items: center; gap: .4rem; }
+        .profile-card .card-title::after { content: ''; flex: 1; height: 1px; background: #f0f2f5; }
+        .info-row { display: flex; align-items: flex-start; padding: .45rem 0; border-bottom: 1px solid #f0f2f5; gap: .75rem; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: .78rem; color: #adb5bd; min-width: 70px; flex-shrink: 0; padding-top: 1px; }
+        .info-val { font-size: .88rem; color: #343a40; font-weight: 500; word-break: break-all; }
+        .grade-badge { display: inline-block; padding: .2rem .55rem; border-radius: 6px; font-size: .75rem; font-weight: 700; }
+        .grade-특급 { background: #ffe0e0; color: #c92a2a; }
+        .grade-고급 { background: #fff3cd; color: #856404; }
+        .grade-중급 { background: #cfe2ff; color: #084298; }
+        .grade-초급 { background: #e2e8f0; color: #495057; }
+
+        /* ── 메뉴 카드 ── */
+        .menu-section-label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; margin: 1.25rem 0 .65rem; display: flex; align-items: center; gap: .4rem; }
+        .menu-section-label::after { content: ''; flex: 1; height: 1px; background: #e9ecef; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .65rem; }
+        .menu-item { background: #fff; border-radius: 12px; border: 1.5px solid #e9ecef; padding: 1rem .75rem; text-align: center; text-decoration: none; transition: all .18s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: .45rem; }
+        .menu-item:hover { border-color: transparent; box-shadow: 0 4px 18px rgba(0,0,0,.12); transform: translateY(-2px); }
+        .menu-item .icon-wrap { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .menu-item .label { font-size: .8rem; font-weight: 600; color: #343a40; line-height: 1.2; }
+        /* 색상 테마 */
+        .mi-blue   .icon-wrap { background: #e7f0ff; color: #0d6efd; }
+        .mi-blue:hover { border-color: #0d6efd30; background: #f5f8ff; }
+        .mi-gray   .icon-wrap { background: #f0f2f5; color: #495057; }
+        .mi-gray:hover { border-color: #adb5bd50; }
+        .mi-teal   .icon-wrap { background: #e0f5f1; color: #0d9488; }
+        .mi-teal:hover { border-color: #0d948830; background: #f0fbf9; }
+        .mi-indigo .icon-wrap { background: #eef0ff; color: #4f46e5; }
+        .mi-indigo:hover { border-color: #4f46e530; background: #f5f5ff; }
+        .mi-red    .icon-wrap { background: #ffe4e4; color: #dc3545; }
+        .mi-red:hover { border-color: #dc354530; background: #fff5f5; }
+        .mi-green  .icon-wrap { background: #e0f7ec; color: #198754; }
+        .mi-green:hover { border-color: #19875430; background: #f0fbf5; }
+        .mi-amber  .icon-wrap { background: #fff8e1; color: #d97706; }
+        .mi-amber:hover { border-color: #d9770630; background: #fffbf0; }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">eActive Resource Hub</a>
-        <div class="ms-auto d-flex align-items-center gap-3">
-            <span class="text-white small" th:text="${user.name}"></span>
-            <form th:action="@{/logout}" method="post" class="mb-0">
-                <button type="submit" class="btn btn-outline-light btn-sm">로그아웃</button>
-            </form>
+<!-- ── 네비게이션 바 ── -->
+<nav class="topnav">
+    <div class="container d-flex align-items-center gap-3">
+        <a th:href="@{/dashboard}" class="brand me-auto">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
+        </a>
+        <div class="user-chip">
+            <div class="avatar" th:text="${#strings.substring(user.name, 0, 1)}">홍</div>
+            <span class="uname" th:text="${user.name}">홍길동</span>
+            <span class="ubadge"
+                  th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-warning text-dark' : 'bg-light text-dark')"
+                  th:text="${user.role.displayName}">직원</span>
         </div>
+        <form th:action="@{/logout}" method="post" class="mb-0">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+            <button type="submit" class="btn btn-logout btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+            </button>
+        </form>
     </div>
 </nav>
 
-<div class="container mt-4">
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h2 class="h5 mb-3">내 정보</h2>
-            <table class="table table-sm mb-0">
-                <tbody>
-                <tr>
-                    <th class="text-muted fw-normal" style="width:120px;">이름</th>
-                    <td th:text="${user.name}"></td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal">이메일</th>
-                    <td th:text="${user.email}"></td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal">권한</th>
-                    <td>
-                        <span th:text="${user.role.displayName}"
-                              th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-primary' : 'bg-secondary')"
-                              class="badge"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal">계정 상태</th>
-                    <td>
+<div class="container py-4">
+
+    <!-- ── 환영 배너 ── -->
+    <div class="welcome-banner">
+        <div class="greeting">안녕하세요, <span th:text="${user.name}">홍길동</span>님 👋</div>
+        <div class="sub">오늘도 eActive Resource Hub에 오신 것을 환영합니다.</div>
+        <div class="meta-chips">
+            <span class="meta-chip" th:if="${user.team != null}">
+                <i class="bi bi-people-fill"></i>
+                <span th:text="${user.team.name}">개발팀</span>
+            </span>
+            <span class="meta-chip" th:if="${user.position != null}">
+                <i class="bi bi-briefcase-fill"></i>
+                <span th:text="${user.position.displayName}">대리</span>
+            </span>
+            <span class="meta-chip" th:if="${profile != null and profile.developerGrade != null and !#strings.isEmpty(profile.developerGrade)}">
+                <i class="bi bi-star-fill"></i>
+                <span th:text="${profile.developerGrade + ' 개발자'}">중급 개발자</span>
+            </span>
+            <span class="meta-chip">
+                <i class="bi bi-envelope-fill"></i>
+                <span th:text="${user.email}">user@eactive.co.kr</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ── 좌: 프로필 카드 ── -->
+        <div class="col-lg-3 col-md-4">
+            <div class="profile-card card p-3">
+                <div class="card-title"><i class="bi bi-person-circle"></i> 내 정보</div>
+
+                <div class="info-row">
+                    <span class="info-label">이름</span>
+                    <span class="info-val" th:text="${user.name}">홍길동</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">이메일</span>
+                    <span class="info-val" th:text="${user.email}">user@eactive.co.kr</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">권한</span>
+                    <span class="info-val">
+                        <span class="badge"
+                              th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                              th:text="${user.role.displayName}">직원</span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">상태</span>
+                    <span class="info-val">
                         <span th:switch="${user.status.name()}">
                             <span th:case="'ACTIVE'" class="badge bg-success">활성</span>
                             <span th:case="'PENDING_ADMIN_APPROVAL'" class="badge bg-warning text-dark">승인 대기</span>
                             <span th:case="'PENDING_EMAIL_VERIFICATION'" class="badge bg-info text-dark">이메일 인증 대기</span>
                             <span th:case="*" class="badge bg-secondary" th:text="${user.status}"></span>
                         </span>
-                    </td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal">직급</th>
-                    <td th:text="${user.position != null ? user.position.displayName : '-'}"></td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal">팀</th>
-                    <td th:text="${user.team != null ? user.team.name : '-'}"></td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal">생년월일</th>
-                    <td th:text="${user.birthDate != null ? #temporals.format(user.birthDate, 'yyyy-MM-dd') : '-'}"></td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal">연락처</th>
-                    <td th:text="${user.phone != null ? user.phone : '-'}"></td>
-                </tr>
-                <tr th:if="${profile != null}">
-                    <th class="text-muted fw-normal">개발자 등급</th>
-                    <td th:text="${profile.developerGrade != null and !#strings.isEmpty(profile.developerGrade)} ? ${profile.developerGrade} : '-'"></td>
-                </tr>
-                </tbody>
-            </table>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">직급</span>
+                    <span class="info-val" th:text="${user.position != null ? user.position.displayName : '-'}">대리</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">팀</span>
+                    <span class="info-val" th:text="${user.team != null ? user.team.name : '-'}">개발팀</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">생년월일</span>
+                    <span class="info-val" th:text="${user.birthDate != null ? #temporals.format(user.birthDate, 'yyyy.MM.dd') : '-'}">2001.09.04</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">연락처</span>
+                    <span class="info-val" th:text="${user.phone != null and !#strings.isEmpty(user.phone) ? user.phone : '-'}">010-0000-0000</span>
+                </div>
+                <div class="info-row" th:if="${profile != null}">
+                    <span class="info-label">개발자 등급</span>
+                    <span class="info-val">
+                        <span th:if="${profile.developerGrade != null and !#strings.isEmpty(profile.developerGrade)}"
+                              th:classappend="'grade-' + ${profile.developerGrade}"
+                              class="grade-badge"
+                              th:text="${profile.developerGrade}">중급</span>
+                        <span th:unless="${profile.developerGrade != null and !#strings.isEmpty(profile.developerGrade)}"
+                              class="text-muted">-</span>
+                    </span>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="d-flex flex-wrap gap-2">
-        <a th:href="@{/my/folder}" class="btn btn-primary">내 폴더</a>
-        <a th:href="@{/search}" class="btn btn-outline-primary">문서 검색</a>
-        <a th:href="@{/my/activity}" class="btn btn-outline-secondary">내 다운로드 이력</a>
-        <a th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}"
-           th:href="@{/sales/members}" class="btn btn-primary">전사 인력 조회</a>
-        <a th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}"
-           th:href="@{/sales/profiles}" class="btn btn-outline-primary">인력 표</a>
-        <a th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}"
-           th:href="@{/sales/career-calculator}" class="btn btn-outline-secondary">경력 계산기</a>
-        <a th:href="@{/shared/folders/public}" class="btn btn-info text-dark">공용 폴더</a>
-        <a th:href="@{/shared/folders}" class="btn btn-outline-info">공유 폴더</a>
-        <a th:if="${user.role.name() == 'ADMIN'}" th:href="@{/admin}" class="btn btn-danger">관리자 패널</a>
-        <a th:if="${user.role.name() == 'ADMIN'}" th:href="@{/admin/statistics}" class="btn btn-outline-success">통계</a>
+        <!-- ── 우: 메뉴 ── -->
+        <div class="col-lg-9 col-md-8">
+
+            <!-- 내 업무 -->
+            <div class="menu-section-label"><i class="bi bi-lightning-charge-fill"></i> 내 업무</div>
+            <div class="menu-grid">
+                <a th:href="@{/my/folder}" class="menu-item mi-blue">
+                    <div class="icon-wrap"><i class="bi bi-folder-fill"></i></div>
+                    <span class="label">내 폴더</span>
+                </a>
+                <a th:href="@{/search}" class="menu-item mi-gray">
+                    <div class="icon-wrap"><i class="bi bi-search"></i></div>
+                    <span class="label">문서 검색</span>
+                </a>
+                <a th:href="@{/my/activity}" class="menu-item mi-gray">
+                    <div class="icon-wrap"><i class="bi bi-clock-history"></i></div>
+                    <span class="label">다운로드 이력</span>
+                </a>
+            </div>
+
+            <!-- 공유 -->
+            <div class="menu-section-label"><i class="bi bi-share-fill"></i> 공유</div>
+            <div class="menu-grid">
+                <a th:href="@{/shared/folders/public}" class="menu-item mi-teal">
+                    <div class="icon-wrap"><i class="bi bi-folder-symlink-fill"></i></div>
+                    <span class="label">공용 폴더</span>
+                </a>
+                <a th:href="@{/shared/folders}" class="menu-item mi-teal">
+                    <div class="icon-wrap"><i class="bi bi-people-fill"></i></div>
+                    <span class="label">공유 폴더</span>
+                </a>
+            </div>
+
+            <!-- 영업·인력 (SALES, ADMIN) -->
+            <div th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}">
+                <div class="menu-section-label"><i class="bi bi-bar-chart-line-fill"></i> 영업·인력</div>
+                <div class="menu-grid">
+                    <a th:href="@{/sales/members}" class="menu-item mi-indigo">
+                        <div class="icon-wrap"><i class="bi bi-person-lines-fill"></i></div>
+                        <span class="label">전사 인력 조회</span>
+                    </a>
+                    <a th:href="@{/sales/profiles}" class="menu-item mi-indigo">
+                        <div class="icon-wrap"><i class="bi bi-table"></i></div>
+                        <span class="label">인력 표</span>
+                    </a>
+                    <a th:href="@{/sales/career-calculator}" class="menu-item mi-amber">
+                        <div class="icon-wrap"><i class="bi bi-calculator-fill"></i></div>
+                        <span class="label">경력 계산기</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 관리자 (ADMIN) -->
+            <div th:if="${user.role.name() == 'ADMIN'}">
+                <div class="menu-section-label"><i class="bi bi-shield-fill"></i> 관리자</div>
+                <div class="menu-grid">
+                    <a th:href="@{/admin}" class="menu-item mi-red">
+                        <div class="icon-wrap"><i class="bi bi-gear-fill"></i></div>
+                        <span class="label">관리자 패널</span>
+                    </a>
+                    <a th:href="@{/admin/statistics}" class="menu-item mi-green">
+                        <div class="icon-wrap"><i class="bi bi-graph-up-arrow"></i></div>
+                        <span class="label">통계</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 
