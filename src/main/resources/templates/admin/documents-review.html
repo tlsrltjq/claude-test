@@ -5,57 +5,185 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문서 검토 목록 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+
+        .topnav {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+            padding: .6rem 1rem;
+        }
+        .topnav .navbar-brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: -.2px;
+        }
+        .btn-nav {
+            border-color: rgba(255,255,255,.35);
+            color: #fff;
+            font-size: .8rem;
+        }
+        .btn-nav:hover {
+            background: rgba(255,255,255,.12);
+            border-color: rgba(255,255,255,.6);
+            color: #fff;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+            border-radius: 14px;
+            padding: 1.4rem 1.75rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+        .page-header h4 { font-weight: 700; margin-bottom: .2rem; }
+        .page-header p { margin: 0; opacity: .75; font-size: .9rem; }
+
+        .table-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+        .table thead th {
+            background: #1e3a5f;
+            color: #fff;
+            font-size: .76rem;
+            font-weight: 600;
+            letter-spacing: .4px;
+            border: none;
+            padding: .65rem .8rem;
+        }
+        .table tbody tr:hover { background: #f5f7fa; }
+        .table tbody td {
+            font-size: .83rem;
+            vertical-align: middle;
+            border-color: #f0f2f5;
+            padding: .6rem .8rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3.5rem 1rem;
+            color: #8898aa;
+        }
+        .empty-state .bi { font-size: 2.8rem; opacity: .45; display: block; margin-bottom: .75rem; }
+        .empty-state p { margin: 0; font-size: .9rem; }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-dark">
+
+<!-- topnav -->
+<nav class="topnav navbar navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" th:href="@{/admin}">eActive Hub — 관리자</a>
-        <div class="ms-auto">
-            <a th:href="@{/admin}" class="btn btn-outline-light btn-sm">← 대시보드</a>
+        <a class="navbar-brand" th:href="@{/admin}">
+            <i class="bi bi-shield-fill me-1"></i>eActive Hub
+            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
+        </a>
+        <div class="ms-auto d-flex gap-2">
+            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
+                <i class="bi bi-speedometer2 me-1"></i>대시보드
+            </a>
+            <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
+                <i class="bi bi-person me-1"></i>내 화면
+            </a>
+            <form th:action="@{/logout}" method="post" class="mb-0">
+                <input type="hidden" name="_csrf" th:value="${_csrf != null ? _csrf.token : ''}">
+                <button type="submit" class="btn btn-nav btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+                </button>
+            </form>
         </div>
     </div>
 </nav>
 
 <div class="container mt-4">
-    <h2 class="mb-1">문서 검토 목록</h2>
-    <p class="text-muted mb-4">검토 대기 중인 문서 버전 목록입니다.</p>
 
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+    <!-- 페이지 헤더 -->
+    <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h4><i class="bi bi-file-earmark-text me-2"></i>문서 검토 목록</h4>
+            <p>검토 대기 중인 문서 버전 목록입니다.</p>
+        </div>
+        <div>
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2" style="border-radius:20px; font-size:.85rem !important;">
+                <i class="bi bi-hourglass-split me-1"></i>
+                검토 대기 <span th:text="${#lists.size(pendingVersions)}">0</span>건
+            </span>
+        </div>
+    </div>
 
-    <div th:if="${#lists.isEmpty(pendingVersions)}" class="alert alert-info">검토 대기 중인 문서가 없습니다.</div>
+    <!-- 알림 -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-1"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-1"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 
-    <table th:if="${!#lists.isEmpty(pendingVersions)}" class="table table-bordered table-hover">
-        <thead class="table-dark">
-        <tr>
-            <th>직원</th>
-            <th>팀</th>
-            <th>종류</th>
-            <th>제목</th>
-            <th>원본 파일명</th>
-            <th>버전</th>
-            <th>업로드일</th>
-            <th>상태</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="v : ${pendingVersions}">
-            <td th:text="${v.document.folder.owner.name}"></td>
-            <td th:text="${v.document.folder.owner.team != null ? v.document.folder.owner.team.name : '-'}"></td>
-            <td th:text="${v.document.documentType.displayName}"></td>
-            <td th:text="${v.document.title}"></td>
-            <td th:text="${v.originalFileName}" class="small text-truncate" style="max-width:150px;"></td>
-            <td th:text="'v' + ${v.versionNo}"></td>
-            <td th:text="${#temporals.format(v.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-            <td><span class="badge bg-warning text-dark">검토 대기</span></td>
-            <td>
-                <a th:href="@{/admin/documents/review/{id}(id=${v.id})}"
-                   class="btn btn-outline-primary btn-sm">검토</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <!-- 빈 상태 -->
+    <div th:if="${#lists.isEmpty(pendingVersions)}" class="table-card">
+        <div class="empty-state">
+            <i class="bi bi-file-earmark-check"></i>
+            <p>검토 대기 중인 문서가 없습니다.</p>
+        </div>
+    </div>
+
+    <!-- 테이블 -->
+    <div th:if="${!#lists.isEmpty(pendingVersions)}" class="table-card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>직원</th>
+                    <th>팀</th>
+                    <th>종류</th>
+                    <th>제목</th>
+                    <th>원본 파일명</th>
+                    <th>버전</th>
+                    <th>업로드일</th>
+                    <th>상태</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="v : ${pendingVersions}">
+                    <td class="fw-semibold" th:text="${v.document.folder.owner.name}"></td>
+                    <td th:text="${v.document.folder.owner.team != null ? v.document.folder.owner.team.name : '-'}"></td>
+                    <td th:text="${v.document.documentType.displayName}"></td>
+                    <td th:text="${v.document.title}"></td>
+                    <td class="text-truncate" style="max-width:150px;" th:text="${v.originalFileName}"></td>
+                    <td>
+                        <span class="badge bg-secondary rounded-pill" th:text="'v' + ${v.versionNo}"></span>
+                    </td>
+                    <td class="text-muted text-nowrap"
+                        th:text="${#temporals.format(v.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td>
+                        <span class="badge rounded-pill px-2 py-1"
+                              style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.72rem;">
+                            검토 대기
+                        </span>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/documents/review/{id}(id=${v.id})}"
+                           class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil-square me-1"></i>검토
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

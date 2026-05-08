@@ -5,75 +5,236 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>다운로드 통계 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+
+        .topnav {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+            padding: .6rem 1rem;
+        }
+        .topnav .navbar-brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: -.2px;
+        }
+        .btn-nav {
+            border-color: rgba(255,255,255,.35);
+            color: #fff;
+            font-size: .8rem;
+        }
+        .btn-nav:hover {
+            background: rgba(255,255,255,.12);
+            border-color: rgba(255,255,255,.6);
+            color: #fff;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+            border-radius: 14px;
+            padding: 1.4rem 1.75rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+        .page-header h4 { font-weight: 700; margin-bottom: .2rem; }
+        .page-header p  { margin: 0; opacity: .75; font-size: .9rem; }
+
+        /* 요약 카드 */
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07);
+            padding: 1.25rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+        .stat-icon.blue   { background: #dbeafe; color: #1d4ed8; }
+        .stat-icon.green  { background: #dcfce7; color: #15803d; }
+        .stat-icon.sky    { background: #e0f2fe; color: #0369a1; }
+        .stat-icon.purple { background: #ede9fe; color: #6d28d9; }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: .15rem;
+        }
+        .stat-label { font-size: .78rem; color: #6b7280; }
+
+        /* 테이블 카드 */
+        .table-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+        .table-card .card-header-custom {
+            padding: .9rem 1rem;
+            font-weight: 700;
+            font-size: .9rem;
+            border-bottom: 1px solid #f0f2f5;
+            background: #fff;
+        }
+        .table thead th {
+            background: #1e3a5f;
+            color: #fff;
+            font-size: .76rem;
+            font-weight: 600;
+            letter-spacing: .4px;
+            border: none;
+            padding: .65rem .8rem;
+        }
+        .table tbody tr:hover { background: #f5f7fa; }
+        .table tbody td {
+            font-size: .82rem;
+            vertical-align: middle;
+            border-color: #f0f2f5;
+            padding: .55rem .8rem;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: .72rem;
+            font-weight: 700;
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .rank-badge.top1 { background: #fef08a; color: #713f12; }
+        .rank-badge.top2 { background: #e2e8f0; color: #334155; }
+        .rank-badge.top3 { background: #fed7aa; color: #7c2d12; }
+
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #8898aa;
+        }
+        .empty-state .bi { font-size: 2rem; opacity: .4; display: block; margin-bottom: .5rem; }
+        .empty-state p { margin: 0; font-size: .88rem; }
+
+        .scroll-body { max-height: 480px; overflow-y: auto; }
+
+        .font-mono { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: .78rem; }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+<!-- topnav -->
+<nav class="topnav navbar navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" th:href="@{/admin}">eActive Hub — 관리자</a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/documents/review}" class="btn btn-outline-info btn-sm">문서 검토</a>
-            <a th:href="@{/admin/teams}" class="btn btn-outline-light btn-sm">팀 관리</a>
-            <a th:href="@{/admin/employees}" class="btn btn-outline-light btn-sm">직원 목록</a>
-            <a th:href="@{/admin/statistics}" class="btn btn-outline-success btn-sm">통계</a>
-            <a th:href="@{/dashboard}" class="btn btn-outline-secondary btn-sm">내 화면</a>
+        <a class="navbar-brand" th:href="@{/admin}">
+            <i class="bi bi-shield-fill me-1"></i>eActive Hub
+            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
+        </a>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+            <a th:href="@{/admin/documents/review}" class="btn btn-nav btn-sm">
+                <i class="bi bi-file-earmark-text me-1"></i>문서검토
+            </a>
+            <a th:href="@{/admin/teams}" class="btn btn-nav btn-sm">
+                <i class="bi bi-people me-1"></i>팀관리
+            </a>
+            <a th:href="@{/admin/employees}" class="btn btn-nav btn-sm">
+                <i class="bi bi-person-lines-fill me-1"></i>직원목록
+            </a>
+            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
+                <i class="bi bi-speedometer2 me-1"></i>대시보드
+            </a>
+            <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
+                <i class="bi bi-person me-1"></i>내 화면
+            </a>
             <form th:action="@{/logout}" method="post" class="mb-0">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                <button type="submit" class="btn btn-outline-danger btn-sm">로그아웃</button>
+                <button type="submit" class="btn btn-nav btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+                </button>
             </form>
         </div>
     </div>
 </nav>
 
 <div class="container mt-4">
-    <h2 class="mb-4">다운로드 통계</h2>
 
-    <!-- 요약 카드 -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card text-center text-bg-primary">
-                <div class="card-body">
-                    <h6 class="card-title">전체 다운로드</h6>
-                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.totalCount}">0</p>
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h4><i class="bi bi-bar-chart-line me-2"></i>다운로드 통계</h4>
+        <p>문서 다운로드 현황 및 TOP 문서·최근 이력을 확인합니다.</p>
+    </div>
+
+    <!-- 요약 카드 4개 -->
+    <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+        <div class="col">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="bi bi-download"></i></div>
+                <div>
+                    <div class="stat-value text-primary" th:text="${downloadStats.totalCount}">0</div>
+                    <div class="stat-label">전체 다운로드</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center text-bg-success">
-                <div class="card-body">
-                    <h6 class="card-title">오늘</h6>
-                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.todayCount}">0</p>
+        <div class="col">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="bi bi-calendar-check"></i></div>
+                <div>
+                    <div class="stat-value text-success" th:text="${downloadStats.todayCount}">0</div>
+                    <div class="stat-label">오늘</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center text-bg-info">
-                <div class="card-body">
-                    <h6 class="card-title">최근 7일</h6>
-                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.weekCount}">0</p>
+        <div class="col">
+            <div class="stat-card">
+                <div class="stat-icon sky"><i class="bi bi-calendar-week"></i></div>
+                <div>
+                    <div class="stat-value" style="color:#0369a1;" th:text="${downloadStats.weekCount}">0</div>
+                    <div class="stat-label">최근 7일</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center text-bg-warning">
-                <div class="card-body">
-                    <h6 class="card-title">이번 달</h6>
-                    <p class="display-5 fw-bold mb-0" th:text="${downloadStats.monthCount}">0</p>
+        <div class="col">
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="bi bi-calendar-month"></i></div>
+                <div>
+                    <div class="stat-value" style="color:#6d28d9;" th:text="${downloadStats.monthCount}">0</div>
+                    <div class="stat-label">이번 달</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 2열 레이아웃 -->
     <div class="row g-4">
-        <!-- TOP 10 문서 -->
+
+        <!-- 왼쪽: TOP 10 -->
         <div class="col-lg-5">
-            <div class="card h-100">
-                <div class="card-header fw-bold">TOP 10 다운로드 문서</div>
-                <div class="card-body p-0">
-                    <div th:if="${#lists.isEmpty(topDocuments)}" class="p-3 text-muted">데이터가 없습니다.</div>
-                    <table th:if="${!#lists.isEmpty(topDocuments)}" class="table table-sm table-hover mb-0">
-                        <thead class="table-light">
+            <div class="table-card h-100">
+                <div class="card-header-custom d-flex align-items-center gap-2">
+                    <i class="bi bi-trophy text-warning"></i>
+                    TOP 10 다운로드 문서
+                </div>
+                <div th:if="${#lists.isEmpty(topDocuments)}" class="empty-state">
+                    <i class="bi bi-file-earmark-x"></i>
+                    <p>데이터가 없습니다.</p>
+                </div>
+                <div th:if="${!#lists.isEmpty(topDocuments)}" class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
                         <tr>
-                            <th class="text-center" style="width:36px;">#</th>
+                            <th class="text-center" style="width:40px;">#</th>
                             <th>문서</th>
                             <th>소유자</th>
                             <th class="text-end">횟수</th>
@@ -81,16 +242,23 @@
                         </thead>
                         <tbody>
                         <tr th:each="doc, stat : ${topDocuments}">
-                            <td class="text-center text-muted small" th:text="${stat.index + 1}"></td>
-                            <td>
-                                <div class="fw-semibold text-truncate" style="max-width:160px;" th:text="${doc.documentTitle}"></div>
-                                <small class="text-muted text-truncate d-block" style="max-width:160px;" th:text="${doc.originalFileName}"></small>
+                            <td class="text-center">
+                                <span class="rank-badge"
+                                      th:classappend="${stat.index == 0 ? ' top1' : (stat.index == 1 ? ' top2' : (stat.index == 2 ? ' top3' : ''))}"
+                                      th:text="${stat.index + 1}"></span>
                             </td>
                             <td>
-                                <div class="small" th:text="${doc.ownerName}"></div>
+                                <div class="fw-semibold text-truncate" style="max-width:160px;"
+                                     th:text="${doc.documentTitle}"></div>
+                                <small class="text-muted text-truncate d-block" style="max-width:160px;"
+                                       th:text="${doc.originalFileName}"></small>
+                            </td>
+                            <td>
+                                <div class="small fw-medium" th:text="${doc.ownerName}"></div>
                                 <small class="text-muted" th:text="${doc.teamName}"></small>
                             </td>
-                            <td class="text-end fw-bold" th:text="${doc.downloadCount}"></td>
+                            <td class="text-end fw-bold" style="color:#1d4ed8;"
+                                th:text="${doc.downloadCount}"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -98,38 +266,48 @@
             </div>
         </div>
 
-        <!-- 최근 다운로드 이력 -->
+        <!-- 오른쪽: 최근 다운로드 이력 -->
         <div class="col-lg-7">
-            <div class="card h-100">
-                <div class="card-header fw-bold">최근 다운로드 이력 (최대 30건)</div>
-                <div class="card-body p-0" style="max-height:520px;overflow-y:auto;">
-                    <div th:if="${#lists.isEmpty(recentDownloads)}" class="p-3 text-muted">다운로드 이력이 없습니다.</div>
-                    <table th:if="${!#lists.isEmpty(recentDownloads)}" class="table table-sm table-hover mb-0">
-                        <thead class="table-light sticky-top">
+            <div class="table-card h-100">
+                <div class="card-header-custom d-flex align-items-center gap-2">
+                    <i class="bi bi-clock-history text-secondary"></i>
+                    최근 다운로드 이력
+                    <span class="badge bg-light text-secondary border ms-1" style="font-size:.7rem;">최대 30건</span>
+                </div>
+                <div th:if="${#lists.isEmpty(recentDownloads)}" class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p>다운로드 이력이 없습니다.</p>
+                </div>
+                <div th:if="${!#lists.isEmpty(recentDownloads)}" class="scroll-body table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="sticky-top" style="top:0;">
                         <tr>
-                            <th>일시</th>
+                            <th class="text-nowrap">일시</th>
                             <th>다운로더</th>
-                            <th>대상 버전 ID</th>
+                            <th>버전 ID</th>
                             <th>사유</th>
                             <th>IP</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="log : ${recentDownloads}">
-                            <td class="small text-nowrap"
+                            <td class="text-nowrap text-muted"
                                 th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
-                            <td class="small" th:text="${log.user.name}"></td>
-                            <td class="small text-muted" th:text="${log.targetId}"></td>
-                            <td class="small text-truncate" style="max-width:160px;"
+                            <td class="fw-medium" th:text="${log.user.name}"></td>
+                            <td class="text-muted small" th:text="${log.targetId}"></td>
+                            <td class="text-truncate" style="max-width:160px;"
                                 th:text="${log.reason}"></td>
-                            <td class="small text-muted" th:text="${log.ipAddress}"></td>
+                            <td class="font-mono text-muted" th:text="${log.ipAddress}"></td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
