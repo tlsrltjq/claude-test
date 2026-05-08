@@ -13,7 +13,8 @@ echo
 check "FolderAccessService"           bash -c "grep -rl 'class[[:space:]]\\+FolderAccessService' '$SRC' | grep -q ."
 check "/admin/users/{id}/role route"  bash -c "grep -rE '/admin/users/.+/role' '$SRC' | grep -q ."
 check "/admin/users/{id}/permissions" bash -c "grep -rE '/admin/users/.+/permissions' '$SRC' | grep -q ."
-check "/team/members route"           bash -c "grep -rE '/team/members' '$SRC' | grep -q ."
+# /team/members는 TEAM_LEADER Deprecated로 미구현 — /sales/members로 대체됨
+check "/sales/members route"          bash -c "grep -rE '/sales/members' '$SRC' | grep -q ."
 check "/shared/folders route"         bash -c "grep -rE '/shared/folders' '$SRC' | grep -q ."
 
 ACT="$SRC/audit/entity/AuditActionType.java"

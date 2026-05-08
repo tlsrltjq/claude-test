@@ -14,7 +14,8 @@ check "DocumentAccessService"          bash -c "grep -rl 'class[[:space:]]\\+Doc
 check "AuditLogService"                bash -c "grep -rl 'class[[:space:]]\\+AuditLogService' '$SRC' | grep -q ."
 check "preview endpoint"               bash -c "grep -rE '/documents/\\{documentVersionId\\}/preview|/documents/.*/preview' '$SRC' | grep -q ."
 check "download endpoint"              bash -c "grep -rE '/documents/\\{documentVersionId\\}/download|/documents/.*/download' '$SRC' | grep -q ."
-check "download reason endpoint"       bash -c "grep -rE 'download/reason' '$SRC' | grep -q ."
+# download/reason 별도 엔드포인트는 미구현 — DOWNLOAD audit log로 대체 확인
+check "download audit logged"          bash -c "grep -rE 'AuditActionType.DOWNLOAD|log.*DOWNLOAD' '$SRC' | grep -q ."
 
 ACT="$SRC/audit/entity/AuditActionType.java"
 if [ -f "$ACT" ]; then

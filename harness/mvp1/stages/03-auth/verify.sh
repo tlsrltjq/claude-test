@@ -20,7 +20,8 @@ check "Signup controller"       bash -c "grep -rl '/signup' '$SRC' | grep -q ."
 check "Login controller or form-login" bash -c "grep -rE '/login|formLogin' '$SRC' >/dev/null"
 
 # Templates
-for v in login signup signup-verify signup-pending dashboard; do
+# signup-pending.html은 M3-01에서 승인 흐름 제거로 삭제됨 — 검사 제외
+for v in login signup signup-verify dashboard; do
   check "template: $v.html" bash -c "test -f '$RES/templates/$v.html' || test -f '$RES/templates/$v/index.html'"
 done
 
