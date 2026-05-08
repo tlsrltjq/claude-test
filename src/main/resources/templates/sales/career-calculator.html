@@ -35,7 +35,7 @@
 
 <div class="container mt-4" style="max-width:900px;">
     <h2 class="mb-1 h5">기술등급 산출</h2>
-    <p class="text-muted small mb-3">학위 또는 자격증 기준으로 경력을 계산해 기술등급을 산출합니다.</p>
+    <p class="text-muted small mb-3">학위 기준과 정보처리기사 보유 여부로 경력을 계산해 기술등급을 산출합니다.</p>
 
     <!-- 플래시 메시지 -->
     <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
@@ -113,20 +113,20 @@
                                th:value="${gradDate}" required>
                         <div class="form-text">경력 기산점</div>
                     </div>
-                    <!-- 자격증 -->
+                    <!-- 정보처리기사 -->
                     <div class="col-sm-3">
-                        <label class="form-label small fw-semibold">자격증</label>
-                        <select name="certType" id="certTypeSelect" class="form-select form-select-sm"
-                                onchange="toggleCertDate()">
-                            <option th:each="c : ${certTypes}"
-                                    th:value="${c.name()}"
-                                    th:text="${c.displayName}"
-                                    th:selected="${certType != null and certType == c.name()}"></option>
-                        </select>
+                        <label class="form-label small fw-semibold d-block">정보처리기사</label>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="engineerCertCheck"
+                                   onchange="toggleCertDate()">
+                            <label class="form-check-label small" for="engineerCertCheck">보유</label>
+                        </div>
+                        <input type="hidden" name="certType" id="certTypeHidden"
+                               th:value="${certType != null ? certType : 'NONE'}">
                     </div>
-                    <!-- 자격증 취득일자 -->
-                    <div class="col-sm-3" id="certDateWrap">
-                        <label class="form-label small fw-semibold">자격증 취득일자</label>
+                    <!-- 취득일자 (정보처리기사 선택 시) -->
+                    <div class="col-sm-3" id="certDateWrap" style="display:none">
+                        <label class="form-label small fw-semibold">취득일자</label>
                         <input type="date" name="certDate" id="certDateInput" class="form-control form-control-sm"
                                th:value="${certDate}">
                         <div class="form-text">경력 기산점</div>
@@ -423,14 +423,15 @@ function filterMembers(q) {
     });
 }
 
-// ── 자격증 취득일 토글 ─────────────────────────────────────────────────────────
+// ── 정보처리기사 취득일 토글 ────────────────────────────────────────────────────
 function toggleCertDate() {
-    const wrap = document.getElementById('certDateWrap');
-    const input = document.getElementById('certDateInput');
-    const val = document.getElementById('certTypeSelect').value;
-    const show = val && val !== 'NONE';
-    wrap.style.display = show ? '' : 'none';
-    if (!show) input.value = '';
+    const checked = document.getElementById('engineerCertCheck').checked;
+    const wrap    = document.getElementById('certDateWrap');
+    const input   = document.getElementById('certDateInput');
+    const hidden  = document.getElementById('certTypeHidden');
+    wrap.style.display = checked ? '' : 'none';
+    hidden.value = checked ? 'ENGINEER' : 'NONE';
+    if (!checked) input.value = '';
 }
 
 // ── 경력 기간 행 관리 ──────────────────────────────────────────────────────────
@@ -518,6 +519,11 @@ function refreshRows() {
 document.addEventListener('DOMContentLoaded', () => {
     const selected = document.querySelector('.member-item.selected');
     if (selected) selected.scrollIntoView({ block: 'nearest' });
+    // 이전 폼 제출값이 ENGINEER였으면 체크박스 복원
+    const hidden = document.getElementById('certTypeHidden');
+    if (hidden && hidden.value === 'ENGINEER') {
+        document.getElementById('engineerCertCheck').checked = true;
+    }
     toggleCertDate();
     refreshRows();
 });
