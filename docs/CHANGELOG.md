@@ -1,0 +1,119 @@
+# CHANGELOG
+
+> 구현 완료된 변경 사항을 역순(최신 → 오래된 순)으로 기록.
+
+---
+
+## [Post-MVP3] 2026-05-08
+
+### 기능 추가
+
+#### 설정 페이지 (`/settings`)
+- 3탭 구성: 계정 정보 / 개인정보 수정 / 비밀번호 변경
+- 수정 가능 항목: 연락처(`phone`), 생년월일(`birthDate`), 직급(`position`)
+- 현재 비밀번호 확인 후 새 비밀번호 변경 (8자 이상 검증)
+- 대시보드 "내 업무" 섹션에 설정 메뉴 버튼 추가
+- 구현 파일: `SettingsController`, `SettingsService`, `templates/settings.html`, `User.updateProfile()`
+
+#### 정보처리기사 자격증 종류 단일화
+- 업로드 폼(`my/upload.html`): 자격증 종류 select 제거 → `certTypeMeta` hidden input ENGINEER 고정, 취득일 전체 너비
+- 경력계산기(`sales/career-calculator.html`): 자격증 종류 select 제거 → "정보처리기사" 체크박스 단일 항목
+- 등급 기준 참고표: 산업기사 열 삭제, 열 명칭 "기사" → "정보처리기사"
+- autofill 자동입력도 체크박스 방식으로 변경
+
+### 인프라 확인
+- Cloudflare R2 외부 스토리지 활성 확인 (`RESOURCEHUB_STORAGE_TYPE=s3` 컨테이너 env 주입 정상)
+
+---
+
+## [Post-MVP3] 2026-05-07 — UI 전면 개선
+
+### 25개 템플릿 전면 리디자인
+
+**디자인 시스템**
+- 사용자 페이지: 상단바 `linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%)` 블루
+- 관리자 페이지: 상단바 `linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%)` 네이비 + ADMIN 배지
+- 테이블 헤더: `#1e3a5f` / 카드: `border-radius:12px`, `box-shadow:0 2px 10px rgba(0,0,0,.07)`
+
+**관리자 패널 (6개)**
+- `admin/dashboard.html` — 통계 카드 + 빠른 메뉴 그리드
+- `admin/employees.html` — 검색·필터·정렬, 인라인 뱃지
+- `admin/teams.html` — 팀별 인원 표시
+- `admin/documents-review.html` — 검토 대기 문서 목록
+- `admin/documents-expiry.html` — 만료 임박 문서 목록
+- `admin/statistics.html` — 시각화 카드
+
+**기타 관리자 서브 페이지 (8개)**
+- `admin/team-edit.html`, `admin/user-role.html`, `admin/user-permissions.html`
+- `admin/resume-template.html`, `admin/document-review-detail.html`
+- `admin/employee-documents.html`, `admin/employee-document-detail.html`, `admin/employee-detail.html`
+
+**사용자·영업·팀 페이지 (5개)**
+- `my/document-detail.html`, `sales/member-documents.html`, `sales/employee-documents.html`
+- `team/members.html`, `team/member-documents.html`
+
+**인증·에러 페이지 (6개)**
+- `login-forgot.html`, `login-forgot-verify.html`, `signup-verify.html`
+- `error/403.html`, `error/404.html`, `error/500.html`
+
+**주요 기능 페이지 (별도 커밋)**
+- `dashboard.html` — 환영 배너, 프로필 카드, 메뉴 그리드
+- `login.html` — 로그인 UI
+- `signup.html` — 전화번호·생년월일 자동 포맷
+- `sales/members.html`, `sales/profiles.html` — 인력 목록·인력표
+- `sales/career-calculator.html` — 경력 계산기 (자동채우기 포함)
+- `my/folder.html`, `shared/folders.html`, `shared/folder-documents.html` — 폴더류
+- `search.html`, `my/activity.html` — 검색·이력
+
+---
+
+## [MVP3] 2026-05-06 이전
+
+### M3-01 ~ M3-14 전 단계 구현 완료
+
+| 단계 | 내용 |
+|------|------|
+| M3-01 | Position 직급 네이밍 (상무 추가, 9개 직급), UserRole 한글 displayName |
+| M3-02 | /login 이메일 기억하기 체크박스 (cookie 30일) |
+| M3-03 | /login/forgot 비밀번호 찾기 (이메일 → 코드 → 임시 비밀번호) |
+| M3-04 | /signup/resend 5분 타이머, 이메일 인증 유효시간 5분 |
+| M3-05 | Dashboard 내 정보 보강 (생년월일, 연락처, 개발자 등급) |
+| M3-06 | DocumentType 정비: EMPLOYMENT_CERTIFICATE @Deprecated, PROFILE_PHOTO 추가, LICENSE → 정보처리기사 |
+| M3-07 | 태그 기능 전면 제거 |
+| M3-08 | /search 통합 검색 (진입 시 전체 문서 표시 + 필터) |
+| M3-09 | /shared/folders/public 전 사원 공용 폴더 |
+| M3-10 | /sales/members 정렬 (직급/팀/역할) |
+| M3-11 | /sales/profiles 컬럼 정리, 등급 위젯, 경력 표시 3가지, 사용자 프리셋, 체크 선택 엑셀 |
+| M3-12 | /sales/career-calculator 검색 동작 복구 |
+| M3-13 | 관리자 직원 목록 검색·필터, 계정 활성/비활성 토글 |
+| M3-14 | 문서 메타 필드 (certType, issuedDate, degreeType), 경력계산기 자동채우기 |
+
+### 보안 개선 (모두 security-lint.sh 15/15 PASS)
+
+| 항목 | 내용 |
+|------|------|
+| [13] HTTP 보안 헤더 | SecurityConfig에 X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP 추가 |
+| [14] 비밀번호 재설정 코드 로그 제거 | PasswordResetService에서 `code={}` 로그 패턴 제거 |
+| [15] 환경변수 기본값 제거 | application.yml에서 `:Admin1234!`, `:resourcehub` 등 하드코딩 제거 |
+
+### 스토리지
+
+- Cloudflare R2 (S3 호환): `RESOURCEHUB_STORAGE_TYPE=s3`, AWS SDK v2 기반 `S3FileStorage`
+- 로컬 폴백: `LocalFileStorage` (`RESOURCEHUB_STORAGE_TYPE=local` 또는 미설정 시)
+
+---
+
+## [MVP2] ~2026-05-05
+
+- SALES 역할, /sales/** 라우팅
+- 인력표, 경력 계산기, 엑셀 내보내기
+- 공유 폴더, 폴더 권한, 문서 삭제(관리자)
+- Flyway V100~V207 마이그레이션
+
+## [MVP1] ~2026-05-01
+
+- 회원가입/이메일 인증/로그인
+- 내 폴더, 문서 업로드/다운로드/미리보기/썸네일
+- 팀 관리, 권한 관리
+- 감사 로그
+- Flyway V1~V6 마이그레이션

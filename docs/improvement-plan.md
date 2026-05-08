@@ -1,14 +1,35 @@
 # 최종 품질 개선 계획 (M3-14)
 
 > 작성일: 2026-05-07  
+> 최종 업데이트: 2026-05-08  
 > 검증 스크립트: `bash harness/mvp3/stages/M3-14/verify.sh`  
-> 린터: `bash scripts/security-lint.sh` → 0 FAIL 목표
+> 린터: `bash scripts/security-lint.sh` → **0 FAIL 달성 (15/15 PASS)**
+
+---
+
+## 완료 현황 요약
+
+| 항목 | 상태 |
+|------|------|
+| 보안 1-1 HTTP 헤더 | ✅ 완료 |
+| 보안 1-2 비밀번호 재설정 코드 로그 제거 | ✅ 완료 |
+| 보안 1-3 환경변수 하드코딩 기본값 제거 | ✅ 완료 |
+| 성능 2-1 AdminController N+1 제거 | 🔲 미완료 |
+| 성능 2-2 읽기 전용 트랜잭션 | 🔲 미완료 |
+| 성능 2-3 직원 목록 페이지네이션 | 🔲 미완료 |
+| 성능 2-4 썸네일 @Async | 🔲 미완료 |
+| UX 3-1 폼 제출 스피너 | ✅ 완료 (업로드 폼) |
+| UX 3-2 네비바 active 상태 | 🔲 미완료 |
+| UX 3-3 빈 목록 Empty State | ✅ 완료 (UI 전면 개선 시 적용) |
+| UX 3-4 커스텀 에러 페이지 | ✅ 완료 (403/404/500) |
+| 코드품질 4-1 GlobalExceptionHandler 확장 | 🔲 미완료 |
+| 코드품질 4-2 FileUtils 헬퍼 | 🔲 미완료 |
 
 ---
 
 ## 1. 보안 (Security)
 
-### 1-1. HTTP 보안 헤더 추가
+### 1-1. HTTP 보안 헤더 추가 ✅ 완료
 **파일**: `src/main/java/com/eactive/resourcehub/common/security/SecurityConfig.java`
 
 `securityFilterChain()` 안에 `.headers()` 블록 추가:
@@ -31,7 +52,7 @@
 - HSTS는 `application.yml secure: true` 전환 시 함께 추가 (현재 로컬 개발 환경)
 - 완료 조건: `security-lint.sh [13]` WARN → OK
 
-### 1-2. 비밀번호 재설정 코드 로그 제거
+### 1-2. 비밀번호 재설정 코드 로그 제거 ✅ 완료
 **파일**: `src/main/java/com/eactive/resourcehub/user/service/PasswordResetService.java`
 
 ```java
@@ -44,7 +65,7 @@ log.info("[PASSWORD_RESET] 코드 발급 — email={}", email);
 
 - 완료 조건: `security-lint.sh [14]` FAIL → OK
 
-### 1-3. 환경변수 하드코딩 기본값 제거
+### 1-3. 환경변수 하드코딩 기본값 제거 ✅ 완료
 **파일**: `src/main/resources/application.yml`
 
 ```yaml
@@ -196,7 +217,7 @@ document.getElementById('submitForm').addEventListener('submit', function() {
 </div>
 ```
 
-### 3-4. 커스텀 에러 페이지
+### 3-4. 커스텀 에러 페이지 ✅ 완료
 Spring Boot Thymeleaf 자동 인식 경로: `templates/error/{status}.html`
 
 | 파일 | 내용 |

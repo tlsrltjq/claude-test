@@ -30,11 +30,19 @@ deprecated: EMPLOYMENT_CERTIFICATE
 
 허용 확장자 (업로드 정책): pdf, jpg, jpeg, png, docx, hwp, hwpx, **ppt, pptx**
 
+### 4-1. LICENSE 메타 정책 (Post-MVP3 확정)
+
+- `certTypeMeta` 값: **`ENGINEER` 고정** — 산업기사(`INDUSTRIAL_ENGINEER`) 선택지 제거
+- 업로드 폼(`/my/folder/documents`): 자격증 종류 select 제거, hidden input으로 ENGINEER 고정
+- 경력계산기(`/sales/career-calculator`): 자격증 종류 select 제거, 체크박스 "정보처리기사" 단일 항목으로 교체
+- 등급 기준 참고표: 산업기사 열 삭제, 기사 → 정보처리기사로 명칭 변경
+
 ## 5. 새 화면 / 라우트
 
 - `/login/forgot`, `/login/forgot/verify` — 비밀번호 찾기
 - `/search` — 본인 권한 모든 문서 + 필터
 - `/shared/folders/public` — 전 사원 공용 폴더
+- `/settings` — 계정 설정 (Post-MVP3 추가, 아래 §9 참조)
 
 ## 6. 새 데이터 모델
 
@@ -47,6 +55,46 @@ deprecated: EMPLOYMENT_CERTIFICATE
 - mvp2 08-excel-export → **mvp3 M3-11에 흡수** (체크 선택 + 엑셀)
 - mvp2 09-career-save → **보류** (다음 라운드)
 - mvp2 10-bundle-template → **보류**
+
+## 9. 계정 설정 페이지 (Post-MVP3)
+
+> 구현 완료: 2026-05-08
+
+### 라우트
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| `GET`  | `/settings?tab=info`     | 계정 정보 (읽기 전용) |
+| `GET`  | `/settings?tab=profile`  | 개인정보 수정 폼 |
+| `GET`  | `/settings?tab=password` | 비밀번호 변경 폼 |
+| `POST` | `/settings/profile`      | 개인정보 저장 |
+| `POST` | `/settings/password`     | 비밀번호 변경 |
+
+### 탭별 기능
+
+**계정 정보 탭** (읽기 전용)
+- 이름, 이메일, 아이디, 권한, 상태, 팀, 직급, 연락처, 생년월일
+
+**개인정보 수정 탭** (수정 가능 항목)
+- 연락처(`phone`), 생년월일(`birthDate`), 직급(`position`)
+- 이름·이메일·팀은 관리자 변경 전용 (화면에서 수정 불가)
+
+**비밀번호 변경 탭**
+- 현재 비밀번호 확인 후 새 비밀번호 설정
+- 8자 이상 필수, 새 비밀번호 확인 불일치 시 서버·클라이언트 양측 오류 표시
+
+### 구현 파일
+
+- `SettingsController` — `/settings/**` 라우팅
+- `SettingsService` — `getUser()`, `updateProfile()`, `changePassword()`
+- `User.updateProfile(phone, birthDate)` — 엔티티 mutator 추가
+- `templates/settings.html` — 3탭 단일 템플릿
+
+### 접근 권한
+
+Spring Security 기본 규칙 적용 — 로그인한 모든 역할(ADMIN/SALES/EMPLOYEE) 접근 가능.
+
+---
 
 ## 8. 모든 단계 공통 보안 (mvp1·mvp2와 동일)
 

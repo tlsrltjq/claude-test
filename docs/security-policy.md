@@ -46,12 +46,14 @@
 
 **미준수 (수정 필요)**
 - `LocalFileStorage.java:28` — `log.debug("파일 저장: {}", target.toAbsolutePath())` → 절대 경로 제거
-- `application.yml:53` — `RESOURCEHUB_ADMIN_PASSWORD:Admin1234!` → 하드코딩 기본값 제거
-- `PasswordResetService.java:52` — `log.info("... code={}", code)` → 재설정 코드를 로그에 남기면 안 됨 (제거 필요)
 
-## 7. HTTP 보안 헤더 (TODO — 미구현)
+**완료**
+- ~~`application.yml:53` — `RESOURCEHUB_ADMIN_PASSWORD:Admin1234!`~~ → 하드코딩 기본값 제거 완료 (`security-lint.sh [15]` PASS)
+- ~~`PasswordResetService.java:52` — `log.info("... code={}", code)`~~ → 재설정 코드 로그 제거 완료 (`security-lint.sh [14]` PASS)
 
-> `SecurityConfig.securityFilterChain()` 의 `.headers()` 블록으로 추가 예정.
+## 7. HTTP 보안 헤더 ✅ 구현 완료
+
+> `SecurityConfig.securityFilterChain()` 의 `.headers()` 블록에 추가됨.
 
 | 헤더 | 값 |
 |------|----|
@@ -61,7 +63,7 @@
 | `Content-Security-Policy` | `default-src 'self'; script-src 'self' cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data:; font-src 'self' cdn.jsdelivr.net` |
 
 - HSTS는 프로덕션에서만 (`secure: true` 전환 시 함께 활성화)
-- `scripts/security-lint.sh [13]` 으로 헤더 누락 여부 자동 감지
+- `scripts/security-lint.sh [13]` PASS 확인
 
 ## 8. 환경변수 기본값 정책
 
