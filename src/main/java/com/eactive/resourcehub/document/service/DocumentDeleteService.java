@@ -1,14 +1,12 @@
 package com.eactive.resourcehub.document.service;
 
 import com.eactive.resourcehub.audit.service.AuditLogService;
-import com.eactive.resourcehub.common.file.FileStorage;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.Document;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.user.entity.UserRole;
-import com.eactive.resourcehub.document.entity.Folder;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +24,6 @@ public class DocumentDeleteService {
 
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
-    private final FileStorage fileStorage;
     private final AuditLogService auditLogService;
 
     @Transactional
@@ -38,32 +35,17 @@ public class DocumentDeleteService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
 
+        Long actorId = actor.getUser().getId();
         String title = document.getTitle();
-        List<DocumentVersion> versions = documentVersionRepository.findByDocumentIdOrderByVersionNoDesc(documentId);
 
-        // 1. circular FK 해제 (documents.current_version_id → document_versions.id)
-        document.setCurrentVersion(null);
+        document.delete(actorId);
         documentRepository.save(document);
 
-        // 2. 각 버전의 디스크 파일 삭제
-        for (DocumentVersion v : versions) {
-            deleteFileSilently(v.getStoragePath());
-            deleteFileSilently(v.getPreviewStoragePath());
-            deleteFileSilently(v.getThumbnailStoragePath());
-        }
-
-        // 3. 버전 행 삭제 → 문서 행 삭제 (document_tags는 ON DELETE CASCADE로 자동 처리)
-        documentVersionRepository.deleteAll(versions);
-        documentRepository.delete(document);
-
-        auditLogService.logDeleteDocument(actor.getUser().getId(), documentId,
-                "문서 삭제: " + title, request);
-
-        log.info("문서 삭제 완료 — documentId={}, title={}, adminId={}",
-                documentId, title, actor.getUser().getId());
+        auditLogService.logDeleteDocument(actorId, documentId, "문서 삭제: " + title, request);
+        log.info("문서 소프트 삭제 완료 — documentId={}, title={}, adminId={}", documentId, title, actorId);
     }
 
-    /** 본인 문서 삭제 — owner 확인 후 물리 파일 + DB 행 삭제 */
+    /** 본인 문서 삭제 — owner 확인 후 소프트 삭제 */
     @Transactional
     public void deleteOwnDocument(Long documentId, Long userId, HttpServletRequest request) {
         Document document = documentRepository.findByIdForDetail(documentId)
@@ -74,24 +56,11 @@ public class DocumentDeleteService {
         }
 
         String title = document.getTitle();
-        List<DocumentVersion> versions = documentVersionRepository.findByDocumentIdOrderByVersionNoDesc(documentId);
-
-        document.setCurrentVersion(null);
+        document.delete(userId);
         documentRepository.save(document);
 
-        for (DocumentVersion v : versions) {
-            deleteFileSilently(v.getStoragePath());
-            deleteFileSilently(v.getPreviewStoragePath());
-            deleteFileSilently(v.getThumbnailStoragePath());
-        }
-
-        documentVersionRepository.deleteAll(versions);
-        documentRepository.delete(document);
-
-        auditLogService.logDeleteDocument(userId, documentId,
-                "본인 문서 삭제: " + title, request);
-
-        log.info("본인 문서 삭제 완료 — documentId={}, title={}, userId={}", documentId, title, userId);
+        auditLogService.logDeleteDocument(userId, documentId, "본인 문서 삭제: " + title, request);
+        log.info("본인 문서 소프트 삭제 완료 — documentId={}, title={}, userId={}", documentId, title, userId);
     }
 
     /** 공용 폴더 문서 삭제 — 최초 업로더 또는 ADMIN만 허용 */
@@ -101,11 +70,9 @@ public class DocumentDeleteService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
 
-        List<DocumentVersion> versions = documentVersionRepository
-                .findByDocumentIdOrderByVersionNoDesc(documentId);
-
         if (actorRole != UserRole.ADMIN) {
-            // 버전 목록은 desc 정렬 → 맨 마지막이 version 1 (최초 업로더)
+            List<DocumentVersion> versions = documentVersionRepository
+                    .findByDocumentIdOrderByVersionNoDesc(documentId);
             Long originalUploaderId = versions.isEmpty()
                     ? null
                     : versions.get(versions.size() - 1).getUploadedBy().getId();
@@ -115,30 +82,10 @@ public class DocumentDeleteService {
         }
 
         String title = document.getTitle();
-        document.setCurrentVersion(null);
+        document.delete(actorId);
         documentRepository.save(document);
 
-        for (DocumentVersion v : versions) {
-            deleteFileSilently(v.getStoragePath());
-            deleteFileSilently(v.getPreviewStoragePath());
-            deleteFileSilently(v.getThumbnailStoragePath());
-        }
-
-        documentVersionRepository.deleteAll(versions);
-        documentRepository.delete(document);
-
-        auditLogService.logDeleteDocument(actorId, documentId,
-                "공용 폴더 문서 삭제: " + title, request);
-
-        log.info("공용 폴더 문서 삭제 완료 — documentId={}, title={}, actorId={}", documentId, title, actorId);
-    }
-
-    private void deleteFileSilently(String storagePath) {
-        if (storagePath == null) return;
-        try {
-            fileStorage.delete(storagePath);
-        } catch (Exception e) {
-            log.warn("파일 삭제 실패 — path={}, error={}", storagePath, e.getMessage());
-        }
+        auditLogService.logDeleteDocument(actorId, documentId, "공용 폴더 문서 삭제: " + title, request);
+        log.info("공용 폴더 문서 소프트 삭제 완료 — documentId={}, title={}, actorId={}", documentId, title, actorId);
     }
 }

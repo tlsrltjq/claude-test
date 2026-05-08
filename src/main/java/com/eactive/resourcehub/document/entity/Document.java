@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,6 +44,12 @@ public class Document extends BaseEntity {
     @Column(name = "expires_at")
     private LocalDate expiresAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    private Long deletedBy;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "document_tags",
                joinColumns = @JoinColumn(name = "document_id"),
@@ -74,8 +81,10 @@ public class Document extends BaseEntity {
         this.status = DocumentStatus.ACTIVE;
     }
 
-    public void delete() {
+    public void delete(Long deletedByUserId) {
         this.status = DocumentStatus.DELETED;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedByUserId;
     }
 
     public void updateExpiresAt(LocalDate expiresAt) {
