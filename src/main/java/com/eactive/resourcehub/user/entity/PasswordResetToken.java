@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,12 +37,14 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    public static final Duration TOKEN_TTL = Duration.ofMinutes(5);
+
     public static PasswordResetToken create(User user, String token) {
         PasswordResetToken prt = new PasswordResetToken();
         prt.user = user;
         prt.email = user.getEmail();
         prt.token = token;
-        prt.expiredAt = LocalDateTime.now().plusMinutes(5);
+        prt.expiredAt = LocalDateTime.now().plus(TOKEN_TTL);
         prt.createdAt = LocalDateTime.now();
         return prt;
     }
