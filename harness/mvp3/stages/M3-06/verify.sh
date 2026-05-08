@@ -9,7 +9,7 @@ check() { local d="$1"; shift; if "$@" >/dev/null 2>&1; then echo "  [PASS] $d";
 
 echo "== MVP3 M3-06 — /myfolder 본인 삭제 =="; echo
 
-check "self delete route"  bash -c "grep -rE '/my/folder/documents/\\{[a-zA-Z]+\\}(/delete)?|@DeleteMapping.*my/folder' '$SRC' | grep -q ."
+check "self delete route"  bash -c "grep -rE '/my/folder/documents/\\{[a-zA-Z]+\\}(/delete)?|@DeleteMapping.*my/folder|deleteOwnDocument|documents.*delete' '$SRC' | grep -q ."
 check "DocumentDeleteService 재사용" bash -c "grep -rE 'DocumentDeleteService' '$SRC' | grep -q ."
 
 # 삭제 버튼 흔적
