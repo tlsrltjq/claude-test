@@ -25,8 +25,7 @@ check "admin/dashboard template"   bash -c "find '$RES/templates' -name 'dashboa
 check "admin/teams template"       bash -c "find '$RES/templates' -name 'teams.html' | grep -q ."
 check "admin/employees template"   bash -c "find '$RES/templates' -name 'employees.html' | grep -q ."
 
-# Initial team seed (any of these patterns)
-check "initial team seed present" bash -c "grep -rE '개발팀|영업팀|기술지원팀|경영지원팀' '$SRC' '$RES' | grep -q ."
+# 기본 팀 자동 시딩 제거됨 — 팀은 관리자가 직접 생성·관리 (M3 결정)
 
 echo; echo "  passed: $PASS"; echo "  failed: $FAIL"
 [ "$FAIL" -eq 0 ]
