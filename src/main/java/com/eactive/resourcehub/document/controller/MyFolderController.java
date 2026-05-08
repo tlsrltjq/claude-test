@@ -32,6 +32,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Set;
+import com.eactive.resourcehub.common.util.FileUtils;
 
 @Controller
 @RequestMapping("/my/folder")
@@ -125,17 +126,12 @@ public class MyFolderController {
 
     private String resolvePreviewType(DocumentVersion version) {
         if (version == null) return "none";
-        String ext = extension(version.getOriginalFileName()).toLowerCase();
+        String ext = FileUtils.extension(version.getOriginalFileName());
         if ("pdf".equals(ext)) return "pdf";
         if (Set.of("jpg", "jpeg", "png").contains(ext)) return "image";
         if (Set.of("docx", "hwp", "hwpx").contains(ext))
             return version.getPreviewStoragePath() != null ? "pdf" : "none";
         return "none";
-    }
-
-    private static String extension(String filename) {
-        if (filename == null || !filename.contains(".")) return "";
-        return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
     @PostMapping("/documents/{documentId}/expiry")

@@ -173,7 +173,6 @@ public class CareerCalculatorController {
         model.addAttribute("certDate",      certDate);
         model.addAttribute("removeOverlap", removeOverlap);
         model.addAttribute("degrees",       Degree.values());
-        model.addAttribute("certTypes",     CertType.values());
         model.addAttribute("grades",        GRADES);
     }
 

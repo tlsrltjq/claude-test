@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import com.eactive.resourcehub.common.util.FileUtils;
 
 @Controller
 @RequiredArgsConstructor
@@ -47,7 +48,7 @@ public class DocumentController {
 
         String storagePath = version.getStoragePath();
         String filename = version.getOriginalFileName();
-        String ext = extension(filename).toLowerCase();
+        String ext = FileUtils.extension(filename);
 
         MediaType mediaType;
         if ("pdf".equals(ext)) {
@@ -155,8 +156,4 @@ public class DocumentController {
         return "redirect:" + request.getHeader("Referer");
     }
 
-    private static String extension(String filename) {
-        if (filename == null || !filename.contains(".")) return "";
-        return filename.substring(filename.lastIndexOf('.') + 1);
-    }
 }

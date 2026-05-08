@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import com.eactive.resourcehub.common.util.FileUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class ResumeTemplateService {
         User uploader = userRepository.findById(actorUserId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        String ext = extension(file.getOriginalFilename());
+        String ext = FileUtils.extension(file.getOriginalFilename());
         String storedFileName = UUID.randomUUID() + "." + ext;
         String storagePath;
         try {
@@ -94,12 +95,8 @@ public class ResumeTemplateService {
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) throw new IllegalArgumentException("파일이 비어 있습니다.");
         if (file.getSize() > MAX_SIZE) throw new IllegalArgumentException("파일 크기는 20MB를 초과할 수 없습니다.");
-        String ext = extension(file.getOriginalFilename()).toLowerCase();
+        String ext = FileUtils.extension(file.getOriginalFilename());
         if (!ALLOWED_EXT.contains(ext)) throw new IllegalArgumentException("허용되지 않는 파일 형식입니다: " + ext);
     }
 
-    private static String extension(String fileName) {
-        if (fileName == null || !fileName.contains(".")) return "";
-        return fileName.substring(fileName.lastIndexOf('.') + 1);
-    }
 }

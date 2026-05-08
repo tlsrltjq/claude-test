@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.eactive.resourcehub.common.util.FileUtils;
 
 @Slf4j
 @Service
@@ -82,7 +83,7 @@ public class DocumentUploadService {
         }
 
         String subPath = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
-        String storedFileName = UUID.randomUUID() + "." + extension(req.getFile().getOriginalFilename());
+        String storedFileName = UUID.randomUUID() + "." + FileUtils.extension(req.getFile().getOriginalFilename());
         String storagePath = storeFile(req.getFile(), subPath, storedFileName);
 
         User uploader = userRepository.findById(ownerId)
@@ -151,7 +152,7 @@ public class DocumentUploadService {
         }
 
         String subPath = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
-        String storedFileName = UUID.randomUUID() + "." + extension(req.getFile().getOriginalFilename());
+        String storedFileName = UUID.randomUUID() + "." + FileUtils.extension(req.getFile().getOriginalFilename());
         String storagePath = storeFile(req.getFile(), subPath, storedFileName);
 
         User uploader = userRepository.findById(uploaderId)
@@ -204,7 +205,7 @@ public class DocumentUploadService {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어 있습니다.");
         }
-        String ext = extension(file.getOriginalFilename()).toLowerCase();
+        String ext = FileUtils.extension(file.getOriginalFilename());
         List<String> allowed = Arrays.asList(allowedExtensionsRaw.split(","));
         if (!allowed.contains(ext)) {
             throw new IllegalArgumentException("허용되지 않는 파일 형식입니다: " + ext);
@@ -224,11 +225,6 @@ public class DocumentUploadService {
             fileStorage.delete(path);
         } catch (IOException ignore) {
         }
-    }
-
-    private static String extension(String filename) {
-        if (filename == null || !filename.contains(".")) return "";
-        return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
     private static String checksum(MultipartFile file) {
