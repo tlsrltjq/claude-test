@@ -5,68 +5,156 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문서 업로드 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topnav { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: .6rem 0; }
+        .topnav .brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
+        .btn-nav { border-color: rgba(255,255,255,.5); color: #fff; font-size: .8rem; padding: .3rem .75rem; border-radius: 6px; }
+        .btn-nav:hover { background: rgba(255,255,255,.15); color: #fff; }
+        .upload-card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.09); }
+        .upload-header { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border-radius: 16px 16px 0 0; padding: 1.5rem 2rem; color: #fff; }
+        .upload-header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; }
+        .upload-body { padding: 1.75rem 2rem; background: #fff; border-radius: 0 0 16px 16px; }
+        .section-label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; margin: 1.4rem 0 .65rem; display: flex; align-items: center; gap: .4rem; }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: #e9ecef; }
+        .form-label { font-size: .85rem; font-weight: 600; color: #343a40; margin-bottom: .3rem; }
+        .form-label .req { color: #dc3545; margin-left: 2px; }
+        .form-label .opt { color: #adb5bd; font-weight: 400; font-size: .78rem; margin-left: 4px; }
+        .file-drop { border: 2px dashed #dee2e6; border-radius: 10px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
+        .file-drop:hover, .file-drop.drag-over { border-color: #0d6efd; background: #f5f8ff; }
+        .file-drop .drop-icon { font-size: 2rem; color: #adb5bd; margin-bottom: .5rem; }
+        .file-drop .drop-text { font-size: .9rem; color: #6c757d; }
+        .file-drop .drop-sub { font-size: .75rem; color: #adb5bd; margin-top: .25rem; }
+        .file-name-display { display: none; align-items: center; gap: .5rem; background: #f0f2f5; border-radius: 8px; padding: .6rem .9rem; margin-top: .5rem; font-size: .85rem; }
+        .meta-box { background: #f8f9ff; border: 1.5px solid #e0e8ff; border-radius: 10px; padding: 1rem 1.25rem; }
+        .meta-box .meta-title { font-size: .8rem; font-weight: 700; color: #0d6efd; margin-bottom: .75rem; display: flex; align-items: center; gap: .35rem; }
+        .btn-upload { padding: .75rem; font-size: 1rem; font-weight: 600; border-radius: 10px; }
+        .warn-box { border-radius: 8px; }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">eActive Resource Hub</a>
-        <div class="ms-auto">
-            <a th:href="@{/my/folder}" class="btn btn-outline-light btn-sm">← 내 폴더</a>
-        </div>
+
+<nav class="topnav">
+    <div class="container d-flex align-items-center gap-3">
+        <a th:href="@{/dashboard}" class="brand me-auto">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
+        </a>
+        <a th:href="@{/my/folder}" class="btn btn-nav btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>내 폴더
+        </a>
     </div>
 </nav>
 
-<div class="container mt-4" style="max-width:600px;">
-    <h2 class="mb-4">문서 업로드</h2>
+<div class="container py-4" style="max-width:640px;">
 
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+    <div class="upload-card card">
+        <div class="upload-header">
+            <h2><i class="bi bi-cloud-upload me-2"></i>문서 업로드</h2>
+            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem">내 폴더에 문서를 업로드합니다.</div>
+        </div>
 
-    <!-- 10MB 초과 시 JS가 이 경고를 표시합니다 -->
-    <div id="largefile-warning" class="alert alert-warning d-none">
-        <strong>파일 크기 초과:</strong> 10MB가 넘는 파일은 <strong>관리자 승인</strong>을 받아야 공개됩니다.
-        업로드는 정상적으로 진행되지만, 승인 전까지는 본인만 확인할 수 있습니다.
-    </div>
+        <div class="upload-body">
+            <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
 
-    <div class="card">
-        <div class="card-body">
-            <form id="upload-form" th:action="@{/my/folder/documents}" method="post" enctype="multipart/form-data">
+            <div id="largeFileWarn" class="alert alert-warning warn-box d-none">
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>10MB 초과 파일</strong>은 관리자 승인 후 공개됩니다. 업로드는 정상 진행됩니다.
+            </div>
+
+            <form id="uploadForm" th:action="@{/my/folder/documents}" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
 
+                <!-- ── 문서 정보 ── -->
+                <div class="section-label"><i class="bi bi-file-text"></i> 문서 정보</div>
+
                 <div class="mb-3">
-                    <label class="form-label fw-bold">문서 종류 *</label>
-                    <select name="documentType" class="form-select" required>
+                    <label class="form-label">문서 종류 <span class="req">*</span></label>
+                    <select name="documentType" id="docTypeSelect" class="form-select" required onchange="onTypeChange()">
                         <option value="">선택하세요</option>
                         <option th:each="dt : ${documentTypes}"
                                 th:value="${dt.name()}"
-                                th:text="${dt.displayName}">
-                        </option>
+                                th:text="${dt.displayName}"></option>
                     </select>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">문서 제목 *</label>
-                    <input type="text" name="title" class="form-control" required
-                           placeholder="예: 2024년 이력서">
+                    <label class="form-label">문서 제목 <span class="req">*</span></label>
+                    <input type="text" name="title" class="form-control" required placeholder="예: 2024년 이력서">
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">파일 *</label>
-                    <input type="file" id="fileInput" name="file" class="form-control" required
-                           accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx"
-                           onchange="checkFileSize(this)">
-                    <div class="form-text">허용 형식: PDF, JPG, PNG, DOCX, HWP, HWPX, PPT, PPTX (최대 20MB) · 10MB 초과 시 관리자 승인 필요</div>
+                <!-- ── 학위/자격증 메타 (문서 종류에 따라 동적 표시) ── -->
+                <div id="metaGrad" class="meta-box mb-3" style="display:none">
+                    <div class="meta-title"><i class="bi bi-mortarboard-fill"></i> 학력 정보</div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">학위 종류 <span class="req">*</span></label>
+                            <select name="degreeType" id="degreeTypeSelect" class="form-select">
+                                <option value="">선택</option>
+                                <option value="HIGHSCHOOL">고졸</option>
+                                <option value="ASSOCIATE">전문학사</option>
+                                <option value="BACHELOR">학사</option>
+                                <option value="MASTER">석사</option>
+                                <option value="DOCTORATE">박사</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">졸업일 <span class="req">*</span></label>
+                            <input type="date" name="issuedDate" id="issuedDateGrad" class="form-control">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">만료일 <span class="text-muted small">(선택 — 자격증·재직증명서 등)</span></label>
+                <div id="metaCert" class="meta-box mb-3" style="display:none">
+                    <div class="meta-title"><i class="bi bi-patch-check-fill"></i> 자격증 정보</div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">자격증 종류 <span class="req">*</span></label>
+                            <select name="certTypeMeta" id="certTypeMetaSelect" class="form-select">
+                                <option value="">선택</option>
+                                <option value="ENGINEER">기사</option>
+                                <option value="INDUSTRIAL_ENGINEER">산업기사</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">취득일 <span class="req">*</span></label>
+                            <input type="date" name="issuedDate" id="issuedDateCert" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── 파일 ── -->
+                <div class="section-label"><i class="bi bi-paperclip"></i> 파일</div>
+
+                <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+                    <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                    <div class="drop-text">클릭하거나 파일을 끌어다 놓으세요</div>
+                    <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, HWPX · 최대 20MB</div>
+                </div>
+                <input type="file" id="fileInput" name="file" class="d-none" required
+                       accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx"
+                       onchange="onFileChange(this)">
+                <div class="file-name-display" id="fileNameDisplay">
+                    <i class="bi bi-file-earmark-fill text-primary"></i>
+                    <span id="fileNameText"></span>
+                    <span id="fileSizeText" class="text-muted ms-auto"></span>
+                </div>
+
+                <!-- 만료일 (선택) -->
+                <div class="mt-3">
+                    <label class="form-label">만료일 <span class="opt">(선택 — 자격증·건강보험료 등 유효기간 있는 문서)</span></label>
                     <input type="date" name="expiresAt" class="form-control"
                            th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
-                    <div class="form-text">유효기간이 있는 문서만 입력하세요.</div>
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" id="uploadBtn" class="btn btn-primary">업로드</button>
-                    <a th:href="@{/my/folder}" class="btn btn-secondary">취소</a>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" id="uploadBtn" class="btn btn-primary flex-fill btn-upload">
+                        <i class="bi bi-cloud-upload me-1"></i>업로드
+                    </button>
+                    <a th:href="@{/my/folder}" class="btn btn-outline-secondary">취소</a>
                 </div>
             </form>
         </div>
@@ -74,15 +162,51 @@
 </div>
 
 <script>
-function checkFileSize(input) {
-    const warning = document.getElementById('largefile-warning');
+/* ── 문서 종류에 따른 메타 박스 표시 ── */
+function onTypeChange() {
+    const val = document.getElementById('docTypeSelect').value;
+    document.getElementById('metaGrad').style.display = (val === 'GRADUATION_CERTIFICATE') ? '' : 'none';
+    document.getElementById('metaCert').style.display = (val === 'LICENSE') ? '' : 'none';
+    /* 숨겨진 input이 제출되지 않도록 비활성화 */
+    ['degreeTypeSelect','issuedDateGrad'].forEach(id => {
+        document.getElementById(id).disabled = (val !== 'GRADUATION_CERTIFICATE');
+    });
+    ['certTypeMetaSelect','issuedDateCert'].forEach(id => {
+        document.getElementById(id).disabled = (val !== 'LICENSE');
+    });
+}
+onTypeChange(); // 초기화
+
+/* ── 파일 선택 표시 ── */
+function onFileChange(input) {
+    const disp = document.getElementById('fileNameDisplay');
+    const nameEl = document.getElementById('fileNameText');
+    const sizeEl = document.getElementById('fileSizeText');
+    const warn = document.getElementById('largeFileWarn');
     if (input.files && input.files[0]) {
-        const size = input.files[0].size;
-        warning.classList.toggle('d-none', size < 10 * 1024 * 1024);
+        const f = input.files[0];
+        nameEl.textContent = f.name;
+        sizeEl.textContent = (f.size / 1024 / 1024).toFixed(1) + ' MB';
+        disp.style.display = 'flex';
+        warn.classList.toggle('d-none', f.size < 10 * 1024 * 1024);
+        document.getElementById('fileDrop').style.borderColor = '#0d6efd';
     }
 }
-document.getElementById('upload-form').addEventListener('submit', function() {
-    var btn = document.getElementById('uploadBtn');
+
+/* ── 드래그 앤 드롭 ── */
+const drop = document.getElementById('fileDrop');
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('drag-over');
+    const fi = document.getElementById('fileInput');
+    fi.files = e.dataTransfer.files;
+    onFileChange(fi);
+});
+
+/* ── 제출 처리 ── */
+document.getElementById('uploadForm').addEventListener('submit', function () {
+    const btn = document.getElementById('uploadBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>업로드 중...';
 });

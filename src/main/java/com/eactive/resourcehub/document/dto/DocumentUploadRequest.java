@@ -19,4 +19,10 @@ public class DocumentUploadRequest {
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate expiresAt;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate issuedDate;
+
+    private String degreeType;
+    private String certTypeMeta;
 }

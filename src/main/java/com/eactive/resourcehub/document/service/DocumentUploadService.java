@@ -78,9 +78,12 @@ public class DocumentUploadService {
             isNew = true;
         }
 
-        if (req.getExpiresAt() != null) {
-            document.updateExpiresAt(req.getExpiresAt());
-        }
+        if (req.getExpiresAt() != null)  document.updateExpiresAt(req.getExpiresAt());
+        if (req.getIssuedDate() != null)  document.updateIssuedDate(req.getIssuedDate());
+        if (req.getDegreeType() != null && !req.getDegreeType().isBlank())
+            document.updateDegreeType(req.getDegreeType());
+        if (req.getCertTypeMeta() != null && !req.getCertTypeMeta().isBlank())
+            document.updateCertTypeMeta(req.getCertTypeMeta());
 
         String subPath = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
         String storedFileName = UUID.randomUUID() + "." + FileUtils.extension(req.getFile().getOriginalFilename());

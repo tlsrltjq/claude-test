@@ -44,6 +44,15 @@ public class Document extends BaseEntity {
     @Column(name = "expires_at")
     private LocalDate expiresAt;
 
+    @Column(name = "issued_date")
+    private LocalDate issuedDate;
+
+    @Column(name = "degree_type", length = 50)
+    private String degreeType;
+
+    @Column(name = "cert_type_meta", length = 50)
+    private String certTypeMeta;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
@@ -90,6 +99,10 @@ public class Document extends BaseEntity {
     public void updateExpiresAt(LocalDate expiresAt) {
         this.expiresAt = expiresAt;
     }
+
+    public void updateIssuedDate(LocalDate issuedDate) { this.issuedDate = issuedDate; }
+    public void updateDegreeType(String degreeType)    { this.degreeType = degreeType; }
+    public void updateCertTypeMeta(String certTypeMeta){ this.certTypeMeta = certTypeMeta; }
 
     public void addTag(Tag tag) {
         this.tags.add(tag);

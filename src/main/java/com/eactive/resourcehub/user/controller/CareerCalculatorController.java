@@ -1,6 +1,11 @@
 package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
+import com.eactive.resourcehub.document.entity.DocumentStatus;
+import com.eactive.resourcehub.document.entity.DocumentType;
+import com.eactive.resourcehub.document.entity.FolderType;
+import com.eactive.resourcehub.document.repository.DocumentRepository;
+import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.employee.service.CareerSaveService;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
@@ -16,12 +21,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -29,6 +37,8 @@ public class CareerCalculatorController {
 
     private final UserRepository userRepository;
     private final CareerSaveService careerSaveService;
+    private final FolderRepository folderRepository;
+    private final DocumentRepository documentRepository;
 
     private static final List<String> GRADES = List.of("특급", "고급", "중급", "초급");
 
@@ -135,6 +145,36 @@ public class CareerCalculatorController {
         }
 
         return "sales/career-calculator";
+    }
+
+    /** 직원의 업로드 문서에서 학위/자격증 정보를 읽어 JSON으로 반환 — 경력계산기 자동 채우기 */
+    @GetMapping("/sales/career-calculator/autofill")
+    @ResponseBody
+    public Map<String, String> autofill(@RequestParam Long userId) {
+        Map<String, String> result = new HashMap<>();
+        folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).ifPresent(folder -> {
+            // 졸업증명서 → degree + gradDate
+            documentRepository.findByFolderIdAndDocumentType(folder.getId(), DocumentType.GRADUATION_CERTIFICATE)
+                    .stream()
+                    .filter(d -> d.getStatus() == DocumentStatus.ACTIVE
+                              && d.getDegreeType() != null && d.getIssuedDate() != null)
+                    .findFirst()
+                    .ifPresent(d -> {
+                        result.put("degree",   d.getDegreeType());
+                        result.put("gradDate", d.getIssuedDate().toString());
+                    });
+            // 자격증 → certType + certDate
+            documentRepository.findByFolderIdAndDocumentType(folder.getId(), DocumentType.LICENSE)
+                    .stream()
+                    .filter(d -> d.getStatus() == DocumentStatus.ACTIVE
+                              && d.getCertTypeMeta() != null && d.getIssuedDate() != null)
+                    .findFirst()
+                    .ifPresent(d -> {
+                        result.put("certType", d.getCertTypeMeta());
+                        result.put("certDate", d.getIssuedDate().toString());
+                    });
+        });
+        return result;
     }
 
     @PostMapping("/sales/career-calculator/save")

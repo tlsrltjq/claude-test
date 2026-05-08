@@ -113,19 +113,19 @@
                                th:value="${gradDate}" required>
                         <div class="form-text">경력 기산점</div>
                     </div>
-                    <!-- 정보처리기사 -->
+                    <!-- 자격증 종류 -->
                     <div class="col-sm-3">
-                        <label class="form-label small fw-semibold d-block">정보처리기사</label>
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" id="engineerCertCheck"
-                                   onchange="toggleCertDate()">
-                            <label class="form-check-label small" for="engineerCertCheck">보유</label>
-                        </div>
-                        <input type="hidden" name="certType" id="certTypeHidden"
-                               th:value="${certType != null ? certType : 'NONE'}">
+                        <label class="form-label small fw-semibold">자격증 종류</label>
+                        <select name="certType" id="certTypeSelect" class="form-select form-select-sm"
+                                onchange="toggleCertDate()">
+                            <option value="NONE">없음</option>
+                            <option value="ENGINEER"            th:selected="${certType == 'ENGINEER'}">기사</option>
+                            <option value="INDUSTRIAL_ENGINEER" th:selected="${certType == 'INDUSTRIAL_ENGINEER'}">산업기사</option>
+                        </select>
                     </div>
-                    <!-- 취득일자 (정보처리기사 선택 시) -->
-                    <div class="col-sm-3" id="certDateWrap" style="display:none">
+                    <!-- 취득일자 (자격증 선택 시) -->
+                    <div class="col-sm-3" id="certDateWrap"
+                         th:style="${certType != null and certType != 'NONE'} ? '' : 'display:none'">
                         <label class="form-label small fw-semibold">취득일자</label>
                         <input type="date" name="certDate" id="certDateInput" class="form-control form-control-sm"
                                th:value="${certDate}">
@@ -411,6 +411,27 @@ function selectMember(el) {
     badge.className = 'badge bg-primary';
     const team = el.dataset.team;
     badge.innerHTML = el.dataset.name + (team ? ' <span class="fw-normal opacity-75">· ' + team + '</span>' : '');
+
+    // 업로드된 문서에서 학위·자격증 정보 자동 채우기
+    fetch('/sales/career-calculator/autofill?userId=' + selectedUserId)
+        .then(r => r.json())
+        .then(data => {
+            if (data.degree)   document.getElementById('degreeSelect').value = data.degree;
+            if (data.gradDate) document.querySelector('[name="gradDate"]').value = data.gradDate;
+            const certSel = document.getElementById('certTypeSelect');
+            if (data.certType && data.certType !== 'NONE') {
+                certSel.value = data.certType;
+                toggleCertDate();
+                if (data.certDate) document.getElementById('certDateInput').value = data.certDate;
+            } else {
+                certSel.value = 'NONE';
+                toggleCertDate();
+            }
+            if (data.degree || data.gradDate || data.certType) {
+                badge.innerHTML += ' <span class="badge bg-success ms-1 fw-normal" style="font-size:.7rem">문서 자동입력</span>';
+            }
+        })
+        .catch(() => {});
 }
 
 function filterMembers(q) {
@@ -425,13 +446,12 @@ function filterMembers(q) {
 
 // ── 정보처리기사 취득일 토글 ────────────────────────────────────────────────────
 function toggleCertDate() {
-    const checked = document.getElementById('engineerCertCheck').checked;
-    const wrap    = document.getElementById('certDateWrap');
-    const input   = document.getElementById('certDateInput');
-    const hidden  = document.getElementById('certTypeHidden');
-    wrap.style.display = checked ? '' : 'none';
-    hidden.value = checked ? 'ENGINEER' : 'NONE';
-    if (!checked) input.value = '';
+    const sel   = document.getElementById('certTypeSelect');
+    const wrap  = document.getElementById('certDateWrap');
+    const input = document.getElementById('certDateInput');
+    const hasCert = sel.value !== 'NONE';
+    wrap.style.display = hasCert ? '' : 'none';
+    if (!hasCert) input.value = '';
 }
 
 // ── 경력 기간 행 관리 ──────────────────────────────────────────────────────────
