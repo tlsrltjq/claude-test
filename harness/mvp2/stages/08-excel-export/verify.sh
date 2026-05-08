@@ -21,9 +21,9 @@ check "POST export: selectedIds 파라미터"  grep -q 'selectedIds'            
 check "POST export: columnsJson 파라미터"  grep -q 'columnsJson'               "$CTRL"
 check "POST export: careerDisplay 반영"    grep -q 'careerDisplay'             "$CTRL"
 
-# 서비스
-SVC="$SRC/user/service/ProfileExcelExportService.java"
-check "ProfileExcelExportService 존재"    [ -f "$SVC" ]
+# 서비스 (MVP3 M3-11에서 SalesProfileExporter로 리네임)
+SVC=$(ls "$SRC/user/service/SalesProfileExporter.java" "$SRC/user/service/ProfileExcelExportService.java" 2>/dev/null | head -n1)
+check "SalesProfileExporter(구 ProfileExcelExportService) 존재" [ -n "$SVC" ] && [ -f "$SVC" ]
 check "SXSSFWorkbook 스트리밍 사용"        grep -q 'SXSSFWorkbook'             "$SVC"
 check "careerDisplay 분기 (careerText)"   grep -q 'careerText'                "$SVC"
 check "docCell: 없음 fallback"            grep -q '"없음"'                    "$SVC"

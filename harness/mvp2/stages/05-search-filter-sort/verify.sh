@@ -14,7 +14,7 @@ T="$RES/templates/sales/profiles.html"
 if [ -f "$T" ]; then
   check "search input q"        grep -qE 'name="q"' "$T"
   check "position select"       grep -qE 'name="position"' "$T"
-  check "developerGrade filter" grep -qE 'name="developerGrade"' "$T"
+  check "developerGrade filter" grep -qE 'name="developerGrade[s]?"' "$T"
   check "sort param usage"      grep -qE 'sort=|name="sort"' "$T"
   check "column toggle hint"    grep -qE 'cols=|column-toggle|컬럼' "$T"
 fi

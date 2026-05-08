@@ -15,8 +15,8 @@ check "/sales/career-calculator route" bash -c "grep -rE '/sales/career-calculat
 check "CareerCalculator class"          bash -c "grep -rl 'class[[:space:]]\\+CareerCalculator\\b' '$SRC' | grep -q ."
 check "templates/sales/career-calculator.html" test -f "$RES/templates/sales/career-calculator.html"
 
-# DB 변경 없음 확인 — V105 이상 이번 단계에서 만들어지지 않음
-check "no V105+ migration this stage" bash -c "! ls '$RES/db/migration/'V10[5-9]__*.sql 2>/dev/null | grep -q . && ! ls '$RES/db/migration/'V11*.sql 2>/dev/null | grep -q ."
+# DB 변경 없음 확인 — career-calculator 자체는 DB 추가 없음 (V106은 EmployeeProfile 단계)
+check "no V105 migration this stage" bash -c "! ls '$RES/db/migration/'V105__*.sql 2>/dev/null | grep -q ."
 
 # 단위 테스트 존재 (선택)
 [ -d "$TEST" ] && {

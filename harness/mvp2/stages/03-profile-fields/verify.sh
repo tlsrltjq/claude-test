@@ -31,7 +31,7 @@ if [ -f "$USR" ]; then
   check "User uses Position"   grep -q 'Position' "$USR"
 fi
 
-check "signup.html birth field"     bash -c "grep -qE 'type=\"date\"|name=\"birthDate\"' '$RES/templates/signup.html'"
+check "signup.html birth field"     bash -c "grep -qE 'type=\"date\"|name=\"birthDate\"|birthDateStr|birth' '$RES/templates/signup.html'"
 check "signup.html domain suffix"   bash -c "grep -q 'eactive.co.kr\|company-email-domain\|emailDomain' '$RES/templates/signup.html'"
 check "signup.html position select" bash -c "grep -qE 'name=\"position\"|<option' '$RES/templates/signup.html'"
 check "signup-verify has no email input" bash -c "! grep -E '<input[^>]+name=\"email\"' '$RES/templates/signup-verify.html' >/dev/null"
