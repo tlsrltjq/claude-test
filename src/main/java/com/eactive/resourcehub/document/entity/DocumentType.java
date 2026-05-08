@@ -12,6 +12,7 @@ public enum DocumentType {
     LICENSE("정보처리기사", false),
     HEALTH_INSURANCE_PROOF("건강보험료납부확인서", false),
     PROFILE_PHOTO("증명사진", false),
+    @Deprecated
     EMPLOYMENT_CERTIFICATE("재직증명서", true),   // deprecated — 업로드 옵션 제외, 기존 데이터 보존
     ETC("기타", false);
 
