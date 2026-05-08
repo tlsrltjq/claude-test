@@ -18,14 +18,11 @@ import com.eactive.resourcehub.permission.entity.Permission;
 import com.eactive.resourcehub.permission.repository.PermissionRepository;
 import com.eactive.resourcehub.permission.service.FolderPermissionService;
 import com.eactive.resourcehub.team.repository.TeamRepository;
-import com.eactive.resourcehub.user.dto.ApproveUserRequest;
-import com.eactive.resourcehub.user.dto.RejectUserRequest;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
 import com.eactive.resourcehub.user.repository.UserRepository;
-import com.eactive.resourcehub.user.service.AdminUserApprovalService;
 import com.eactive.resourcehub.user.service.EmployeeManagementService;
 import com.eactive.resourcehub.user.service.UserRoleService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,13 +40,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Set;
+import com.eactive.resourcehub.common.util.FileUtils;
 
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final AdminUserApprovalService approvalService;
     private final EmployeeManagementService employeeService;
     private final UserRoleService userRoleService;
     private final FolderPermissionService folderPermissionService;
@@ -68,53 +65,11 @@ public class AdminController {
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
-        model.addAttribute("pendingCount",
-                userRepository.findByStatus(UserStatus.PENDING_ADMIN_APPROVAL).size());
         model.addAttribute("totalUsers", userRepository.count());
         model.addAttribute("totalTeams", teamRepository.count());
         model.addAttribute("pendingReviewCount",
                 documentReviewService.findPendingVersions().size());
         return "admin/dashboard";
-    }
-
-    // ── 승인 대기 ─────────────────────────────
-    @GetMapping("/users/pending")
-    public String pendingUsers(Model model) {
-        model.addAttribute("pendingUsers", approvalService.findPendingUsers());
-        model.addAttribute("teams", teamRepository.findAll());
-        model.addAttribute("positions", Position.values());
-        return "admin/users-pending";
-    }
-
-    @PostMapping("/users/{userId}/approve")
-    public String approve(@PathVariable Long userId,
-                          @ModelAttribute ApproveUserRequest req,
-                          @AuthenticationPrincipal CustomUserDetails actor,
-                          HttpServletRequest request,
-                          RedirectAttributes ra) {
-        try {
-            approvalService.approve(userId, req.getTeamId(), req.getPosition(),
-                    actor.getUser().getId(), request);
-            ra.addFlashAttribute("successMessage", "사용자를 승인했습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/admin/users/pending";
-    }
-
-    @PostMapping("/users/{userId}/reject")
-    public String reject(@PathVariable Long userId,
-                         @ModelAttribute RejectUserRequest req,
-                         @AuthenticationPrincipal CustomUserDetails actor,
-                         HttpServletRequest request,
-                         RedirectAttributes ra) {
-        try {
-            approvalService.reject(userId, req.getReason(), actor.getUser().getId(), request);
-            ra.addFlashAttribute("successMessage", "사용자를 반려했습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/admin/users/pending";
     }
 
     // ── 직원 목록 ─────────────────────────────
@@ -123,8 +78,19 @@ public class AdminController {
                             @RequestParam(required = false) String position,
                             @RequestParam(required = false) String role,
                             @RequestParam(required = false) Long teamId,
+                            @RequestParam(defaultValue = "0") int page,
                             Model model) {
-        model.addAttribute("employees", employeeService.findActiveFiltered(q, position, role, teamId));
+        List<com.eactive.resourcehub.user.entity.User> all =
+                employeeService.findActiveFiltered(q, position, role, teamId);
+        int pageSize = 20;
+        int totalPages = Math.max(1, (int) Math.ceil((double) all.size() / pageSize));
+        int safePage = Math.min(Math.max(page, 0), totalPages - 1);
+        int from = safePage * pageSize;
+        int to = Math.min(from + pageSize, all.size());
+        model.addAttribute("employees", from < all.size() ? all.subList(from, to) : List.of());
+        model.addAttribute("totalCount", all.size());
+        model.addAttribute("currentPage", safePage);
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("positions", Position.values());
         model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
                 .filter(r -> r != UserRole.TEAM_LEADER).toList());
@@ -406,7 +372,7 @@ public class AdminController {
 
     private String resolvePreviewType(DocumentVersion version) {
         if (version == null) return "none";
-        String ext = extension(version.getOriginalFileName()).toLowerCase();
+        String ext = FileUtils.extension(version.getOriginalFileName());
         if ("pdf".equals(ext)) return "pdf";
         if (Set.of("jpg", "jpeg", "png").contains(ext)) return "image";
         if (Set.of("docx", "hwp", "hwpx").contains(ext))
@@ -414,8 +380,4 @@ public class AdminController {
         return "none";
     }
 
-    private static String extension(String filename) {
-        if (filename == null || !filename.contains(".")) return "";
-        return filename.substring(filename.lastIndexOf('.') + 1);
-    }
 }

@@ -76,7 +76,7 @@ public class User extends BaseEntity {
 
     public void verifyEmail() {
         this.emailVerified = true;
-        this.status = UserStatus.PENDING_ADMIN_APPROVAL;
+        this.status = UserStatus.ACTIVE;
     }
 
     public void activate() {

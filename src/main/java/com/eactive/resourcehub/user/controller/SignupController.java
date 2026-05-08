@@ -140,7 +140,7 @@ public class SignupController {
         try {
             signupService.completeSignup(pending);
             clearPendingSession(session);
-            return "redirect:/signup/pending";
+            return "redirect:/login?signup";
         } catch (IllegalStateException e) {
             clearPendingSession(session);
             model.addAttribute("errorMessage", e.getMessage() + " 다시 회원가입해 주세요.");
@@ -169,11 +169,6 @@ public class SignupController {
             return "redirect:/signup";
         }
         return "signup-verify";
-    }
-
-    @GetMapping("/pending")
-    public String pending() {
-        return "signup-pending";
     }
 
     private void clearPendingSession(HttpSession session) {

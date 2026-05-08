@@ -34,12 +34,17 @@ public class AdminInitializer {
     @Value("${resourcehub.company-email-domain}")
     private String companyEmailDomain;
 
+    @Value("${resourcehub.seed.test-password:#{null}}")
+    private String testPassword;
+
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void init() {
         User admin = ensureSeedUser(adminEmail, adminPassword, "관리자", UserRole.ADMIN, Position.REPRESENTATIVE);
-        String salesEmail = "test@" + companyEmailDomain;
-        ensureSeedUser(salesEmail, "Test1234!", "테스트영업", UserRole.SALES, Position.MANAGER);
+        if (testPassword != null && !testPassword.isBlank()) {
+            String salesEmail = "test@" + companyEmailDomain;
+            ensureSeedUser(salesEmail, testPassword, "테스트영업", UserRole.SALES, Position.MANAGER);
+        }
         ensurePublicFolder(admin);
     }
 
@@ -59,7 +64,6 @@ public class AdminInitializer {
                     role == UserRole.ADMIN ? "" : "010-0000-0000");
             u.changeRole(role);
             u.verifyEmail();
-            u.activate();
             User saved = userRepository.save(u);
             log.info("시드 계정 생성 — email={}, role={}", email, role);
             return saved;

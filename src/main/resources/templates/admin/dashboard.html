@@ -11,7 +11,6 @@
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" th:href="@{/admin}">eActive Hub — 관리자</a>
         <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/users/pending}" class="btn btn-outline-warning btn-sm">승인 대기</a>
             <a th:href="@{/admin/documents/review}" class="btn btn-outline-info btn-sm">문서 검토</a>
             <a th:href="@{/admin/documents/expiry}" class="btn btn-outline-danger btn-sm">만료 현황</a>
             <a th:href="@{/admin/teams}" class="btn btn-outline-light btn-sm">팀 관리</a>
@@ -32,15 +31,6 @@
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
     <div class="row g-3">
-        <div class="col-md-4">
-            <div class="card text-bg-warning">
-                <div class="card-body text-center">
-                    <h6 class="card-title">승인 대기</h6>
-                    <p class="display-4 fw-bold mb-0" th:text="${pendingCount}">0</p>
-                    <a th:href="@{/admin/users/pending}" class="btn btn-dark btn-sm mt-2">처리하기</a>
-                </div>
-            </div>
-        </div>
         <div class="col-md-4">
             <div class="card text-bg-primary">
                 <div class="card-body text-center">

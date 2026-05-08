@@ -58,7 +58,7 @@ public class SignupService {
     }
 
     /**
-     * 2단계: 이메일 인증 완료 후 DB에 유저 저장. status = PENDING_ADMIN_APPROVAL.
+     * 2단계: 이메일 인증 완료 후 DB에 유저 저장. status = ACTIVE (즉시 로그인 가능).
      */
     @Transactional
     public void completeSignup(SignupRequest request) {
@@ -75,7 +75,7 @@ public class SignupService {
                 request.getPosition(), birthDate, request.getPhone());
         user.verifyEmail();
         userRepository.save(user);
-        log.info("회원가입 완료 (이메일 인증 후 저장) — email={}", email);
+        log.info("회원가입 완료 (즉시 활성화) — email={}", email);
     }
 
     private void validateSignupRequest(SignupRequest request, String email) {
