@@ -354,7 +354,7 @@
                         <tfoot>
                             <tr>
                                 <td colspan="4" class="text-end">합계</td>
-                                <td th:text="${#numbers.formatInteger(result.rows.stream().mapToInt(T(com.eactive.resourcehub.user.service.CareerCalculator.RowResult).totalDays).sum(), 1, 'COMMA')}"></td>
+                                <td th:text="${#numbers.formatInteger(result.totalRawDays(), 1, 'COMMA')}"></td>
                                 <td th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA')}"></td>
                                 <td th:if="${result.certResult != null}"
                                     th:text="${#numbers.formatInteger(result.certResult.totalDays(), 1, 'COMMA')}"></td>
