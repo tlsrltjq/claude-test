@@ -19,7 +19,7 @@ E="$RES/templates/admin/employees.html"
 }
 
 M="$RES/templates/sales/members.html"
-[ -f "$M" ] && check "sales/members sort link" grep -qE 'sort=position|sort=team|sort=role' "$M"
+[ -f "$M" ] && check "sales/members sort link" grep -qE "sort=position|sort='position'|sort=team|sort='team'|sort=role|sort='role'" "$M"
 
 echo; echo "  passed: $PASS"; echo "  failed: $FAIL"
 [ "$FAIL" -eq 0 ]
