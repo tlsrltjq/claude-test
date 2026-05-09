@@ -3,10 +3,13 @@ package com.eactive.resourcehub.audit.service;
 import com.eactive.resourcehub.audit.dto.DownloadStatsDto;
 import com.eactive.resourcehub.audit.dto.TopDocumentDto;
 import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.audit.entity.AuditLog;
 import com.eactive.resourcehub.audit.repository.AuditLogRepository;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
+import com.eactive.resourcehub.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,24 @@ public class StatisticsService {
 
     private final AuditLogRepository auditLogRepository;
     private final DocumentVersionRepository documentVersionRepository;
+    private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public long countUsers() {
+        return userRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AuditLog> findRecentDownloads(int limit) {
+        return auditLogRepository.findByActionTypeWithUser(
+                AuditActionType.DOWNLOAD, PageRequest.of(0, limit)).getContent();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AuditLog> findUserDownloads(Long userId, int page, int size) {
+        return auditLogRepository.findByActionTypeAndUserIdWithUser(
+                AuditActionType.DOWNLOAD, userId, PageRequest.of(page, size));
+    }
 
     @Transactional(readOnly = true)
     public DownloadStatsDto getDownloadStats() {

@@ -3,7 +3,12 @@ package com.eactive.resourcehub.user.service;
 import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.service.AuditService;
+import com.eactive.resourcehub.document.entity.Document;
+import com.eactive.resourcehub.document.entity.DocumentStatus;
+import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.entity.FolderType;
+import com.eactive.resourcehub.document.repository.DocumentRepository;
+import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.team.repository.TeamRepository;
@@ -15,8 +20,10 @@ import com.eactive.resourcehub.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +38,8 @@ public class EmployeeManagementService {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final FolderRepository folderRepository;
+    private final DocumentRepository documentRepository;
+    private final DocumentVersionRepository documentVersionRepository;
     private final AuditService auditService;
 
     private static final List<UserStatus> MANAGED_STATUSES =
@@ -68,12 +77,31 @@ public class EmployeeManagementService {
     @Transactional(readOnly = true)
     public User findById(Long userId) {
         return userRepository.findByIdWithTeam(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
     }
 
     @Transactional(readOnly = true)
     public boolean hasPersonalFolder(Long userId) {
         return folderRepository.existsByOwnerIdAndType(userId, FolderType.PERSONAL);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Document> findPersonalDocuments(Long userId) {
+        return folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL)
+                .map(folder -> documentRepository.findByFolderIdAndStatusWithVersion(
+                        folder.getId(), DocumentStatus.ACTIVE))
+                .orElse(List.of());
+    }
+
+    @Transactional(readOnly = true)
+    public Document findDocumentDetail(Long documentId) {
+        return documentRepository.findByIdForDetail(documentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
+    }
+
+    @Transactional(readOnly = true)
+    public List<DocumentVersion> findDocumentVersions(Long documentId) {
+        return documentVersionRepository.findByDocumentIdOrderByVersionNoDesc(documentId);
     }
 
     /**

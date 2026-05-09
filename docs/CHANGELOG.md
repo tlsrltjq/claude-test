@@ -4,7 +4,55 @@
 
 ---
 
-## [Post-MVP3] 2026-05-08
+## [Post-MVP3] 2026-05-08 (3차 — UX 마감)
+
+### UX 개선
+
+#### 관리자 네비바 active 상태 (14개 템플릿)
+- `admin/*.html` 전체: `.btn-nav.active { background: rgba(255,255,255,.22); border-color: #fff; }` CSS 추가
+- JS: `window.location.pathname` 기준으로 현재 페이지와 일치하는 nav 버튼에 `.active` 자동 적용
+  - 루트(`/admin`) — 정확 일치, 그 외 — `startsWith` 매칭
+
+#### 로딩 스피너 (14개 관리자 + 설정 페이지)
+- `admin/*.html` 전체 + `settings.html`: 반투명 오버레이 + Bootstrap spinner 추가
+- POST 폼 `submit` 이벤트 시 자동 표시 (GET 검색 폼 제외)
+- HTML: `position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999`
+
+---
+
+## [Post-MVP3] 2026-05-08 (2차 — 아키텍처 개선)
+
+### 아키텍처 개선
+
+#### 1순위 — DB 레벨 필터링 + 페이지네이션
+- `EmployeeManagementService.findActiveFilteredPaged()`: Java 스트림 필터 → DB JPQL + `Page<User>` 반환
+- `AdminController /employees`: `result.getContent()` + `totalPages` / `currentPage` 사용
+- `SalesMemberService.findActiveMembers()`: 전체 로드 후 스트림 → DB `findActiveMembersFiltered()` 호출
+- `UserRepository`: `findFilteredPage`, `findActiveMembersFiltered` 2개 JPQL 추가
+
+#### 2순위 — 컨트롤러 Repository 직접 주입 제거
+6개 컨트롤러 → 서비스 레이어 경유로 교체 (보안 lint [5] WARN 목록 5→3 감소):
+
+| 컨트롤러 | 제거된 Repository | 사용 서비스 |
+|---|---|---|
+| `SalesController` | `TeamRepository` | `TeamService.findAll()` |
+| `SalesProfileController` | `TeamRepository` | `TeamService.findAll()` |
+| `SignupController` | `TeamRepository` | `TeamService.findAll()` |
+| `DashboardController` | `UserRepository`, `EmployeeProfileRepository` | `SettingsService.getUser()`, `CareerSaveService.findProfile()` |
+| `CareerCalculatorController` | `UserRepository`, `FolderRepository`, `DocumentRepository` | `SalesMemberService.findActiveMembersForCalculator()`, `getMemberAutofillData()` |
+| `MyActivityController` | `AuditLogRepository` | `StatisticsService.findUserDownloads()` |
+
+서비스 추가 메서드:
+- `CareerSaveService.findProfile(Long userId)` — EmployeeProfile 조회
+- `SalesMemberService.findActiveMembersForCalculator()` — 경력계산기용 멤버 목록
+- `SalesMemberService.getMemberAutofillData(Long userId)` — 자동채우기 문서 데이터
+- `StatisticsService.findUserDownloads(Long userId, int page, int size)` — 내 활동 다운로드 이력
+
+잔여 WARN (기술 부채): `AdminController`, `SharedFolderController`, `MyFolderController`
+
+---
+
+## [Post-MVP3] 2026-05-08 (1차)
 
 ### 기능 추가
 

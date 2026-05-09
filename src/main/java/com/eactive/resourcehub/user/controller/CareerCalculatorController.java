@@ -1,16 +1,9 @@
 package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
-import com.eactive.resourcehub.document.entity.DocumentStatus;
-import com.eactive.resourcehub.document.entity.DocumentType;
-import com.eactive.resourcehub.document.entity.FolderType;
-import com.eactive.resourcehub.document.repository.DocumentRepository;
-import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.employee.service.CareerSaveService;
-import com.eactive.resourcehub.user.entity.UserRole;
-import com.eactive.resourcehub.user.entity.UserStatus;
-import com.eactive.resourcehub.user.repository.UserRepository;
 import com.eactive.resourcehub.user.service.CareerCalculator;
+import com.eactive.resourcehub.user.service.SalesMemberService;
 import com.eactive.resourcehub.user.service.CareerCalculator.Degree;
 import com.eactive.resourcehub.user.service.CareerCalculator.CertType;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,10 +27,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CareerCalculatorController {
 
-    private final UserRepository userRepository;
+    private final SalesMemberService salesMemberService;
     private final CareerSaveService careerSaveService;
-    private final FolderRepository folderRepository;
-    private final DocumentRepository documentRepository;
 
     private static final List<String> GRADES = List.of("특급", "고급", "중급", "초급");
 
@@ -151,30 +141,7 @@ public class CareerCalculatorController {
     @GetMapping("/sales/career-calculator/autofill")
     @ResponseBody
     public Map<String, String> autofill(@RequestParam Long userId) {
-        Map<String, String> result = new HashMap<>();
-        folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).ifPresent(folder -> {
-            // 졸업증명서 → degree + gradDate
-            documentRepository.findByFolderIdAndDocumentType(folder.getId(), DocumentType.GRADUATION_CERTIFICATE)
-                    .stream()
-                    .filter(d -> d.getStatus() == DocumentStatus.ACTIVE
-                              && d.getDegreeType() != null && d.getIssuedDate() != null)
-                    .findFirst()
-                    .ifPresent(d -> {
-                        result.put("degree",   d.getDegreeType());
-                        result.put("gradDate", d.getIssuedDate().toString());
-                    });
-            // 자격증 → certType + certDate
-            documentRepository.findByFolderIdAndDocumentType(folder.getId(), DocumentType.LICENSE)
-                    .stream()
-                    .filter(d -> d.getStatus() == DocumentStatus.ACTIVE
-                              && d.getCertTypeMeta() != null && d.getIssuedDate() != null)
-                    .findFirst()
-                    .ifPresent(d -> {
-                        result.put("certType", d.getCertTypeMeta());
-                        result.put("certDate", d.getIssuedDate().toString());
-                    });
-        });
-        return result;
+        return salesMemberService.getMemberAutofillData(userId);
     }
 
     @PostMapping("/sales/career-calculator/save")
@@ -200,12 +167,7 @@ public class CareerCalculatorController {
 
     private void loadCommon(Model model, Long targetUserId, String degree, String gradDate,
                             String certType, String certDate, boolean removeOverlap) {
-        model.addAttribute("members",
-                userRepository.findByStatusWithTeam(UserStatus.ACTIVE).stream()
-                        .filter(u -> u.getRole() != UserRole.ADMIN)
-                        .sorted(java.util.Comparator.comparing(u ->
-                                u.getTeam() != null ? u.getTeam().getName() + u.getName() : u.getName()))
-                        .toList());
+        model.addAttribute("members", salesMemberService.findActiveMembersForCalculator());
         model.addAttribute("targetUserId",  targetUserId);
         model.addAttribute("degree",        degree);
         model.addAttribute("gradDate",      gradDate);

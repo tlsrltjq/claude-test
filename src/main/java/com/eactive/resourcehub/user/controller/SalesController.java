@@ -1,6 +1,6 @@
 package com.eactive.resourcehub.user.controller;
 
-import com.eactive.resourcehub.team.repository.TeamRepository;
+import com.eactive.resourcehub.team.service.TeamService;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.service.SalesMemberService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SalesController {
 
     private final SalesMemberService salesMemberService;
-    private final TeamRepository teamRepository;
+    private final TeamService teamService;
 
     @GetMapping("/members")
     public String members(@RequestParam(required = false) String q,
@@ -26,7 +26,7 @@ public class SalesController {
                           @RequestParam(defaultValue = "asc") String direction,
                           Model model) {
         model.addAttribute("members", salesMemberService.findActiveMembers(q, teamId, sort, direction));
-        model.addAttribute("teams", teamRepository.findAll());
+        model.addAttribute("teams", teamService.findAll());
         model.addAttribute("q", q);
         model.addAttribute("teamId", teamId);
         model.addAttribute("sort", sort);

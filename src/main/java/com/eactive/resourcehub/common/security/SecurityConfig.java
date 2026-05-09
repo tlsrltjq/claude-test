@@ -35,7 +35,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .headers(headers -> headers
-                .frameOptions(frame -> frame.deny())
+                .frameOptions(frame -> frame.sameOrigin())
                 .contentTypeOptions(c -> {})
                 .referrerPolicy(ref -> ref.policy(
                     ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
@@ -44,13 +44,15 @@ public class SecurityConfig {
                     "script-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
                     "style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
                     "img-src 'self' data:; " +
-                    "font-src 'self' cdn.jsdelivr.net"
+                    "font-src 'self' cdn.jsdelivr.net; " +
+                    "frame-src 'self'"
                 ))
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/login", "/login/forgot", "/login/forgot/verify",
                         "/signup", "/signup/**",
+                        "/error", "/error/**",
                         "/health", "/css/**", "/js/**", "/images/**"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")

@@ -5,7 +5,7 @@ import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.entity.DocumentType;
-import com.eactive.resourcehub.team.repository.TeamRepository;
+import com.eactive.resourcehub.team.service.TeamService;
 import com.eactive.resourcehub.user.dto.SalesProfileQuery;
 import com.eactive.resourcehub.user.entity.ColumnViewPreference;
 import com.eactive.resourcehub.user.entity.Position;
@@ -47,7 +47,7 @@ public class SalesProfileController {
     private final SalesProfileExporter excelExportService;
     private final ColumnViewPreferenceService presetService;
     private final AuditService auditService;
-    private final TeamRepository teamRepository;
+    private final TeamService teamService;
     private final ObjectMapper objectMapper;
 
     @GetMapping("/sales/profiles")
@@ -59,7 +59,7 @@ public class SalesProfileController {
         model.addAttribute("gradeCounts", profileQueryService.getGradeCountsFromRows(rows));
         model.addAttribute("docTypes", DocumentType.values());
         model.addAttribute("positions", Position.values());
-        model.addAttribute("teams", teamRepository.findAll());
+        model.addAttribute("teams", teamService.findAll());
         model.addAttribute("presets", presetService.findByUser(userDetails.getUser().getId()));
         return "sales/profiles";
     }

@@ -2,24 +2,22 @@ package com.eactive.resourcehub.document.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.dto.DocumentUploadRequest;
+import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.document.entity.Document;
-import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentType;
-import com.eactive.resourcehub.document.entity.Folder;
-import com.eactive.resourcehub.document.entity.FolderType;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
-import com.eactive.resourcehub.document.repository.DocumentRepository;
-import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
-import com.eactive.resourcehub.document.repository.FolderRepository;
+import com.eactive.resourcehub.document.entity.Folder;
 import com.eactive.resourcehub.document.service.DocumentDeleteService;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
+import com.eactive.resourcehub.document.service.MyFolderService;
 import com.eactive.resourcehub.template.service.ResumeTemplateService;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-import java.util.Set;
 import com.eactive.resourcehub.common.util.FileUtils;
 
 @Controller
@@ -39,9 +35,7 @@ import com.eactive.resourcehub.common.util.FileUtils;
 @RequiredArgsConstructor
 public class MyFolderController {
 
-    private final FolderRepository folderRepository;
-    private final DocumentRepository documentRepository;
-    private final DocumentVersionRepository documentVersionRepository;
+    private final MyFolderService myFolderService;
     private final DocumentUploadService documentUploadService;
     private final DocumentDeleteService documentDeleteService;
     private final ResumeTemplateService resumeTemplateService;
@@ -49,19 +43,13 @@ public class MyFolderController {
     @GetMapping
     public String myFolder(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Long userId = userDetails.getUser().getId();
-        Folder folder = folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).orElse(null);
+        Folder folder = myFolderService.findPersonalFolder(userId).orElse(null);
         if (folder == null) {
             model.addAttribute("errorMessage", "개인 폴더가 없습니다. 관리자에게 문의하세요.");
             return "my/folder";
         }
-        // 본인은 모든 상태 문서 조회 (currentVersion이 없는 PENDING 문서 포함)
-        List<Document> documents = documentRepository.findByFolderIdAndStatus(folder.getId(), DocumentStatus.ACTIVE);
-        // 각 문서의 최신 버전을 별도 조회 (review status 포함)
-        Map<Long, DocumentVersion> latestVersions = new HashMap<>();
-        for (Document doc : documents) {
-            documentVersionRepository.findFirstByDocumentIdOrderByVersionNoDesc(doc.getId())
-                    .ifPresent(v -> latestVersions.put(doc.getId(), v));
-        }
+        List<Document> documents = myFolderService.findActiveDocuments(folder.getId());
+        Map<Long, DocumentVersion> latestVersions = myFolderService.findLatestVersionMap(documents);
         model.addAttribute("folder", folder);
         model.addAttribute("documents", documents);
         model.addAttribute("latestVersions", latestVersions);
@@ -72,7 +60,7 @@ public class MyFolderController {
     @GetMapping("/documents/upload")
     public String uploadForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Long userId = userDetails.getUser().getId();
-        if (folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).isEmpty()) {
+        if (myFolderService.findPersonalFolder(userId).isEmpty()) {
             return "redirect:/my/folder";
         }
         model.addAttribute("documentTypes", Arrays.stream(DocumentType.values())
@@ -104,23 +92,22 @@ public class MyFolderController {
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  Model model) {
         Long userId = userDetails.getUser().getId();
-        Document document = documentRepository.findByIdForDetailWithTags(documentId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
+        Document document = myFolderService.findDocumentDetail(documentId);
 
-        if (!document.getFolder().getOwner().getId().equals(userId)) {
+        UserRole role = userDetails.getUser().getRole();
+        boolean isOwner = document.getFolder().getOwner().getId().equals(userId);
+        if (role != UserRole.ADMIN && !isOwner) {
             throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        List<DocumentVersion> versions = documentVersionRepository
-                .findByDocumentIdOrderByVersionNoDesc(documentId);
-        // 본인은 최신 버전을 currentVersion으로 표시 (pending/rejected 포함)
+        List<DocumentVersion> versions = myFolderService.findDocumentVersions(documentId);
         DocumentVersion currentVersion = versions.isEmpty() ? null : versions.get(0);
 
         model.addAttribute("document", document);
         model.addAttribute("currentVersion", currentVersion);
         model.addAttribute("versions", versions);
         model.addAttribute("previewType", resolvePreviewType(currentVersion));
+        model.addAttribute("isOwner", isOwner);
         return "my/document-detail";
     }
 
@@ -140,15 +127,7 @@ public class MyFolderController {
                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiresAt,
                                @AuthenticationPrincipal CustomUserDetails userDetails,
                                RedirectAttributes redirectAttributes) {
-        Long userId = userDetails.getUser().getId();
-        Document document = documentRepository.findByIdForDetail(documentId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        HttpStatus.NOT_FOUND));
-        if (!document.getFolder().getOwner().getId().equals(userId)) {
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-        document.updateExpiresAt(expiresAt);
-        documentRepository.save(document);
+        myFolderService.updateExpiry(documentId, userDetails.getUser().getId(), expiresAt);
         redirectAttributes.addFlashAttribute("successMessage", "만료일이 수정되었습니다.");
         return "redirect:/my/folder/documents/" + documentId;
     }

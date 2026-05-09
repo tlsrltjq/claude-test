@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CareerSaveService {
@@ -21,6 +23,11 @@ public class CareerSaveService {
     private final UserRepository userRepository;
     private final EmployeeProfileRepository employeeProfileRepository;
     private final AuditService auditService;
+
+    @Transactional(readOnly = true)
+    public Optional<EmployeeProfile> findProfile(Long userId) {
+        return employeeProfileRepository.findByUserId(userId);
+    }
 
     @Transactional
     public void saveCareer(Long targetUserId, int careerMonths, int careerTotalDays,

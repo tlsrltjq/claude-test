@@ -1,6 +1,6 @@
 package com.eactive.resourcehub.user.controller;
 
-import com.eactive.resourcehub.team.repository.TeamRepository;
+import com.eactive.resourcehub.team.service.TeamService;
 import com.eactive.resourcehub.user.dto.SignupRequest;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.service.SignupService;
@@ -33,7 +33,7 @@ public class SignupController {
     private static final String SESSION_EXPIRY  = "PENDING_SIGNUP_EXPIRY";
 
     private final SignupService signupService;
-    private final TeamRepository teamRepository;
+    private final TeamService teamService;
 
     @Value("${resourcehub.company-email-domain}")
     private String emailDomain;
@@ -92,7 +92,7 @@ public class SignupController {
 
     private void loadFormModel(Model model) {
         model.addAttribute("positions", Position.values());
-        model.addAttribute("teams", teamRepository.findAll());
+        model.addAttribute("teams", teamService.findAll());
         model.addAttribute("emailDomain", emailDomain);
     }
 

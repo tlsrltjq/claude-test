@@ -1,35 +1,22 @@
 package com.eactive.resourcehub.user.controller;
 
-import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditLog;
-import com.eactive.resourcehub.audit.repository.AuditLogRepository;
 import com.eactive.resourcehub.audit.service.StatisticsService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
-import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
-import com.eactive.resourcehub.document.entity.FolderType;
-import com.eactive.resourcehub.document.repository.DocumentRepository;
-import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
-import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.document.service.DocumentDeleteService;
 import com.eactive.resourcehub.document.service.DocumentExpiryService;
 import com.eactive.resourcehub.document.service.DocumentReviewService;
-import com.eactive.resourcehub.permission.entity.Permission;
-import com.eactive.resourcehub.permission.repository.PermissionRepository;
 import com.eactive.resourcehub.permission.service.FolderPermissionService;
-import com.eactive.resourcehub.team.repository.TeamRepository;
+import com.eactive.resourcehub.team.service.TeamService;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
-import com.eactive.resourcehub.user.repository.UserRepository;
 import com.eactive.resourcehub.user.service.EmployeeManagementService;
 import com.eactive.resourcehub.user.service.UserRoleService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
@@ -50,23 +37,17 @@ public class AdminController {
     private final EmployeeManagementService employeeService;
     private final UserRoleService userRoleService;
     private final FolderPermissionService folderPermissionService;
-    private final UserRepository userRepository;
-    private final TeamRepository teamRepository;
-    private final FolderRepository folderRepository;
-    private final DocumentRepository documentRepository;
-    private final DocumentVersionRepository documentVersionRepository;
+    private final TeamService teamService;
     private final DocumentReviewService documentReviewService;
     private final DocumentDeleteService documentDeleteService;
-    private final PermissionRepository permissionRepository;
     private final StatisticsService statisticsService;
-    private final AuditLogRepository auditLogRepository;
     private final DocumentExpiryService documentExpiryService;
     private final SessionRegistry sessionRegistry;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
-        model.addAttribute("totalUsers", userRepository.count());
-        model.addAttribute("totalTeams", teamRepository.count());
+        model.addAttribute("totalUsers", statisticsService.countUsers());
+        model.addAttribute("totalTeams", teamService.count());
         model.addAttribute("pendingReviewCount",
                 documentReviewService.findPendingVersions().size());
         return "admin/dashboard";
@@ -88,7 +69,7 @@ public class AdminController {
         model.addAttribute("positions", Position.values());
         model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
                 .filter(r -> r != UserRole.TEAM_LEADER).toList());
-        model.addAttribute("teams", teamRepository.findAll());
+        model.addAttribute("teams", teamService.findAll());
         model.addAttribute("q", q);
         model.addAttribute("position", position);
         model.addAttribute("role", role);
@@ -103,27 +84,16 @@ public class AdminController {
         model.addAttribute("activeTab", tab);
         User user = employeeService.findById(userId);
         model.addAttribute("user", user);
-        model.addAttribute("teams", teamRepository.findAll());
+        model.addAttribute("teams", teamService.findAll());
         model.addAttribute("hasFolder", employeeService.hasPersonalFolder(userId));
 
-        // 역할 목록
         model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
                 .filter(r -> r != UserRole.TEAM_LEADER).toList());
 
-        // 문서 목록
-        folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).ifPresent(folder ->
-                model.addAttribute("documents",
-                        documentRepository.findByFolderIdAndStatusWithVersion(folder.getId(), DocumentStatus.ACTIVE)));
+        model.addAttribute("documents", employeeService.findPersonalDocuments(userId));
 
-        // 권한 목록
-        List<Permission> permissions = folderPermissionService.findPermissionsByUser(userId);
-        List<Long> grantedFolderIds = permissions.stream().map(Permission::getTargetId).toList();
-        var grantableFolders = folderRepository.findAllWithOwner().stream()
-                .filter(f -> !f.getOwner().getId().equals(userId))
-                .filter(f -> !grantedFolderIds.contains(f.getId()))
-                .toList();
-        model.addAttribute("permissions", permissions);
-        model.addAttribute("grantableFolders", grantableFolders);
+        model.addAttribute("permissions", folderPermissionService.findPermissionsByUser(userId));
+        model.addAttribute("grantableFolders", folderPermissionService.findGrantableFolders(userId));
 
         return "admin/employee-detail";
     }
@@ -136,7 +106,6 @@ public class AdminController {
         try {
             UserStatus newStatus = employeeService.toggleStatus(userId, actor.getUser().getId(), request);
             if (newStatus == UserStatus.DISABLED) {
-                // 해당 사용자의 모든 세션을 즉시 만료
                 for (Object principal : sessionRegistry.getAllPrincipals()) {
                     if (principal instanceof CustomUserDetails cud
                             && cud.getUser().getId().equals(userId)) {
@@ -175,10 +144,7 @@ public class AdminController {
     public String employeeDocuments(@PathVariable Long userId, Model model) {
         User user = employeeService.findById(userId);
         model.addAttribute("user", user);
-        folderRepository.findByOwnerIdAndType(userId, FolderType.PERSONAL).ifPresent(folder -> {
-            model.addAttribute("documents",
-                    documentRepository.findByFolderIdAndStatusWithVersion(folder.getId(), DocumentStatus.ACTIVE));
-        });
+        model.addAttribute("documents", employeeService.findPersonalDocuments(userId));
         return "admin/employee-documents";
     }
 
@@ -188,11 +154,8 @@ public class AdminController {
                                          @PathVariable Long documentId,
                                          Model model) {
         User user = employeeService.findById(userId);
-        var document = documentRepository.findByIdForDetail(documentId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
-
-        var versions = documentVersionRepository.findByDocumentIdOrderByVersionNoDesc(documentId);
+        var document = employeeService.findDocumentDetail(documentId);
+        var versions = employeeService.findDocumentVersions(documentId);
         DocumentVersion currentVersion = document.getCurrentVersion() != null
                 ? document.getCurrentVersion() : (versions.isEmpty() ? null : versions.get(0));
 
@@ -251,21 +214,9 @@ public class AdminController {
     // ── 권한 관리: /admin/users/{userId}/permissions ────────────
     @GetMapping("/users/{userId}/permissions")
     public String permissionsForm(@PathVariable Long userId, Model model) {
-        User user = employeeService.findById(userId);
-        List<Permission> permissions = folderPermissionService.findPermissionsByUser(userId);
-
-        List<Long> grantedFolderIds = permissions.stream()
-                .map(Permission::getTargetId).toList();
-
-        var allFolders = folderRepository.findAllWithOwner();
-        var grantableFolders = allFolders.stream()
-                .filter(f -> !f.getOwner().getId().equals(userId))
-                .filter(f -> !grantedFolderIds.contains(f.getId()))
-                .toList();
-
-        model.addAttribute("user", user);
-        model.addAttribute("permissions", permissions);
-        model.addAttribute("grantableFolders", grantableFolders);
+        model.addAttribute("user", employeeService.findById(userId));
+        model.addAttribute("permissions", folderPermissionService.findPermissionsByUser(userId));
+        model.addAttribute("grantableFolders", folderPermissionService.findGrantableFolders(userId));
         return "admin/user-permissions";
     }
 
@@ -308,9 +259,7 @@ public class AdminController {
 
     @GetMapping("/documents/review/{documentVersionId}")
     public String reviewDetail(@PathVariable Long documentVersionId, Model model) {
-        DocumentVersion version = documentVersionRepository.findByIdForReviewDetail(documentVersionId)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "문서 버전을 찾을 수 없습니다."));
+        DocumentVersion version = documentReviewService.findVersionForReview(documentVersionId);
         model.addAttribute("version", version);
         model.addAttribute("previewType", resolvePreviewType(version));
         return "admin/document-review-detail";
@@ -358,9 +307,7 @@ public class AdminController {
     public String statistics(Model model) {
         model.addAttribute("downloadStats", statisticsService.getDownloadStats());
         model.addAttribute("topDocuments", statisticsService.getTopDownloadedDocuments(10));
-        Page<AuditLog> recentPage = auditLogRepository.findByActionTypeWithUser(
-                AuditActionType.DOWNLOAD, PageRequest.of(0, 30));
-        model.addAttribute("recentDownloads", recentPage.getContent());
+        model.addAttribute("recentDownloads", statisticsService.findRecentDownloads(30));
         return "admin/statistics";
     }
 

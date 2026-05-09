@@ -16,6 +16,7 @@
             color: #fff;
             font-size: .8rem;
         }
+        .btn-nav.active { background: rgba(255,255,255,.22); border-color: #fff; color: #fff; }
         .btn-nav:hover {
             background: rgba(255,255,255,.12);
             border-color: rgba(255,255,255,.6);
@@ -201,6 +202,33 @@
 
 </div>
 
+<!-- 로딩 스피너 오버레이 -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+        <span class="visually-hidden">처리 중...</span>
+    </div>
+</div>
+<script>
+(function(){
+    var p = window.location.pathname;
+    // 네비바 active 상태
+    document.querySelectorAll('a.btn-nav').forEach(function(el){
+        var h = el.getAttribute('href');
+        if(!h) return;
+        var isRoot = (h==='/admin'||h==='/admin/');
+        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
+        if(active) el.classList.add('active');
+    });
+    // POST 폼 제출 시 스피너 표시
+    document.querySelectorAll('form').forEach(function(f){
+        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
+            f.addEventListener('submit',function(){
+                document.getElementById('loadingOverlay').style.display='flex';
+            });
+        }
+    });
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

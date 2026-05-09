@@ -40,7 +40,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 관리자 직원 목록: 상태·검색어·직급·역할·팀 필터 + DB 페이지네이션.
      * null 파라미터는 해당 조건을 무시한다.
      */
-    @Query(value = "SELECT u FROM User u LEFT JOIN u.team t " +
+    @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.team t " +
                    "WHERE u.status IN :statuses " +
                    "AND (:qLike IS NULL OR LOWER(u.name) LIKE :qLike OR LOWER(u.email) LIKE :qLike) " +
                    "AND (:position IS NULL OR u.position = :position) " +

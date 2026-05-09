@@ -30,6 +30,11 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
+    public long count() {
+        return teamRepository.count();
+    }
+
+    @Transactional(readOnly = true)
     public Team findById(Long id) {
         return teamRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
