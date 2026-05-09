@@ -51,4 +51,8 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
            "LEFT JOIN FETCH u.team " +
            "WHERE dv.id IN :ids")
     List<DocumentVersion> findByIdInWithOwnerAndTeam(@Param("ids") List<Long> ids);
+
+    // GC: 특정 문서들의 모든 버전 경로 조회 (파일 삭제용)
+    @Query("SELECT dv FROM DocumentVersion dv WHERE dv.document.id IN :documentIds")
+    List<DocumentVersion> findByDocumentIdIn(@Param("documentIds") List<Long> documentIds);
 }
