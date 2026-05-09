@@ -6,6 +6,7 @@ import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.service.DocumentDeleteService;
 import com.eactive.resourcehub.document.service.DocumentExpiryService;
+import com.eactive.resourcehub.document.service.DocumentFileGcService;
 import com.eactive.resourcehub.document.service.DocumentReviewService;
 import com.eactive.resourcehub.permission.service.FolderPermissionService;
 import com.eactive.resourcehub.team.service.TeamService;
@@ -42,6 +43,7 @@ public class AdminController {
     private final DocumentDeleteService documentDeleteService;
     private final StatisticsService statisticsService;
     private final DocumentExpiryService documentExpiryService;
+    private final DocumentFileGcService documentFileGcService;
     private final SessionRegistry sessionRegistry;
 
     @GetMapping({"", "/"})
@@ -309,6 +311,21 @@ public class AdminController {
         model.addAttribute("topDocuments", statisticsService.getTopDownloadedDocuments(10));
         model.addAttribute("recentDownloads", statisticsService.findRecentDownloads(30));
         return "admin/statistics";
+    }
+
+    // ── GC 대시보드: /admin/gc ────────────────────────────────────
+    @GetMapping("/gc")
+    public String gcDashboard(Model model) {
+        model.addAttribute("retentionDays", documentFileGcService.getRetentionDays());
+        return "admin/gc";
+    }
+
+    @PostMapping("/gc/run")
+    public String runGc(RedirectAttributes redirectAttributes) {
+        int count = documentFileGcService.runGc();
+        redirectAttributes.addFlashAttribute("gcResult",
+                count == 0 ? "정리 대상 없음" : count + "건 처리 완료");
+        return "redirect:/admin/gc";
     }
 
     private String resolvePreviewType(DocumentVersion version) {

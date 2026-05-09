@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,6 +95,11 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM Document d JOIN FETCH d.currentVersion " +
            "WHERE d.folder.id IN :folderIds AND d.status = 'ACTIVE'")
     List<Document> findActiveWithVersionByFolderIds(@Param("folderIds") List<Long> folderIds);
+
+    // GC: DELETED + 보존 기간 경과 + 파일 미정리 문서 조회
+    @Query("SELECT d FROM Document d WHERE d.status = 'DELETED' " +
+           "AND d.deletedAt < :threshold AND d.filesPurgedAt IS NULL")
+    List<Document> findPurgeCandidates(@Param("threshold") LocalDateTime threshold);
 
     // 본인 문서 태그 포함 조회 (detail용)
     @Query("SELECT d FROM Document d " +

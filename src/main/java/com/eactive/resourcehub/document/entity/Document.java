@@ -59,6 +59,9 @@ public class Document extends BaseEntity {
     @Column(name = "deleted_by")
     private Long deletedBy;
 
+    @Column(name = "files_purged_at")
+    private LocalDateTime filesPurgedAt;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "document_tags",
                joinColumns = @JoinColumn(name = "document_id"),
@@ -94,6 +97,12 @@ public class Document extends BaseEntity {
         this.status = DocumentStatus.DELETED;
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedByUserId;
+    }
+
+    public void markFilesPurged() {
+        if (this.filesPurgedAt == null) {
+            this.filesPurgedAt = LocalDateTime.now();
+        }
     }
 
     public void updateExpiresAt(LocalDate expiresAt) {
