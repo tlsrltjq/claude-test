@@ -22,8 +22,9 @@
         .log-row:not(:last-child) { border-bottom: 1px solid #f0f2f5; }
         .log-icon { width: 36px; height: 36px; border-radius: 10px; background: #e7f0ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .log-icon i { color: #0d6efd; font-size: 1rem; }
-        .log-reason { font-size: .88rem; color: #212529; font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .log-version { font-size: .78rem; color: #868e96; flex-shrink: 0; }
+        .log-body { flex: 1; min-width: 0; }
+        .log-filename { font-size: .88rem; color: #212529; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .log-meta { font-size: .75rem; color: #868e96; margin-top: .1rem; display: flex; align-items: center; gap: .4rem; }
         .log-ip { font-size: .75rem; color: #adb5bd; flex-shrink: 0; font-family: monospace; }
         .log-date { font-size: .75rem; color: #adb5bd; flex-shrink: 0; white-space: nowrap; }
 
@@ -78,9 +79,13 @@
             <div class="log-icon">
                 <i class="bi bi-download"></i>
             </div>
-            <div class="log-reason" th:text="${log.reason != null and !log.reason.isBlank() ? log.reason : '(사유 없음)'}">사유</div>
-            <span class="log-version" th:text="'v-id ' + ${log.targetId}"></span>
-            <span class="log-ip" th:text="${log.ipAddress}"></span>
+            <div class="log-body">
+                <div class="log-filename"
+                     th:text="${log.reason != null and !log.reason.isBlank() ? log.reason : '파일 다운로드'}"></div>
+                <div class="log-meta">
+                    <span th:text="${log.ipAddress}"></span>
+                </div>
+            </div>
             <span class="log-date" th:text="${#temporals.format(log.createdAt, 'yy.MM.dd HH:mm')}"></span>
         </div>
     </div>

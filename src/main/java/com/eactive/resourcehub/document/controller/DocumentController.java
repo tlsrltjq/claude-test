@@ -95,7 +95,8 @@ public class DocumentController {
             return ResponseEntity.notFound().build();
         }
 
-        auditLogService.logDownload(userDetails.getUser().getId(), documentVersionId, null, request);
+        auditLogService.logDownload(userDetails.getUser().getId(), documentVersionId,
+                version.getOriginalFileName(), request);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,

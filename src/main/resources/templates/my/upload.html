@@ -83,7 +83,7 @@
 
                 <div class="mb-3">
                     <label class="form-label">문서 제목 <span class="req">*</span></label>
-                    <input type="text" name="title" class="form-control" required placeholder="예: 2024년 이력서">
+                    <input type="text" name="title" class="form-control" required placeholder="문서 종류를 먼저 선택하세요">
                 </div>
 
                 <!-- ── 학위/자격증 메타 (문서 종류에 따라 동적 표시) ── -->
@@ -155,7 +155,18 @@
 </div>
 
 <script>
-/* ── 문서 종류에 따른 메타 박스 표시 ── */
+/* ── 문서 종류별 제목 placeholder 매핑 ── */
+const TITLE_PLACEHOLDER = {
+    'RESUME':                  '예: 2025년 이력서',
+    'CAREER_DESCRIPTION':      '예: 2025년 경력기술서',
+    'GRADUATION_CERTIFICATE':  '예: ○○대학교 졸업증명서',
+    'LICENSE':                 '예: 정보처리기사 자격증',
+    'HEALTH_INSURANCE_PROOF':  '예: 2025년 4월 건강보험료납부확인서',
+    'PROFILE_PHOTO':           '예: 증명사진 2025',
+    'ETC':                     '예: 기타 서류',
+};
+
+/* ── 문서 종류에 따른 메타 박스 + placeholder 변경 ── */
 function onTypeChange() {
     const val = document.getElementById('docTypeSelect').value;
     document.getElementById('metaGrad').style.display = (val === 'GRADUATION_CERTIFICATE') ? '' : 'none';
@@ -166,6 +177,9 @@ function onTypeChange() {
     });
     const certDateEl = document.getElementById('issuedDateCert');
     if (certDateEl) certDateEl.disabled = (val !== 'LICENSE');
+    /* 제목 placeholder 동적 변경 */
+    const titleInput = document.querySelector('input[name="title"]');
+    titleInput.placeholder = TITLE_PLACEHOLDER[val] || '문서 제목을 입력하세요';
 }
 onTypeChange(); // 초기화
 
