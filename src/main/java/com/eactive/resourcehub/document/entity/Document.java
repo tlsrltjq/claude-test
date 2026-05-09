@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,6 +44,21 @@ public class Document extends BaseEntity {
     @Column(name = "expires_at")
     private LocalDate expiresAt;
 
+    @Column(name = "issued_date")
+    private LocalDate issuedDate;
+
+    @Column(name = "degree_type", length = 50)
+    private String degreeType;
+
+    @Column(name = "cert_type_meta", length = 50)
+    private String certTypeMeta;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    private Long deletedBy;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "document_tags",
                joinColumns = @JoinColumn(name = "document_id"),
@@ -74,13 +90,19 @@ public class Document extends BaseEntity {
         this.status = DocumentStatus.ACTIVE;
     }
 
-    public void delete() {
+    public void delete(Long deletedByUserId) {
         this.status = DocumentStatus.DELETED;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedByUserId;
     }
 
     public void updateExpiresAt(LocalDate expiresAt) {
         this.expiresAt = expiresAt;
     }
+
+    public void updateIssuedDate(LocalDate issuedDate) { this.issuedDate = issuedDate; }
+    public void updateDegreeType(String degreeType)    { this.degreeType = degreeType; }
+    public void updateCertTypeMeta(String certTypeMeta){ this.certTypeMeta = certTypeMeta; }
 
     public void addTag(Tag tag) {
         this.tags.add(tag);

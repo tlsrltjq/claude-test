@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,16 @@ public class FolderPermissionService {
     @Transactional(readOnly = true)
     public List<Permission> findPermissionsByUser(Long userId) {
         return permissionRepository.findByUserIdAndTargetType(userId, PermissionTargetType.FOLDER);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Folder> findGrantableFolders(Long userId) {
+        List<Long> grantedFolderIds = findPermissionsByUser(userId).stream()
+                .map(Permission::getTargetId).collect(Collectors.toList());
+        return folderRepository.findAllWithOwner().stream()
+                .filter(f -> !f.getOwner().getId().equals(userId))
+                .filter(f -> !grantedFolderIds.contains(f.getId()))
+                .toList();
     }
 
     @Transactional

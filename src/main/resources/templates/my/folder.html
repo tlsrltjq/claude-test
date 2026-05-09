@@ -5,157 +5,223 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>내 폴더 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
-        .doc-card { transition: box-shadow .2s; cursor: default; }
-        .doc-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.15); }
-        .doc-thumbnail { width:100%; height:160px; object-fit:cover; background:#f0f0f0; }
-        .doc-thumbnail-placeholder { width:100%; height:160px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; color:#aaa; font-size:2.5rem; }
+        body { background: #f0f2f5; }
+        .topnav { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: .6rem 0; }
+        .topnav .brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
+        .btn-nav { border-color: rgba(255,255,255,.5); color: #fff; font-size: .8rem; padding: .3rem .75rem; border-radius: 6px; }
+        .btn-nav:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+        .folder-header { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border-radius: 14px; padding: 1.4rem 1.75rem; color: #fff; margin-bottom: 1.25rem; }
+        .folder-header h2 { font-size: 1.2rem; font-weight: 700; margin: 0 0 .2rem; }
+        .folder-header .sub { font-size: .85rem; opacity: .8; }
+
+        .filter-bar { background: #fff; border-radius: 12px; padding: .75rem 1rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+        /* ── 문서 카드 ── */
+        .doc-card { border: 1.5px solid #e9ecef; border-radius: 12px; overflow: hidden; background: #fff; transition: box-shadow .18s, transform .18s; }
+        .doc-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.12); transform: translateY(-2px); }
+        .doc-thumb { width: 100%; height: 148px; object-fit: cover; display: block; }
+        .doc-icon-area { width: 100%; height: 148px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; }
+        .doc-ext { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; letter-spacing: .04em; }
+        .ext-pdf  { background: #ffe4e4; color: #c92a2a; }
+        .ext-img  { background: #e7f0ff; color: #1c7ed6; }
+        .ext-word { background: #e8f0fa; color: #2b579a; }
+        .ext-hwp  { background: #e4f7eb; color: #1e7e34; }
+        .ext-etc  { background: #f0f2f5; color: #6c757d; }
+        .doc-body { padding: .75rem; }
+        .doc-type-badge { font-size: .7rem; padding: .15rem .45rem; border-radius: 4px; }
+        .doc-title { font-size: .88rem; font-weight: 600; color: #212529; margin: .3rem 0 .2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .doc-meta { font-size: .75rem; color: #adb5bd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .doc-footer { padding: .5rem .75rem; border-top: 1px solid #f0f2f5; display: flex; gap: .4rem; }
+        .doc-footer .btn { font-size: .78rem; border-radius: 6px; padding: .3rem .6rem; }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; color: #adb5bd; }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+        .empty-state p { font-size: .95rem; margin-bottom: 1.25rem; }
+
+        .resume-banner { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: .7rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: .75rem; }
+        .resume-banner i { color: #3b82f6; font-size: 1.2rem; flex-shrink: 0; }
+        .resume-banner .text { font-size: .85rem; color: #1e40af; flex: 1; }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">eActive Resource Hub</a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/dashboard}" class="btn btn-outline-light btn-sm">대시보드</a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                <button type="submit" class="btn btn-outline-light btn-sm">로그아웃</button>
-            </form>
-        </div>
+
+<nav class="topnav">
+    <div class="container d-flex align-items-center gap-3">
+        <a th:href="@{/dashboard}" class="brand me-auto">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
+        </a>
+        <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
+            <i class="bi bi-house me-1"></i>대시보드
+        </a>
+        <form th:action="@{/logout}" method="post" class="mb-0">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+            <button type="submit" class="btn btn-nav btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+            </button>
+        </form>
     </div>
 </nav>
 
-<div class="container mt-4">
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+<div class="container py-4">
 
-    <div th:if="${folder == null}" class="alert alert-warning">
+    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-check-circle-fill"></i><span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${errorMessage}"></span>
+    </div>
+
+    <div th:if="${folder == null}" class="alert alert-warning d-flex align-items-center gap-2">
+        <i class="bi bi-folder-x"></i>
         개인 폴더가 없습니다. 관리자에게 문의하세요.
     </div>
 
     <div th:if="${folder != null}">
-        <!-- 상단 정보 -->
-        <div class="d-flex justify-content-between align-items-start mb-3">
+
+        <!-- 양식 이력서 배너 -->
+        <div th:if="${activeResumeTemplate != null}" class="resume-banner">
+            <i class="bi bi-file-earmark-person-fill"></i>
+            <span class="text">
+                양식 이력서 <strong th:text="${activeResumeTemplate.fileName}"></strong>가 등록되어 있습니다.
+            </span>
+            <a th:href="@{/my/folder/resume-template/download}" class="btn btn-primary btn-sm">
+                <i class="bi bi-download me-1"></i>다운로드
+            </a>
+        </div>
+
+        <!-- 폴더 헤더 -->
+        <div class="folder-header d-flex align-items-start justify-content-between">
             <div>
-                <h2 class="mb-0" th:text="${folder.folderName}">내 폴더</h2>
-                <small class="text-muted"
-                       th:text="'문서 ' + (${documents != null ? #lists.size(documents) : 0}) + '개'"></small>
+                <h2><i class="bi bi-folder-fill me-2"></i><span th:text="${folder.folderName}">내 폴더</span></h2>
+                <div class="sub">
+                    문서 <strong th:text="${documents != null ? #lists.size(documents) : 0}">0</strong>개
+                </div>
             </div>
-            <a th:href="@{/my/folder/documents/upload}" class="btn btn-primary">+ 문서 업로드</a>
+            <a th:href="@{/my/folder/documents/upload}" class="btn btn-light btn-sm fw-semibold">
+                <i class="bi bi-plus-lg me-1"></i>문서 업로드
+            </a>
         </div>
 
-        <!-- 필터/검색/정렬 -->
-        <div class="row g-2 mb-3">
-            <div class="col-auto">
-                <select id="filterType" class="form-select form-select-sm" onchange="applyFilter()">
-                    <option value="">전체 종류</option>
-                    <option value="이력서">이력서</option>
-                    <option value="경력기술서">경력기술서</option>
-                    <option value="졸업증명서">졸업증명서</option>
-                    <option value="자격증">자격증</option>
-                    <option value="재직증명서">재직증명서</option>
-                    <option value="기타">기타</option>
-                </select>
+        <!-- 필터/검색 바 -->
+        <div class="filter-bar">
+            <i class="bi bi-funnel text-muted" style="font-size:.95rem;flex-shrink:0"></i>
+            <select id="filterType" class="form-select form-select-sm" style="width:auto;min-width:120px"
+                    onchange="applyFilter()">
+                <option value="">전체 종류</option>
+                <option value="이력서">이력서</option>
+                <option value="경력기술서">경력기술서</option>
+                <option value="졸업증명서">졸업증명서</option>
+                <option value="정보처리기사">정보처리기사</option>
+                <option value="건강보험료납부확인서">건강보험료납부확인서</option>
+                <option value="증명사진">증명사진</option>
+                <option value="기타">기타</option>
+            </select>
+            <div class="flex-fill" style="min-width:160px;max-width:260px">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input id="searchBox" class="form-control border-start-0" placeholder="제목 또는 파일명" oninput="applyFilter()">
+                </div>
             </div>
-            <div class="col-sm-4">
-                <input id="searchBox" class="form-control form-control-sm" placeholder="제목 또는 파일명 검색"
-                       oninput="applyFilter()">
-            </div>
-            <div class="col-auto">
-                <select id="sortOrder" class="form-select form-select-sm" onchange="applySort()">
-                    <option value="date">최근 업로드</option>
-                    <option value="type">종류</option>
-                    <option value="title">제목</option>
-                </select>
-            </div>
+            <select id="sortOrder" class="form-select form-select-sm" style="width:auto;min-width:110px"
+                    onchange="applySort()">
+                <option value="date">최근 업로드</option>
+                <option value="type">종류</option>
+                <option value="title">제목</option>
+            </select>
         </div>
 
-        <div th:if="${#lists.isEmpty(documents)}" class="alert alert-info">업로드된 문서가 없습니다.</div>
+        <!-- 빈 상태 -->
+        <div th:if="${#lists.isEmpty(documents)}" class="empty-state">
+            <i class="bi bi-folder2-open"></i>
+            <p class="fw-semibold" style="color:#6c757d">아직 업로드된 문서가 없습니다.</p>
+            <a th:href="@{/my/folder/documents/upload}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>첫 문서 업로드
+            </a>
+        </div>
 
-        <!-- 카드 뷰 -->
-        <div id="cardGrid" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3"
+        <!-- 카드 그리드 -->
+        <div id="cardGrid"
+             class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3"
              th:if="${!#lists.isEmpty(documents)}">
+
             <div th:each="doc : ${documents}" class="col doc-card-col"
                  th:with="lv=${latestVersions[doc.id]}"
                  th:data-type="${doc.documentType.name()}"
-                 th:data-label="${doc.documentType.name() == 'RESUME' ? '이력서' :
-                                 doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                                 doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                                 doc.documentType.name() == 'LICENSE' ? '자격증' :
-                                 doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
+                 th:data-label="${doc.documentType.displayName}"
                  th:data-title="${doc.title}"
                  th:data-filename="${lv != null ? lv.originalFileName : ''}"
                  th:data-date="${lv != null ? lv.createdAt : ''}">
-                <div class="card h-100 doc-card">
-                    <!-- 썸네일 -->
-                    <div th:if="${lv != null and lv.thumbnailStoragePath != null}">
-                        <img th:src="@{/documents/{id}/thumbnail(id=${lv.id})}"
-                             class="card-img-top doc-thumbnail" alt="썸네일"
-                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                        <div class="doc-thumbnail-placeholder" style="display:none;">📄</div>
-                    </div>
-                    <div th:if="${lv == null or lv.thumbnailStoragePath == null}"
-                         class="doc-thumbnail-placeholder">📄</div>
 
-                    <div class="card-body p-2">
-                        <div class="d-flex gap-1 flex-wrap mb-1">
-                            <span th:text="${doc.documentType.name() == 'RESUME' ? '이력서' :
-                                             doc.documentType.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                                             doc.documentType.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                                             doc.documentType.name() == 'LICENSE' ? '자격증' :
-                                             doc.documentType.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}"
-                                  class="badge bg-secondary"></span>
-                            <!-- 검토 상태 배지 -->
-                            <span th:if="${lv != null and lv.reviewStatus.name() == 'PENDING_REVIEW'}"
-                                  class="badge bg-warning text-dark">검토 대기</span>
-                            <span th:if="${lv != null and lv.reviewStatus.name() == 'APPROVED'}"
-                                  class="badge bg-success">승인됨</span>
-                            <span th:if="${lv != null and lv.reviewStatus.name() == 'REJECTED'}"
-                                  class="badge bg-danger">반려됨</span>
-                            <span th:if="${lv != null and lv.reviewStatus.name() == 'ARCHIVED'}"
-                                  class="badge bg-secondary">보관됨</span>
-                            <!-- 만료 배지 -->
-                            <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
-                                  class="badge bg-danger">만료됨</span>
-                            <span th:if="${doc.expiresAt != null and !doc.expiresAt.isBefore(#temporals.createToday()) and doc.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
-                                  class="badge bg-warning text-dark">만료임박</span>
+                <div class="doc-card h-100"
+                     th:with="ext=${lv != null ? lv.originalFileName.substring(lv.originalFileName.lastIndexOf('.')+1).toLowerCase() : 'etc'}">
+
+                    <!-- 썸네일 / 파일 아이콘 -->
+                    <a th:if="${lv != null}"
+                       th:href="@{/documents/{id}/preview(id=${lv.id})}"
+                       target="_blank" class="text-decoration-none d-block">
+                        <img th:if="${lv.thumbnailStoragePath != null}"
+                             th:src="@{/documents/{id}/thumbnail(id=${lv.id})}"
+                             class="doc-thumb" alt="미리보기"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div th:classappend="${lv.thumbnailStoragePath != null} ? 'd-none'" class="doc-icon-area">
+                            <div th:class="'doc-ext ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                                 th:text="${ext.toUpperCase()}"></div>
                         </div>
-                        <h6 class="card-title mb-1 text-truncate" th:text="${doc.title}"></h6>
-                        <small class="text-muted d-block text-truncate"
-                               th:text="${lv != null ? lv.originalFileName : '-'}"></small>
-                        <small class="text-muted"
-                               th:text="${lv != null ? 'v' + lv.versionNo : ''}"></small>
-                        <small class="text-muted ms-1"
-                               th:text="${lv != null ? #temporals.format(lv.createdAt, 'yyyy-MM-dd') : ''}"></small>
+                    </a>
+                    <div th:if="${lv == null}" class="doc-icon-area">
+                        <div class="doc-ext ext-etc">?</div>
                     </div>
-                    <div class="card-footer p-2 d-flex gap-1 flex-wrap">
+
+                    <div class="doc-body">
+                        <!-- 배지 -->
+                        <div class="d-flex flex-wrap gap-1 mb-1">
+                            <span class="badge bg-secondary doc-type-badge" th:text="${doc.documentType.displayName}"></span>
+                            <span th:if="${lv != null and lv.reviewStatus.name() == 'PENDING_REVIEW'}"  class="badge bg-warning text-dark" style="font-size:.65rem">검토 대기</span>
+                            <span th:if="${lv != null and lv.reviewStatus.name() == 'APPROVED'}"        class="badge bg-success"            style="font-size:.65rem">승인됨</span>
+                            <span th:if="${lv != null and lv.reviewStatus.name() == 'REJECTED'}"        class="badge bg-danger"             style="font-size:.65rem">반려됨</span>
+                            <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
+                                  class="badge bg-danger" style="font-size:.65rem">만료됨</span>
+                            <span th:if="${doc.expiresAt != null and !doc.expiresAt.isBefore(#temporals.createToday()) and doc.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
+                                  class="badge bg-warning text-dark" style="font-size:.65rem">만료임박</span>
+                        </div>
+                        <div class="doc-title" th:text="${doc.title}">제목</div>
+                        <div class="doc-meta" th:text="${lv != null ? lv.originalFileName : '-'}">파일명</div>
+                        <div class="doc-meta">
+                            <span th:if="${lv != null}" th:text="'v' + ${lv.versionNo}"></span>
+                            <span th:if="${lv != null}" class="ms-1" th:text="${#temporals.format(lv.createdAt, 'yy.MM.dd')}"></span>
+                        </div>
+                    </div>
+
+                    <div class="doc-footer">
                         <a th:if="${lv != null}"
-                           th:href="@{/documents/{id}/preview(id=${lv.id})}"
-                           target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">미리보기</a>
-                        <a th:if="${lv != null}"
-                           th:href="@{/documents/{id}/download/reason(id=${lv.id})}"
-                           class="btn btn-outline-secondary btn-sm flex-fill">다운로드</a>
+                           th:href="@{/documents/{id}/download(id=${lv.id})}"
+                           class="btn btn-outline-secondary flex-fill">
+                            <i class="bi bi-download"></i>
+                        </a>
                         <a th:href="@{/my/folder/documents/{id}(id=${doc.id})}"
-                           class="btn btn-outline-primary btn-sm flex-fill">상세</a>
+                           class="btn btn-outline-primary flex-fill">
+                            <i class="bi bi-three-dots"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+
+    </div><!-- /folder != null -->
 </div>
 
 <script>
 function applyFilter() {
-    const type = document.getElementById('filterType').value;
+    const type  = document.getElementById('filterType').value;
     const query = document.getElementById('searchBox').value.toLowerCase();
     document.querySelectorAll('.doc-card-col').forEach(col => {
         const label = col.dataset.label || '';
-        const title = (col.dataset.title || '').toLowerCase();
+        const title = (col.dataset.title    || '').toLowerCase();
         const fname = (col.dataset.filename || '').toLowerCase();
-        const typeMatch = !type || label === type;
-        const searchMatch = !query || title.includes(query) || fname.includes(query);
-        col.style.display = typeMatch && searchMatch ? '' : 'none';
+        col.style.display = (!type || label === type) && (!query || title.includes(query) || fname.includes(query)) ? '' : 'none';
     });
 }
 function applySort() {
@@ -164,7 +230,7 @@ function applySort() {
     if (!grid) return;
     const cols = Array.from(grid.querySelectorAll('.doc-card-col'));
     cols.sort((a, b) => {
-        if (sort === 'type') return (a.dataset.label || '').localeCompare(b.dataset.label || '');
+        if (sort === 'type')  return (a.dataset.label || '').localeCompare(b.dataset.label || '');
         if (sort === 'title') return (a.dataset.title || '').localeCompare(b.dataset.title || '');
         return (b.dataset.date || '').localeCompare(a.dataset.date || '');
     });

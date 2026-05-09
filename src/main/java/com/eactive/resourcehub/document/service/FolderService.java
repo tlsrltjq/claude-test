@@ -4,6 +4,7 @@ import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.entity.FolderType;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,9 +23,9 @@ public class FolderService {
 
     @Transactional
     public Folder createPersonalFolder(User owner, Long actorUserId, HttpServletRequest request) {
-        if (folderRepository.existsByOwnerId(owner.getId())) {
+        if (folderRepository.existsByOwnerIdAndType(owner.getId(), FolderType.PERSONAL)) {
             log.info("개인 폴더 이미 존재 — userId={}", owner.getId());
-            return folderRepository.findByOwnerId(owner.getId()).orElseThrow();
+            return folderRepository.findByOwnerIdAndType(owner.getId(), FolderType.PERSONAL).orElseThrow();
         }
         String folderName = owner.getName() + " 개인 폴더";
         Folder folder = Folder.create(owner, folderName);

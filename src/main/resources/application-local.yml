@@ -1,0 +1,20 @@
+spring:
+  thymeleaf:
+    cache: false
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/resourcehub
+    username: resourcehub
+    password: ${POSTGRES_PASSWORD}  # .env 파일 또는 환경변수로 설정 필요
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false   # 로컬 HTTP 개발 환경
+
+logging:
+  level:
+    com.eactive.resourcehub: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

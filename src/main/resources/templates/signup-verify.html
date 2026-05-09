@@ -5,45 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>이메일 인증 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; min-height: 100vh; }
+        .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+        .auth-card { width: 100%; max-width: 420px; border: none; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.10); overflow: hidden; }
+        .auth-header { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: 2rem; text-align: center; color: #fff; }
+        .auth-header .logo-icon { font-size: 2.2rem; margin-bottom: .5rem; display: block; }
+        .auth-header .brand { font-size: .8rem; opacity: .85; letter-spacing: .08em; text-transform: uppercase; }
+        .auth-header h1 { font-size: 1.3rem; font-weight: 700; margin: .3rem 0 0; }
+        .auth-body { padding: 2rem; background: #fff; }
+        .email-chip { display: inline-flex; align-items: center; gap: .4rem; background: #e7f0ff; color: #0d6efd; padding: .3rem .75rem; border-radius: 50px; font-size: .85rem; font-weight: 600; margin-bottom: 1rem; }
+        .timer-badge { display: inline-flex; align-items: center; gap: .4rem; background: #f0f2f5; border-radius: 50px; padding: .35rem .9rem; font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .code-input { font-size: 1.5rem; text-align: center; letter-spacing: .5em; font-weight: 700; }
+        .form-label { font-size: .85rem; font-weight: 600; color: #343a40; margin-bottom: .3rem; }
+        .btn-submit { padding: .75rem; font-size: 1rem; font-weight: 600; border-radius: 10px; }
+    </style>
 </head>
-<body class="bg-light">
-<div class="container d-flex justify-content-center align-items-center" style="min-height:100vh;">
-    <div class="card shadow-sm" style="width:100%;max-width:420px;">
-        <div class="card-body p-4">
-            <h1 class="h4 text-center mb-2">이메일 인증</h1>
-            <p class="text-center text-muted small mb-4">
-                입력하신 이메일로 6자리 인증 코드를 전송했습니다.<br>
-                (로컬 개발 중에는 서버 로그를 확인하세요.)
-            </p>
-
-            <div th:if="${errorMessage}" class="alert alert-danger" role="alert"
-                 th:text="${errorMessage}"></div>
-
-            <form th:action="@{/signup/verify}" th:object="${verifyCodeRequest}" method="post">
-                <div class="mb-3">
-                    <label for="email" class="form-label">이메일</label>
-                    <input type="email" id="email" th:field="*{email}"
-                           class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
-                           th:value="${pendingEmail}" required>
-                    <div class="invalid-feedback" th:errors="*{email}"></div>
+<body>
+<div class="wrap">
+    <div class="auth-card card">
+        <div class="auth-header">
+            <i class="bi bi-envelope-check-fill logo-icon"></i>
+            <div class="brand">eActive Resource Hub</div>
+            <h1>이메일 인증</h1>
+        </div>
+        <div class="auth-body">
+            <div class="text-center">
+                <div class="email-chip">
+                    <i class="bi bi-envelope-fill"></i>
+                    <span th:text="${pendingEmail}"></span>
                 </div>
-                <div class="mb-3">
+                <p class="text-muted small mb-2" style="font-size:.84rem;">위 주소로 6자리 인증 코드를 전송했습니다.</p>
+
+                <div class="timer-badge" id="timerWrap" th:data-expire-at="${expireAt}">
+                    <i class="bi bi-clock text-muted" style="font-size:.9rem;"></i>
+                    <span id="timerDisplay">10:00</span>
+                    <span class="text-muted" style="font-size:.72rem; font-weight:400;">남음</span>
+                </div>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <div th:if="${infoMessage}" class="alert alert-info d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-info-circle-fill"></i>
+                <span th:text="${infoMessage}"></span>
+            </div>
+
+            <form th:action="@{/signup/verify}" method="post" id="verifyForm">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <div class="mb-4">
                     <label for="code" class="form-label">인증 코드 (6자리)</label>
-                    <input type="text" id="code" th:field="*{code}"
-                           class="form-control text-center fs-4 letter-spacing-wide"
-                           th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
-                           maxlength="6" placeholder="000000" required>
-                    <div class="invalid-feedback" th:errors="*{code}"></div>
+                    <input type="text" id="code" name="code"
+                           class="form-control code-input"
+                           maxlength="6" placeholder="000000" required inputmode="numeric">
                 </div>
-                <button type="submit" class="btn btn-primary w-100">인증하기</button>
+                <button type="submit" id="verifyBtn" class="btn btn-primary w-100 btn-submit">
+                    <i class="bi bi-check-circle-fill me-1"></i>인증하기
+                </button>
             </form>
 
-            <hr>
-            <p class="text-center mb-0 small">
-                코드를 받지 못하셨나요? <a th:href="@{/signup}">다시 가입 시도</a>
-            </p>
+            <hr class="my-3">
+            <form th:action="@{/signup/resend}" method="post" class="text-center">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <button type="submit" id="resendBtn" class="btn btn-link btn-sm text-secondary p-0" disabled>
+                    <i class="bi bi-arrow-repeat me-1"></i>코드를 받지 못하셨나요? 재발송
+                </button>
+            </form>
         </div>
     </div>
 </div>
+<script>
+(function() {
+    var timerEl = document.getElementById('timerDisplay');
+    var timerWrap = document.getElementById('timerWrap');
+    var expireAt = parseInt(timerWrap.dataset.expireAt || '0');
+    var resendBtn = document.getElementById('resendBtn');
+
+    function tick() {
+        var remain = (expireAt - Date.now()) / 1000;
+        if (remain <= 0) {
+            timerEl.textContent = '만료됨';
+            timerWrap.style.background = '#fde8e8';
+            timerEl.style.color = '#dc3545';
+            resendBtn.disabled = false;
+            return;
+        }
+        var m = Math.floor(remain / 60);
+        var s = Math.floor(remain % 60);
+        timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+        if (remain < 60) {
+            timerWrap.style.background = '#fde8e8';
+            timerEl.style.color = '#dc3545';
+        } else {
+            timerWrap.style.background = '';
+            timerEl.style.color = '';
+        }
+        setTimeout(tick, 250);
+    }
+    tick();
+})();
+</script>
 </body>
 </html>

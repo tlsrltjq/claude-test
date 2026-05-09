@@ -1,10 +1,8 @@
 package com.eactive.resourcehub.common.email;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
 public class ConsoleEmailSender implements EmailSender {
 
     @Override
@@ -62,6 +60,16 @@ public class ConsoleEmailSender implements EmailSender {
         log.info("  문서: {}", documentTitle);
         log.info("  만료일: {}", expiresAt);
         log.info("  내용: 문서 유효기간이 만료되었습니다. 최신 문서로 갱신해 주세요.");
+        log.info("========================================");
+    }
+
+    @Override
+    public void sendPasswordResetCode(String toEmail, String code) {
+        log.info("========================================");
+        log.info("[비밀번호 재설정 인증코드]");
+        log.info("  수신자: {}", toEmail);
+        log.info("  인증코드: {}", code);
+        log.info("  유효시간: 5분");
         log.info("========================================");
     }
 }

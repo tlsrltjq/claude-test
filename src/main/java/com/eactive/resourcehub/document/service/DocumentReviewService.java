@@ -12,8 +12,10 @@ import com.eactive.resourcehub.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -31,6 +33,13 @@ public class DocumentReviewService {
     @Transactional(readOnly = true)
     public List<DocumentVersion> findPendingVersions() {
         return documentVersionRepository.findByReviewStatusWithDetails(DocumentReviewStatus.PENDING_REVIEW);
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentVersion findVersionForReview(Long documentVersionId) {
+        return documentVersionRepository.findByIdForReviewDetail(documentVersionId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "문서 버전을 찾을 수 없습니다."));
     }
 
     @Transactional

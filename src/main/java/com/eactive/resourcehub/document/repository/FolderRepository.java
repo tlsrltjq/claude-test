@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.document.repository;
 
 import com.eactive.resourcehub.document.entity.Folder;
+import com.eactive.resourcehub.document.entity.FolderType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,10 @@ import java.util.Optional;
 public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     Optional<Folder> findByOwnerId(Long ownerId);
+
+    Optional<Folder> findByOwnerIdAndType(Long ownerId, FolderType type);
+
+    boolean existsByOwnerIdAndType(Long ownerId, FolderType type);
 
     List<Folder> findByOwnerTeamId(Long teamId);
 
@@ -28,4 +33,14 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     @Query("SELECT f FROM Folder f JOIN FETCH f.owner u LEFT JOIN FETCH u.team WHERE u.team.id = :teamId")
     List<Folder> findByOwnerTeamIdWithOwner(@Param("teamId") Long teamId);
+
+    @Query("SELECT f FROM Folder f WHERE f.owner.id IN :ownerIds")
+    List<Folder> findByOwnerIdIn(@Param("ownerIds") List<Long> ownerIds);
+
+    @Query("SELECT f FROM Folder f WHERE f.owner.id IN :ownerIds AND f.type = :type")
+    List<Folder> findByOwnerIdInAndType(@Param("ownerIds") List<Long> ownerIds, @Param("type") FolderType type);
+
+    Optional<Folder> findFirstByType(FolderType type);
+
+    boolean existsByType(FolderType type);
 }

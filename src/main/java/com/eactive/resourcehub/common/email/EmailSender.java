@@ -15,4 +15,6 @@ public interface EmailSender {
 
     void sendDocumentExpired(String toEmail, String ownerName,
                              String documentTitle, java.time.LocalDate expiresAt);
+
+    void sendPasswordResetCode(String toEmail, String code);
 }

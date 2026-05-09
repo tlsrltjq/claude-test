@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>직원 문서 목록 — eActive Resource Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topnav { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: .6rem 1rem; }
+        .topnav .navbar-brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
+        .btn-nav { border-color: rgba(255,255,255,.35); color: #fff; font-size: .8rem; }
+        .btn-nav:hover { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.6); color: #fff; }
+        .member-header { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border-radius: 14px; padding: 1.4rem 1.75rem; color: #fff; margin-bottom: 1.5rem; }
+        .avatar-circle { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .filter-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); padding: .9rem 1rem; margin-bottom: 1.25rem; }
+        .doc-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); overflow: hidden; transition: transform .18s, box-shadow .18s; height: 100%; }
+        .doc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+        .doc-thumb { width: 100%; height: 140px; object-fit: cover; }
+        .ext-pdf  { background: #ff4444; color: #fff; }
+        .ext-img  { background: #0d6efd; color: #fff; }
+        .ext-word { background: #2b579a; color: #fff; }
+        .ext-hwp  { background: #1e7e34; color: #fff; }
+        .ext-etc  { background: #6c757d; color: #fff; }
+        .doc-icon { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; letter-spacing: .04em; }
+        .doc-card .card-body { padding: .85rem; }
+        .doc-card .card-footer { padding: .65rem .85rem; background: #f8f9fa; border-top: 1px solid #f0f2f5; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: #9ca3af; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+        .empty-state .bi { font-size: 2.5rem; display: block; margin-bottom: .75rem; opacity: .4; }
+    </style>
+</head>
+<body>
+<nav class="topnav navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/dashboard}">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
+        </a>
+        <div class="ms-auto d-flex gap-2">
+            <a th:href="@{/sales/members}" class="btn btn-nav btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>전사 인력 목록
+            </a>
+            <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
+                <i class="bi bi-house me-1"></i>대시보드
+            </a>
+            <form th:action="@{/logout}" method="post" class="mb-0">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-nav btn-sm"><i class="bi bi-box-arrow-right me-1"></i>로그아웃</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="member-header d-flex align-items-center gap-3">
+        <div class="avatar-circle" th:text="${#strings.substring(member.name, 0, 1)}">홍</div>
+        <div class="flex-grow-1 min-w-0">
+            <h5 class="fw-bold mb-0" th:text="${member.name}"></h5>
+            <div class="opacity-80 small" th:text="${member.email}"></div>
+            <div class="d-flex gap-2 mt-1 flex-wrap">
+                <span class="badge rounded-pill" style="background:rgba(255,255,255,.2); font-size:.75rem;"
+                      th:if="${member.team != null}" th:text="${member.team.name}"></span>
+                <span class="badge rounded-pill" style="background:rgba(255,255,255,.2); font-size:.75rem;"
+                      th:if="${member.position != null}" th:text="${member.position.displayName}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 필터 바 -->
+    <div class="filter-card d-flex gap-2 flex-wrap align-items-center">
+        <select id="filterType" class="form-select form-select-sm" style="width:auto;" onchange="applyFilter()">
+            <option value="">전체 종류</option>
+            <option value="이력서">이력서</option>
+            <option value="경력기술서">경력기술서</option>
+            <option value="졸업증명서">졸업증명서</option>
+            <option value="자격증">자격증</option>
+            <option value="재직증명서">재직증명서</option>
+            <option value="기타">기타</option>
+        </select>
+        <div class="input-group input-group-sm" style="width:220px;">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input id="searchBox" class="form-control border-start-0" placeholder="제목 또는 파일명" oninput="applyFilter()">
+        </div>
+        <select id="sortOrder" class="form-select form-select-sm" style="width:auto;" onchange="applySort()">
+            <option value="date">최근 업로드</option>
+            <option value="type">종류</option>
+            <option value="title">제목</option>
+        </select>
+    </div>
+
+    <div th:if="${documents == null or #lists.isEmpty(documents)}" class="empty-state">
+        <i class="bi bi-file-earmark-x"></i>
+        <p>업로드된 문서가 없습니다.</p>
+    </div>
+
+    <div id="cardGrid" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3"
+         th:if="${documents != null and not #lists.isEmpty(documents)}">
+        <div th:each="doc : ${documents}" class="col doc-card-col"
+             th:data-label="${doc.documentType.displayName}"
+             th:data-title="${doc.title}"
+             th:data-filename="${doc.currentVersion != null ? doc.currentVersion.originalFileName : ''}"
+             th:data-date="${doc.currentVersion != null ? doc.currentVersion.createdAt : ''}">
+            <div class="doc-card">
+                <div th:if="${doc.currentVersion != null and doc.currentVersion.thumbnailStoragePath != null}">
+                    <img th:src="@{/documents/{id}/thumbnail(id=${doc.currentVersion.id})}"
+                         class="doc-thumb" alt=""
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="doc-icon ext-etc" style="display:none;"
+                         th:with="ext=${(doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase()}"
+                         th:text="${ext.toUpperCase()}"></div>
+                </div>
+                <div th:if="${doc.currentVersion == null or doc.currentVersion.thumbnailStoragePath == null}"
+                     th:with="ext=${doc.currentVersion != null ? (doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase() : 'file'}"
+                     th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                     th:text="${ext.toUpperCase()}"></div>
+                <div class="card-body">
+                    <span class="badge bg-secondary rounded-pill mb-1" th:text="${doc.documentType.displayName}"></span>
+                    <div class="fw-semibold text-truncate small" th:text="${doc.title}"></div>
+                    <div class="text-muted text-truncate" style="font-size:.75rem;"
+                         th:text="${doc.currentVersion != null ? doc.currentVersion.originalFileName : '-'}"></div>
+                    <div class="text-muted" style="font-size:.72rem;"
+                         th:text="${doc.currentVersion != null ? 'v' + doc.currentVersion.versionNo : ''}"></div>
+                </div>
+                <div class="card-footer d-flex gap-1" th:if="${doc.currentVersion != null}">
+                    <a th:href="@{/documents/{id}/preview(id=${doc.currentVersion.id})}"
+                       target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">
+                        <i class="bi bi-eye me-1"></i>미리보기
+                    </a>
+                    <a th:href="@{/documents/{id}/download(id=${doc.currentVersion.id})}"
+                       class="btn btn-outline-primary btn-sm flex-fill">
+                        <i class="bi bi-download me-1"></i>다운로드
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function applyFilter() {
+    const type = document.getElementById('filterType').value;
+    const query = document.getElementById('searchBox').value.toLowerCase();
+    document.querySelectorAll('.doc-card-col').forEach(col => {
+        const label = col.dataset.label || '';
+        const title = (col.dataset.title || '').toLowerCase();
+        const fname = (col.dataset.filename || '').toLowerCase();
+        col.style.display = (!type || label === type) && (!query || title.includes(query) || fname.includes(query)) ? '' : 'none';
+    });
+}
+function applySort() {
+    const sort = document.getElementById('sortOrder').value;
+    const grid = document.getElementById('cardGrid');
+    if (!grid) return;
+    const cols = Array.from(grid.querySelectorAll('.doc-card-col'));
+    cols.sort((a, b) => {
+        if (sort === 'type') return (a.dataset.label || '').localeCompare(b.dataset.label || '');
+        if (sort === 'title') return (a.dataset.title || '').localeCompare(b.dataset.title || '');
+        return (b.dataset.date || '').localeCompare(a.dataset.date || '');
+    });
+    cols.forEach(c => grid.appendChild(c));
+}
+</script>
+</body>
+</html>

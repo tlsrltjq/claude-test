@@ -5,117 +5,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문서 검색 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topnav { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: .6rem 0; }
+        .topnav .brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
+        .btn-nav { border-color: rgba(255,255,255,.5); color: #fff; font-size: .8rem; padding: .3rem .75rem; border-radius: 6px; }
+        .btn-nav:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+        .search-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.07); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+        .search-card .main-input-wrap { position: relative; }
+        .search-card .main-input-wrap .bi-search { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: #adb5bd; font-size: 1rem; pointer-events: none; }
+        .search-card .main-input { padding-left: 2.4rem; border-radius: 10px; font-size: .95rem; height: 2.6rem; }
+        .filter-label { font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #6c757d; margin-bottom: .35rem; }
+
+        .result-count { font-size: .85rem; color: #868e96; margin-bottom: .75rem; }
+        .result-count strong { color: #212529; font-size: 1rem; }
+
+        .result-item { background: #fff; border: 1.5px solid #e9ecef; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: .6rem; transition: box-shadow .18s, transform .18s; text-decoration: none; color: inherit; display: block; }
+        .result-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); transform: translateY(-1px); color: inherit; }
+
+        .ext-chip { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; font-size: .68rem; font-weight: 700; flex-shrink: 0; }
+        .ext-pdf  { background: #ffe4e4; color: #c92a2a; }
+        .ext-img  { background: #e7f0ff; color: #1c7ed6; }
+        .ext-word { background: #e8f0fa; color: #2b579a; }
+        .ext-hwp  { background: #e4f7eb; color: #1e7e34; }
+        .ext-etc  { background: #f0f2f5; color: #6c757d; }
+
+        .badge-folder-public  { background: #dbeafe; color: #1d4ed8; }
+        .badge-folder-personal { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+        .badge-folder-shared  { background: #fef3c7; color: #92400e; }
+
+        .result-title { font-size: .95rem; font-weight: 600; color: #212529; }
+        .result-meta { font-size: .78rem; color: #868e96; margin-top: .25rem; }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; color: #adb5bd; background: #fff; border-radius: 12px; }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+        .empty-state p { font-size: .95rem; margin-bottom: 0; }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">eActive Resource Hub</a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/my/folder}" class="btn btn-outline-light btn-sm">내 폴더</a>
-            <a th:href="@{/dashboard}" class="btn btn-outline-light btn-sm">대시보드</a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                <button type="submit" class="btn btn-outline-light btn-sm">로그아웃</button>
-            </form>
-        </div>
+
+<nav class="topnav">
+    <div class="container d-flex align-items-center gap-3">
+        <a th:href="@{/dashboard}" class="brand me-auto">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
+        </a>
+        <a th:href="@{/my/folder}" class="btn btn-nav btn-sm">
+            <i class="bi bi-folder me-1"></i>내 폴더
+        </a>
+        <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
+            <i class="bi bi-house me-1"></i>대시보드
+        </a>
+        <form th:action="@{/logout}" method="post" class="mb-0">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+            <button type="submit" class="btn btn-nav btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+            </button>
+        </form>
     </div>
 </nav>
 
-<div class="container mt-4" style="max-width:900px;">
-    <h2 class="mb-4">문서 검색</h2>
+<div class="container py-4" style="max-width:860px;">
 
-    <!-- 검색 폼 -->
-    <form th:action="@{/search}" method="get" class="card card-body mb-4">
-        <div class="row g-2">
-            <div class="col-md-5">
-                <input type="text" name="q" class="form-control" placeholder="제목 키워드"
-                       th:value="${q}">
-            </div>
-            <div class="col-md-3">
-                <select name="type" class="form-select">
-                    <option value="">전체 종류</option>
-                    <option th:each="dt : ${documentTypes}"
-                            th:value="${dt.name()}"
-                            th:selected="${dt.name() == type}"
-                            th:text="${dt.name() == 'RESUME' ? '이력서' :
-                                       dt.name() == 'CAREER_DESCRIPTION' ? '경력기술서' :
-                                       dt.name() == 'GRADUATION_CERTIFICATE' ? '졸업증명서' :
-                                       dt.name() == 'LICENSE' ? '자격증' :
-                                       dt.name() == 'EMPLOYMENT_CERTIFICATE' ? '재직증명서' : '기타'}">
-                    </option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select name="tag" class="form-select">
-                    <option value="">전체 태그</option>
-                    <option th:each="t : ${allTags}"
-                            th:value="${t.name}"
-                            th:selected="${t.name == tag}"
-                            th:text="${'#' + t.name}">
-                    </option>
-                </select>
-            </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary w-100">검색</button>
-            </div>
-        </div>
-    </form>
+    <!-- 검색 카드 -->
+    <div class="search-card">
+        <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:1rem;">
+            <i class="bi bi-search me-2 text-primary"></i>문서 검색
+        </h2>
+        <form th:action="@{/search}" method="get">
 
-    <!-- 결과 -->
-    <div th:if="${results != null}">
-        <p class="text-muted mb-3">
-            검색 결과 <strong th:text="${totalCount}">0</strong>건
-        </p>
+            <!-- 메인 검색어 -->
+            <div class="main-input-wrap mb-3">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control main-input"
+                       placeholder="제목 또는 파일명으로 검색" th:value="${q}" autofocus>
+            </div>
 
-        <div th:if="${#lists.isEmpty(results)}" class="alert alert-info">검색 결과가 없습니다.</div>
-
-        <div th:if="${!#lists.isEmpty(results)}" class="list-group">
-            <a th:each="doc : ${results}"
-               th:href="@{/my/folder/documents/{id}(id=${doc.id})}"
-               class="list-group-item list-group-item-action">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="flex-grow-1 me-2">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <span th:switch="${doc.documentType.name()}" class="badge bg-secondary">
-                                <span th:case="'RESUME'">이력서</span>
-                                <span th:case="'CAREER_DESCRIPTION'">경력기술서</span>
-                                <span th:case="'GRADUATION_CERTIFICATE'">졸업증명서</span>
-                                <span th:case="'LICENSE'">자격증</span>
-                                <span th:case="'EMPLOYMENT_CERTIFICATE'">재직증명서</span>
-                                <span th:case="*">기타</span>
-                            </span>
-                            <!-- 만료 배지 -->
-                            <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
-                                  class="badge bg-danger">만료됨</span>
-                            <span th:if="${doc.expiresAt != null and !doc.expiresAt.isBefore(#temporals.createToday()) and doc.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
-                                  class="badge bg-warning text-dark">만료임박</span>
-                            <strong th:text="${doc.title}"></strong>
-                        </div>
-                        <!-- 태그 -->
-                        <div th:if="${!doc.tags.isEmpty()}" class="mb-1">
-                            <span th:each="t : ${doc.tags}"
-                                  class="badge rounded-pill bg-light text-secondary border me-1"
-                                  th:text="${'#' + t.name}"></span>
-                        </div>
-                        <small class="text-muted">
-                            <span th:if="${doc.folder != null}" th:text="${doc.folder.owner.name + ' · '}"></span>
-                            <span th:if="${doc.expiresAt != null}"
-                                  th:text="'만료일: ' + ${#temporals.format(doc.expiresAt, 'yyyy-MM-dd')}"></span>
-                        </small>
-                    </div>
-                    <small class="text-muted text-nowrap"
-                           th:text="${#temporals.format(doc.createdAt, 'yyyy-MM-dd')}"></small>
+            <!-- 부가 필터 -->
+            <div class="row g-2">
+                <div class="col-6 col-md-3">
+                    <div class="filter-label">문서 종류</div>
+                    <select name="type" class="form-select form-select-sm">
+                        <option value="">전체</option>
+                        <option th:each="dt : ${documentTypes}"
+                                th:value="${dt.name()}"
+                                th:selected="${dt.name() == type}"
+                                th:text="${dt.displayName}"></option>
+                    </select>
                 </div>
-            </a>
-        </div>
+                <div class="col-6 col-md-3">
+                    <div class="filter-label">업로더</div>
+                    <input type="text" name="uploader" class="form-control form-control-sm"
+                           placeholder="이름" th:value="${uploader}">
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="filter-label">폴더 유형</div>
+                    <select name="folderKind" class="form-select form-select-sm">
+                        <option value="">전체</option>
+                        <option value="personal" th:selected="${folderKind == 'personal'}">개인</option>
+                        <option value="public"   th:selected="${folderKind == 'public'}">공용</option>
+                        <option value="shared"   th:selected="${folderKind == 'shared'}">공유</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="filter-label">업로드 시작일</div>
+                    <input type="date" name="dateFrom" class="form-control form-control-sm" th:value="${dateFrom}">
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="filter-label">업로드 종료일</div>
+                    <input type="date" name="dateTo" class="form-control form-control-sm" th:value="${dateTo}">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold">
+                    <i class="bi bi-search me-1"></i>검색
+                </button>
+                <a th:href="@{/search}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>초기화
+                </a>
+            </div>
+        </form>
     </div>
 
-    <!-- 검색 전 안내 -->
-    <div th:if="${results == null}" class="text-center text-muted mt-5">
-        <div class="fs-1 mb-2">🔍</div>
-        <div>키워드, 문서 종류, 태그로 검색해 보세요.</div>
-        <div class="small mt-1">본인 문서와 공유받은 폴더의 문서가 검색됩니다.</div>
+    <!-- 결과 수 -->
+    <div class="result-count">
+        검색 결과 <strong th:text="${totalCount}">0</strong>건
     </div>
+
+    <!-- 빈 상태 -->
+    <div th:if="${#lists.isEmpty(results)}" class="empty-state">
+        <i class="bi bi-file-earmark-x"></i>
+        <p>조건에 맞는 문서가 없습니다.</p>
+    </div>
+
+    <!-- 결과 목록 -->
+    <div th:if="${!#lists.isEmpty(results)}">
+        <a th:each="doc : ${results}"
+           th:href="@{/my/folder/documents/{id}(id=${doc.id})}"
+           class="result-item"
+           th:with="lv=${doc.currentVersion},
+                    ext=${doc.currentVersion != null ? doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1).toLowerCase() : 'etc'}">
+            <div class="d-flex align-items-center gap-3">
+
+                <!-- 확장자 아이콘 -->
+                <div th:class="'ext-chip ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                     th:text="${ext.toUpperCase()}"></div>
+
+                <!-- 본문 -->
+                <div class="flex-fill min-w-0">
+                    <div class="d-flex align-items-center gap-1 flex-wrap mb-1">
+                        <!-- 폴더 유형 뱃지 -->
+                        <span th:if="${doc.folder.type.name() == 'SHARED_PUBLIC'}"
+                              class="badge badge-folder-public" style="font-size:.68rem">공용</span>
+                        <span th:if="${doc.folder.type.name() == 'PERSONAL'}"
+                              class="badge badge-folder-personal" style="font-size:.68rem">개인</span>
+                        <span th:if="${doc.folder.type.name() == 'SHARED'}"
+                              class="badge badge-folder-shared" style="font-size:.68rem">공유</span>
+                        <!-- 문서 종류 뱃지 -->
+                        <span class="badge bg-secondary" style="font-size:.68rem"
+                              th:text="${doc.documentType.displayName}"></span>
+                        <!-- 만료 뱃지 -->
+                        <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
+                              class="badge bg-danger" style="font-size:.68rem">만료됨</span>
+                        <span th:if="${doc.expiresAt != null and !doc.expiresAt.isBefore(#temporals.createToday()) and doc.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
+                              class="badge bg-warning text-dark" style="font-size:.68rem">만료임박</span>
+                        <span class="result-title" th:text="${doc.title}">제목</span>
+                    </div>
+                    <div class="result-meta">
+                        <span th:if="${doc.folder != null}">
+                            <i class="bi bi-person me-1"></i><span th:text="${doc.folder.owner.name}"></span>
+                        </span>
+                        <span th:if="${lv != null}" class="ms-2">
+                            <i class="bi bi-file-earmark me-1"></i><span th:text="${lv.originalFileName}"></span>
+                        </span>
+                        <span th:if="${doc.expiresAt != null}" class="ms-2">
+                            <i class="bi bi-calendar-x me-1"></i>
+                            <span th:text="'만료: ' + ${#temporals.format(doc.expiresAt, 'yyyy-MM-dd')}"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 날짜 -->
+                <div class="text-end flex-shrink-0">
+                    <small class="text-muted d-block"
+                           th:text="${#temporals.format(doc.createdAt, 'yy.MM.dd')}"></small>
+                    <i class="bi bi-chevron-right text-muted" style="font-size:.75rem"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+
 </div>
 </body>
 </html>

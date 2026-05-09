@@ -6,5 +6,6 @@ public enum AuditTargetType {
     FOLDER,
     USER,
     PERMISSION,
-    TEAM
+    TEAM,
+    RESUME_TEMPLATE
 }

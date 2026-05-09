@@ -10,7 +10,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/resourcehub}
     username: ${SPRING_DATASOURCE_USERNAME:resourcehub}
-    password: ${SPRING_DATASOURCE_PASSWORD:resourcehub}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -24,6 +24,8 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    out-of-order: true
+    ignore-migration-patterns: "*:Missing"
     locations: classpath:db/migration
 
   thymeleaf:
@@ -42,13 +44,24 @@ server:
 
 # 애플리케이션 고유 설정
 resourcehub:
+  storage:
+    type: ${RESOURCEHUB_STORAGE_TYPE:local}
+    s3:
+      endpoint:   ${RESOURCEHUB_S3_ENDPOINT:}
+      access-key: ${RESOURCEHUB_S3_ACCESS_KEY:}
+      secret-key: ${RESOURCEHUB_S3_SECRET_KEY:}
+      bucket:     ${RESOURCEHUB_S3_BUCKET:eactive-uploads}
+      region:     ${RESOURCEHUB_S3_REGION:auto}
   upload:
     base-dir: ${RESOURCEHUB_UPLOAD_BASE_DIR:./storage/uploads}
-    allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx
+    allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx,ppt,pptx
   company-email-domain: ${RESOURCEHUB_COMPANY_EMAIL_DOMAIN:eactive.co.kr}
   admin:
     email: ${RESOURCEHUB_ADMIN_EMAIL:admin@eactive.co.kr}
-    password: ${RESOURCEHUB_ADMIN_PASSWORD:Admin1234!}
+    password: ${RESOURCEHUB_ADMIN_PASSWORD}
+  seed:
+    # 로컬 개발용 테스트 영업 계정. 미설정 시 생성 안 함 (운영 환경에서는 설정 금지)
+    test-password: ${RESOURCEHUB_SEED_TEST_PASSWORD:}
 
 logging:
   level:

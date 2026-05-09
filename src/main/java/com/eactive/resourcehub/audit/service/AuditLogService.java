@@ -81,6 +81,25 @@ public class AuditLogService {
                 documentVersionId, "반려: " + reason, request);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logDeleteDocument(Long actorUserId, Long documentId, String detail,
+                                  HttpServletRequest request) {
+        record(actorUserId, AuditActionType.DELETE_DOCUMENT, AuditTargetType.DOCUMENT,
+                documentId, detail, request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logUploadResumeTemplate(Long actorUserId, Long templateId, HttpServletRequest request) {
+        record(actorUserId, AuditActionType.UPLOAD_RESUME_TEMPLATE, AuditTargetType.RESUME_TEMPLATE,
+                templateId, null, request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logDownloadResumeTemplate(Long actorUserId, Long templateId, HttpServletRequest request) {
+        record(actorUserId, AuditActionType.DOWNLOAD_RESUME_TEMPLATE, AuditTargetType.RESUME_TEMPLATE,
+                templateId, null, request);
+    }
+
     private void record(Long userId, AuditActionType action, AuditTargetType targetType,
                         Long targetId, String reason, HttpServletRequest request) {
         try {

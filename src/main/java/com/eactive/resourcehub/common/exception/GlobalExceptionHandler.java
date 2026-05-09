@@ -1,12 +1,17 @@
 package com.eactive.resourcehub.common.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import jakarta.servlet.http.HttpServletRequest;
-
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -20,5 +25,40 @@ public class GlobalExceptionHandler {
             return "redirect:/my/folder/documents/upload";
         }
         return "redirect:/";
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public String handleResponseStatus(ResponseStatusException e,
+                                       Model model,
+                                       HttpServletResponse response) {
+        if (response.isCommitted()) return null;
+        int status = e.getStatusCode().value();
+        response.setStatus(status);
+        model.addAttribute("message", e.getReason());
+        if (status == 403) return "error/403";
+        if (status == 404) return "error/404";
+        return "error/500";
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public String handleNoResource(NoResourceFoundException e, HttpServletResponse response, Model model) {
+        if (response.isCommitted()) return null;
+        response.setStatus(404);
+        model.addAttribute("message", "페이지를 찾을 수 없습니다.");
+        return "error/404";
+    }
+
+    @ExceptionHandler(Exception.class)
+    public String handleGeneric(Exception e,
+                                HttpServletRequest request,
+                                HttpServletResponse response,
+                                Model model) {
+        if (response.isCommitted()) {
+            log.debug("Response already committed, skipping error page [{}]", request.getRequestURI());
+            return null;
+        }
+        log.error("Unhandled exception [{}]: {}", request.getRequestURI(), e.getMessage(), e);
+        response.setStatus(500);
+        return "error/500";
     }
 }

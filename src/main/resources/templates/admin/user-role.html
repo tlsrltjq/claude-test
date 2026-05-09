@@ -5,59 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>역할 변경 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topnav { background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%); padding: .6rem 1rem; }
+        .topnav .navbar-brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
+        .btn-nav { border-color: rgba(255,255,255,.35); color: #fff; font-size: .8rem; }
+        .btn-nav.active { background: rgba(255,255,255,.22); border-color: #fff; color: #fff; }
+        .btn-nav:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.6); color: #fff; }
+        .page-header { background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%); border-radius: 14px; padding: 1.4rem 1.75rem; color: #fff; margin-bottom: 1.5rem; }
+        .page-header h4 { font-weight: 700; margin-bottom: .2rem; }
+        .page-header p { margin: 0; opacity: .75; font-size: .9rem; }
+        .form-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; }
+        .form-card .card-header-custom { background: #1e3a5f; color: #fff; padding: .9rem 1.25rem; font-weight: 600; font-size: .9rem; }
+        .form-card .card-body { padding: 1.5rem 1.25rem; }
+        .user-info-row { display: flex; align-items: center; gap: .6rem; padding: .45rem 0; border-bottom: 1px solid #f0f2f5; font-size: .88rem; }
+        .user-info-row:last-child { border-bottom: none; }
+        .user-info-label { min-width: 80px; color: #9ca3af; font-size: .8rem; }
+        .role-option { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all .15s; margin-bottom: .5rem; }
+        .role-option:hover { border-color: #1e3a5f; background: #f5f7fb; }
+        .role-option input[type=radio] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #1e3a5f; }
+        .role-option.selected { border-color: #1e3a5f; background: #eef2f8; }
+        .role-badge-admin { background: #fde8e8; color: #b91c1c; border-radius: 6px; font-size: .75rem; font-weight: 700; padding: .2rem .55rem; }
+        .role-badge-sales { background: #dbeafe; color: #1d4ed8; border-radius: 6px; font-size: .75rem; font-weight: 700; padding: .2rem .55rem; }
+        .role-badge-emp { background: #e5e7eb; color: #374151; border-radius: 6px; font-size: .75rem; font-weight: 700; padding: .2rem .55rem; }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-dark">
+<nav class="topnav navbar navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" th:href="@{/admin}">eActive Hub — 관리자</a>
-        <div class="ms-auto">
-            <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-outline-light btn-sm">← 직원 상세</a>
+        <a class="navbar-brand" th:href="@{/admin}">
+            <i class="bi bi-shield-fill me-1"></i>eActive Hub
+            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
+        </a>
+        <div class="ms-auto d-flex gap-2">
+            <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-nav btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>직원 상세
+            </a>
+            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
+                <i class="bi bi-speedometer2 me-1"></i>대시보드
+            </a>
         </div>
     </div>
 </nav>
 
-<div class="container mt-4" style="max-width: 500px;">
-    <h2 class="mb-4">역할 변경</h2>
+<div class="container mt-4" style="max-width:520px;">
+    <div class="page-header">
+        <h4><i class="bi bi-person-gear me-2"></i>역할 변경</h4>
+        <p>직원의 시스템 역할을 변경합니다.</p>
+    </div>
 
-    <div class="card mb-4">
+    <div class="form-card mb-3">
+        <div class="card-header-custom"><i class="bi bi-person-circle me-2"></i>직원 정보</div>
         <div class="card-body">
-            <p class="mb-1"><strong>이름:</strong> <span th:text="${user.name}"></span></p>
-            <p class="mb-1"><strong>이메일:</strong> <span th:text="${user.email}"></span></p>
-            <p class="mb-0"><strong>현재 역할:</strong>
-                <span class="badge bg-secondary" th:text="${user.role}"></span>
-            </p>
+            <div class="user-info-row"><span class="user-info-label">이름</span><strong th:text="${user.name}"></strong></div>
+            <div class="user-info-row"><span class="user-info-label">이메일</span><span class="text-muted" th:text="${user.email}"></span></div>
+            <div class="user-info-row">
+                <span class="user-info-label">현재 역할</span>
+                <span th:classappend="${user.role.name() == 'ADMIN'} ? 'role-badge-admin' : (${user.role.name() == 'SALES'} ? 'role-badge-sales' : 'role-badge-emp')"
+                      th:text="${user.role.displayName}"></span>
+            </div>
         </div>
     </div>
 
-    <div class="alert alert-warning" id="adminWarning" style="display:none;">
-        <strong>주의:</strong> ADMIN 역할을 부여하면 모든 시스템 기능에 접근 가능합니다. 계속하시겠습니까?
-    </div>
-
-    <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" onsubmit="return confirmIfAdmin(this)">
-        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-        <div class="mb-3">
-            <label class="form-label fw-semibold">새 역할</label>
-            <select name="role" class="form-select" id="roleSelect" onchange="checkAdmin(this)">
-                <option th:each="r : ${roles}"
-                        th:value="${r}"
-                        th:text="${r}"
-                        th:selected="${r == user.role}"></option>
-            </select>
+    <div class="form-card">
+        <div class="card-header-custom"><i class="bi bi-shield-check me-2"></i>새 역할 선택</div>
+        <div class="card-body">
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 py-2" style="font-size:.84rem;" id="adminWarning" style="display:none!important;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                ADMIN 역할은 모든 시스템 기능에 접근 가능합니다. 신중하게 부여하세요.
+            </div>
+            <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" onsubmit="return confirmIfAdmin(this)">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <div th:each="r : ${roles}" class="role-option" th:classappend="${r == user.role} ? 'selected'">
+                    <input class="form-check-input m-0" type="radio" name="role"
+                           th:id="'role_' + ${r.name()}"
+                           th:value="${r.name()}"
+                           th:checked="${user.role == r}"
+                           onchange="handleRoleChange(this)">
+                    <label th:for="'role_' + ${r.name()}" th:text="${r.displayName}" class="mb-0 fw-semibold" style="cursor:pointer; flex:1;"></label>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-warning fw-semibold">
+                        <i class="bi bi-check-lg me-1"></i>역할 변경
+                    </button>
+                    <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-outline-secondary">취소</a>
+                </div>
+            </form>
         </div>
-        <button type="submit" class="btn btn-primary">변경</button>
-        <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-secondary ms-2">취소</a>
-    </form>
+    </div>
 </div>
 
+<!-- 로딩 스피너 오버레이 -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+        <span class="visually-hidden">처리 중...</span>
+    </div>
+</div>
 <script>
-function checkAdmin(select) {
-    document.getElementById('adminWarning').style.display =
-        select.value === 'ADMIN' ? 'block' : 'none';
+(function(){
+    var p = window.location.pathname;
+    // 네비바 active 상태
+    document.querySelectorAll('a.btn-nav').forEach(function(el){
+        var h = el.getAttribute('href');
+        if(!h) return;
+        var isRoot = (h==='/admin'||h==='/admin/');
+        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
+        if(active) el.classList.add('active');
+    });
+    // POST 폼 제출 시 스피너 표시
+    document.querySelectorAll('form').forEach(function(f){
+        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
+            f.addEventListener('submit',function(){
+                document.getElementById('loadingOverlay').style.display='flex';
+            });
+        }
+    });
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function handleRoleChange(radio) {
+    document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+    radio.closest('.role-option').classList.add('selected');
+    var warning = document.getElementById('adminWarning');
+    warning.style.display = radio.value === 'ADMIN' ? '' : 'none';
 }
 function confirmIfAdmin(form) {
-    var role = form.querySelector('select[name=role]').value;
-    if (role === 'ADMIN') {
-        return confirm('ADMIN 역할을 부여하시겠습니까? 이 사용자는 모든 관리 기능에 접근할 수 있게 됩니다.');
+    var role = form.querySelector('select[name=role], input[name=role]:checked');
+    if (role && role.value === 'ADMIN') {
+        return confirm('ADMIN 역할을 부여하시겠습니까? 모든 관리 기능에 접근 가능해집니다.');
     }
     return true;
 }
