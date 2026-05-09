@@ -173,7 +173,7 @@
 
             <!-- ── Tab 2: 개인정보 수정 ── -->
             <div th:if="${tab == 'profile'}">
-                <p class="text-muted small mb-4">연락처, 생년월일, 직급을 수정할 수 있습니다. 이름·이메일·팀은 관리자에게 문의하세요.</p>
+                <p class="text-muted small mb-4">연락처, 생년월일을 수정할 수 있습니다. 이름·이메일·팀·직급은 관리자에게 문의하세요.</p>
 
                 <form th:action="@{/settings/profile}" method="post">
                     <input type="hidden" name="_csrf" th:value="${_csrf.token}">
@@ -191,12 +191,10 @@
                     </div>
                     <div class="mb-4">
                         <label class="form-label">직급</label>
-                        <select name="position" class="form-select">
-                            <option th:each="pos : ${positions}"
-                                    th:value="${pos.name()}"
-                                    th:text="${pos.displayName}"
-                                    th:selected="${user.position != null and user.position.name() == pos.name()}"></option>
-                        </select>
+                        <input type="text" class="form-control"
+                               th:value="${user.position != null ? user.position.displayName : '-'}"
+                               readonly disabled>
+                        <div class="form-text">직급 변경은 관리자에게 문의하세요.</div>
                     </div>
 
                     <div class="d-flex gap-2">

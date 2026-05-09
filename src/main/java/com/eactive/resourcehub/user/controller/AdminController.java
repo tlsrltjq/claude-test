@@ -88,6 +88,7 @@ public class AdminController {
         model.addAttribute("user", user);
         model.addAttribute("teams", teamService.findAll());
         model.addAttribute("hasFolder", employeeService.hasPersonalFolder(userId));
+        model.addAttribute("positions", Position.values());
 
         model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
                 .filter(r -> r != UserRole.TEAM_LEADER).toList());
@@ -124,6 +125,21 @@ public class AdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/employees/" + userId + "?tab=info";
+    }
+
+    @PostMapping("/employees/{userId}/change-position")
+    public String changePosition(@PathVariable Long userId,
+                                 @RequestParam Position position,
+                                 @AuthenticationPrincipal CustomUserDetails actor,
+                                 HttpServletRequest request,
+                                 RedirectAttributes ra) {
+        try {
+            employeeService.changePosition(userId, position, actor.getUser().getId(), request);
+            ra.addFlashAttribute("successMessage", "직급을 변경했습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/employees/" + userId + "?tab=position";
     }
 
     @PostMapping("/employees/{userId}/change-team")

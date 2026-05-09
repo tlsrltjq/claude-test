@@ -144,4 +144,16 @@ public class EmployeeManagementService {
                 AuditTargetType.USER, userId,
                 "팀 변경: " + oldTeamName + " → " + team.getName(), request);
     }
+
+    @Transactional
+    public void changePosition(Long userId, Position position, Long actorUserId, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        String oldPosition = user.getPosition() != null ? user.getPosition().getDisplayName() : "없음";
+        user.changePosition(position);
+        log.info("직급 변경 — userId={}, {} → {}", userId, oldPosition, position.getDisplayName());
+        auditService.log(actorUserId, AuditActionType.UPDATE,
+                AuditTargetType.USER, userId,
+                "직급 변경: " + oldPosition + " → " + position.getDisplayName(), request);
+    }
 }

@@ -139,6 +139,12 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" th:classappend="${activeTab == 'position'} ? 'active'"
+               th:href="@{/admin/employees/{id}(id=${user.id},tab='position')}">
+                <i class="bi bi-person-badge me-1"></i>직급 변경
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" th:classappend="${activeTab == 'team'} ? 'active'"
                th:href="@{/admin/employees/{id}(id=${user.id},tab='team')}">
                 <i class="bi bi-people me-1"></i>팀 변경
@@ -351,6 +357,32 @@
                         </form>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ 탭: 직급 변경 ══ -->
+    <div th:if="${activeTab == 'position'}" style="max-width:480px;">
+        <div class="tab-card">
+            <div class="card-header-custom"><i class="bi bi-person-badge me-2"></i>직급 변경</div>
+            <div class="card-body">
+                <div class="info-row mb-3">
+                    <span class="info-label">현재 직급</span>
+                    <strong th:text="${user.position != null ? user.position.displayName : '미설정'}"></strong>
+                </div>
+                <form th:action="@{/admin/employees/{id}/change-position(id=${user.id})}" method="post"
+                      class="d-flex gap-2">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <select name="position" class="form-select">
+                        <option th:each="pos : ${positions}"
+                                th:value="${pos.name()}"
+                                th:text="${pos.displayName}"
+                                th:selected="${user.position != null and user.position.name() == pos.name()}"></option>
+                    </select>
+                    <button type="submit" class="btn btn-primary text-nowrap">
+                        <i class="bi bi-check-lg me-1"></i>변경
+                    </button>
+                </form>
             </div>
         </div>
     </div>
