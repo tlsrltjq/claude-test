@@ -1,7 +1,6 @@
 package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
-import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.service.SettingsService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ public class SettingsController {
                                Model model) {
         User user = settingsService.getUser(userDetails.getUser().getId());
         model.addAttribute("user", user);
-        model.addAttribute("positions", Position.values());
         model.addAttribute("tab", tab);
         return "settings";
     }
@@ -36,9 +34,8 @@ public class SettingsController {
     public String updateProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
                                 @RequestParam(required = false) String phone,
                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDate,
-                                @RequestParam(required = false) Position position,
                                 RedirectAttributes redirectAttributes) {
-        settingsService.updateProfile(userDetails.getUser().getId(), phone, birthDate, position);
+        settingsService.updateProfile(userDetails.getUser().getId(), phone, birthDate);
         redirectAttributes.addFlashAttribute("successMessage", "개인정보가 저장되었습니다.");
         return "redirect:/settings?tab=profile";
     }
