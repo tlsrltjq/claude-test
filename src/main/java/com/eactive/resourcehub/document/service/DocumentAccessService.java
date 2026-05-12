@@ -62,8 +62,9 @@ public class DocumentAccessService {
         UserRole role = userDetails.getUser().getRole();
 
         if (role == UserRole.ADMIN) return;
-        if (role == UserRole.SALES) return;   // 영업부: 승인 상태 제한 없음
+        if (role == UserRole.SALES) return;
         if (version.getDocument().getFolder().getOwner().getId().equals(userId)) return;
+        if (version.getUploadedBy().getId().equals(userId)) return;  // 본인이 올린 파일은 검토 상태 무관하게 접근 허용
 
         if (version.getReviewStatus() != DocumentReviewStatus.APPROVED) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "승인된 문서만 접근할 수 있습니다.");

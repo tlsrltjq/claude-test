@@ -23,6 +23,7 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
            "JOIN FETCH dv.document d " +
            "JOIN FETCH d.folder f " +
            "JOIN FETCH f.owner " +
+           "JOIN FETCH dv.uploadedBy " +
            "WHERE dv.id = :id")
     Optional<DocumentVersion> findByIdWithDocumentAndFolder(@Param("id") Long id);
 
