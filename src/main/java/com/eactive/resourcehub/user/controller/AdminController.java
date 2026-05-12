@@ -222,7 +222,15 @@ public class AdminController {
                              RedirectAttributes ra) {
         try {
             userRoleService.changeRole(userId, role, actor.getUser().getId(), request);
-            ra.addFlashAttribute("successMessage", "역할을 변경했습니다.");
+            for (Object principal : sessionRegistry.getAllPrincipals()) {
+                if (principal instanceof CustomUserDetails cud
+                        && cud.getUser().getId().equals(userId)) {
+                    sessionRegistry.getAllSessions(principal, false)
+                            .forEach(SessionInformation::expireNow);
+                    break;
+                }
+            }
+            ra.addFlashAttribute("successMessage", "역할을 변경했습니다. 해당 사용자는 재로그인 시 새 권한이 적용됩니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
