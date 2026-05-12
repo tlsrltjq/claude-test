@@ -37,7 +37,8 @@ public class FolderAccessService {
         UserRole role = userDetails.getUser().getRole();
 
         if (role == UserRole.ADMIN) return;
-        if (role == UserRole.SALES) return;   // 영업부: 전사 read-only
+        if (role == UserRole.SALES) return;
+        if (folder.isPublic()) return;  // 전 사원 공용 폴더는 모든 인증 사용자 접근 허용
         if (folder.getOwner().getId().equals(userId)) return;
 
         if (permissionRepository.existsByUserIdAndPermissionTypeAndTargetTypeAndTargetId(
