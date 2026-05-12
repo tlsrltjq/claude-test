@@ -59,6 +59,10 @@
                 <i class="bi bi-exclamation-triangle-fill"></i>
                 <span th:text="${errorMessage}"></span>
             </div>
+            <div th:if="${#request.getParameter('err') != null}" class="alert alert-danger d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>업로드 중 오류가 발생했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.</span>
+            </div>
 
             <div id="largeFileWarn" class="alert alert-warning warn-box d-none">
                 <i class="bi bi-info-circle me-1"></i>
@@ -143,6 +147,24 @@
                            th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
                 </div>
 
+                <!-- 업로드 진행률 -->
+                <div id="progressWrap" class="d-none mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted">업로드 중...</small>
+                        <small id="progressText" class="fw-bold text-primary">0%</small>
+                    </div>
+                    <div class="progress" style="height:8px;">
+                        <div id="progressBar"
+                             class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                             role="progressbar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div id="xhrErrorBox" class="alert alert-danger d-none mt-3">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <span id="xhrErrorMsg"></span>
+                </div>
+
                 <div class="d-flex gap-2 mt-4">
                     <button type="submit" id="uploadBtn" class="btn btn-primary flex-fill btn-upload">
                         <i class="bi bi-cloud-upload me-1"></i>업로드
@@ -210,12 +232,79 @@ drop.addEventListener('drop', e => {
     onFileChange(fi);
 });
 
-/* ── 제출 처리 ── */
-document.getElementById('uploadForm').addEventListener('submit', function () {
+/* ── 제출 처리 (XHR + 진행률) ── */
+const ALLOWED_EXTS = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx'];
+const MAX_SIZE = 20 * 1024 * 1024;
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files && fileInput.files[0];
+
+    /* 클라이언트 사전 검증 */
+    if (!file) { showXhrError('파일을 선택해주세요.'); return; }
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXTS.includes(ext)) { showXhrError('허용되지 않는 파일 형식입니다: ' + ext); return; }
+    if (file.size > MAX_SIZE) { showXhrError('파일 크기가 20MB를 초과합니다.'); return; }
+
     const btn = document.getElementById('uploadBtn');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    document.getElementById('xhrErrorBox').classList.add('d-none');
+
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>업로드 중...';
+    progressWrap.classList.remove('d-none');
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.onprogress = function(e) {
+        if (!e.lengthComputable) return;
+        const pct = Math.round(e.loaded / e.total * 100);
+        progressBar.style.width = pct + '%';
+        progressBar.setAttribute('aria-valuenow', pct);
+        if (pct < 100) {
+            progressText.textContent = pct + '%';
+        } else {
+            progressText.textContent = '서버 처리 중...';
+            progressBar.classList.remove('progress-bar-animated');
+        }
+    };
+
+    xhr.onload = function() {
+        /* XHR은 redirect를 자동 추적하므로 responseURL로 최종 위치 판별 */
+        const finalUrl = xhr.responseURL || '';
+        if (finalUrl.includes('/documents/upload')) {
+            /* 서버가 업로드 폼으로 돌려보냄 → 오류 */
+            window.location.href = '/my/folder/documents/upload?err=1';
+        } else {
+            window.location.href = finalUrl || '/my/folder';
+        }
+    };
+
+    xhr.onerror = function() {
+        showXhrError('네트워크 오류가 발생했습니다. 다시 시도하세요.');
+        resetBtn();
+    };
+
+    xhr.open('POST', document.getElementById('uploadForm').action);
+    xhr.send(new FormData(document.getElementById('uploadForm')));
 });
+
+function showXhrError(msg) {
+    const box = document.getElementById('xhrErrorBox');
+    document.getElementById('xhrErrorMsg').textContent = msg;
+    box.classList.remove('d-none');
+}
+
+function resetBtn() {
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-cloud-upload me-1"></i>업로드';
+    document.getElementById('progressWrap').classList.add('d-none');
+}
 </script>
 </body>
 </html>

@@ -139,6 +139,21 @@
                             </div>
                         </div>
                     </div>
+                    <div id="publicProgressWrap" class="d-none mt-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">업로드 중...</small>
+                            <small id="publicProgressText" class="fw-bold text-primary">0%</small>
+                        </div>
+                        <div class="progress" style="height:6px;">
+                            <div id="publicProgressBar"
+                                 class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                 role="progressbar" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div id="publicXhrErrorBox" class="alert alert-danger d-none mt-2" style="font-size:.85rem">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        <span id="publicXhrErrorMsg"></span>
+                    </div>
                     <div class="d-flex gap-2 mt-3">
                         <button type="submit" id="publicUploadBtn" class="btn btn-primary btn-sm fw-semibold px-4">
                             <i class="bi bi-cloud-upload me-1"></i>업로드
@@ -304,13 +319,61 @@ if (drop) {
     });
 }
 
+const ALLOWED_EXTS_PUB = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx'];
+const MAX_SIZE_PUB = 20 * 1024 * 1024;
+
 const form = document.getElementById('publicUploadForm');
 if (form) {
-    form.addEventListener('submit', function () {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('publicFileInput');
+        const file = fileInput.files && fileInput.files[0];
+
+        document.getElementById('publicXhrErrorBox').classList.add('d-none');
+        if (!file) { showPubError('파일을 선택해주세요.'); return; }
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!ALLOWED_EXTS_PUB.includes(ext)) { showPubError('허용되지 않는 파일 형식입니다: ' + ext); return; }
+        if (file.size > MAX_SIZE_PUB) { showPubError('파일 크기가 20MB를 초과합니다.'); return; }
+
         const btn = document.getElementById('publicUploadBtn');
+        const progressWrap = document.getElementById('publicProgressWrap');
+        const progressBar = document.getElementById('publicProgressBar');
+        const progressText = document.getElementById('publicProgressText');
+
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>업로드 중...';
+        progressWrap.classList.remove('d-none');
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.onprogress = function(ev) {
+            if (!ev.lengthComputable) return;
+            const pct = Math.round(ev.loaded / ev.total * 100);
+            progressBar.style.width = pct + '%';
+            progressText.textContent = pct < 100 ? pct + '%' : '서버 처리 중...';
+            if (pct === 100) progressBar.classList.remove('progress-bar-animated');
+        };
+
+        xhr.onload = function() {
+            window.location.href = xhr.responseURL || '/shared/folders/public';
+        };
+
+        xhr.onerror = function() {
+            showPubError('네트워크 오류가 발생했습니다. 다시 시도하세요.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-cloud-upload me-1"></i>업로드';
+            progressWrap.classList.add('d-none');
+        };
+
+        xhr.open('POST', form.action);
+        xhr.send(new FormData(form));
     });
+}
+
+function showPubError(msg) {
+    const box = document.getElementById('publicXhrErrorBox');
+    document.getElementById('publicXhrErrorMsg').textContent = msg;
+    box.classList.remove('d-none');
 }
 </script>
 </body>
