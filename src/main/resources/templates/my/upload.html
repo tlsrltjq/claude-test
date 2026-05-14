@@ -165,7 +165,7 @@
                     <button type="submit" id="uploadBtn" class="btn btn-primary flex-fill btn-upload">
                         <i class="bi bi-cloud-upload me-1"></i>업로드
                     </button>
-                    <a th:href="@{/my/folder}" class="btn btn-outline-secondary">취소</a>
+                    <button type="button" id="cancelBtn" class="btn btn-outline-secondary" onclick="onCancelClick()">취소</button>
                 </div>
             </form>
         </div>
@@ -228,6 +228,17 @@ drop.addEventListener('drop', e => {
     onFileChange(fi);
 });
 
+/* ── 취소 버튼 ── */
+let currentXhr = null;
+
+function onCancelClick() {
+    if (currentXhr) {
+        currentXhr.abort();
+    } else {
+        window.location.href = '/my/folder';
+    }
+}
+
 /* ── 제출 처리 (XHR + 진행률) ── */
 const ALLOWED_EXTS = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx'];
 const MAX_SIZE = 20 * 1024 * 1024;
@@ -254,7 +265,12 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>업로드 중...';
     progressWrap.classList.remove('d-none');
 
+    const cancelBtn = document.getElementById('cancelBtn');
+    cancelBtn.textContent = '업로드 취소';
+    cancelBtn.classList.replace('btn-outline-secondary', 'btn-outline-danger');
+
     const xhr = new XMLHttpRequest();
+    currentXhr = xhr;
 
     xhr.upload.onprogress = function(e) {
         if (!e.lengthComputable) return;
@@ -274,6 +290,7 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
             try {
                 const data = JSON.parse(xhr.responseText);
                 if (data.success) {
+                    currentXhr = null;
                     progressBar.style.width = '100%';
                     progressBar.classList.remove('progress-bar-animated');
                     progressBar.classList.add('bg-success');
@@ -303,6 +320,11 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
         resetBtn();
     };
 
+    xhr.onabort = function() {
+        showXhrError('업로드가 취소됐습니다.');
+        resetBtn();
+    };
+
     xhr.open('POST', document.getElementById('uploadForm').action);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.send(new FormData(document.getElementById('uploadForm')));
@@ -315,10 +337,20 @@ function showXhrError(msg) {
 }
 
 function resetBtn() {
+    currentXhr = null;
     const btn = document.getElementById('uploadBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-cloud-upload me-1"></i>업로드';
-    document.getElementById('progressWrap').classList.add('d-none');
+    const progressWrap = document.getElementById('progressWrap');
+    progressWrap.classList.add('d-none');
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = '0%';
+    progressBar.classList.remove('bg-success');
+    progressBar.classList.add('progress-bar-animated');
+    document.getElementById('progressText').textContent = '0%';
+    const cancelBtn = document.getElementById('cancelBtn');
+    cancelBtn.textContent = '취소';
+    cancelBtn.classList.replace('btn-outline-danger', 'btn-outline-secondary');
 }
 </script>
 </body>
