@@ -44,6 +44,7 @@ public class SearchController {
 
         model.addAttribute("results", results);
         model.addAttribute("totalCount", results.size());
+        model.addAttribute("userId", userDetails.getUser().getId());
         model.addAttribute("q", q);
         model.addAttribute("type", type);
         model.addAttribute("uploader", uploader);

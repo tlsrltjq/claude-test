@@ -59,10 +59,6 @@
                 <i class="bi bi-exclamation-triangle-fill"></i>
                 <span th:text="${errorMessage}"></span>
             </div>
-            <div th:if="${#request.getParameter('err') != null}" class="alert alert-danger d-flex align-items-center gap-2">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span>업로드 중 오류가 발생했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.</span>
-            </div>
 
             <div id="largeFileWarn" class="alert alert-warning warn-box d-none">
                 <i class="bi bi-info-circle me-1"></i>
