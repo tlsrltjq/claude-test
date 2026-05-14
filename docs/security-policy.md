@@ -28,14 +28,13 @@
 - `storagePath` / `thumbnailStoragePath` 를 응답 JSON에 노출 금지
 - `resources/static/` 하위에 업로드 디렉터리 없음
 
-## 5. 삭제 정책 (TODO — 현재 미구현)
+## 5. 삭제 정책 ✅ 구현 완료
 
-> **현재 hard delete 사용 중 — 아래가 목표 정책**
-
-- soft delete: `deleted_at`, `deleted_by` 컬럼 추가 (Flyway 마이그레이션 필요)
-- `Document` 엔티티: `@SQLDelete` + `@Where(clause="deleted_at IS NULL")`
-- 물리 파일은 배치 또는 별도 cleanup 작업으로 지연 삭제
-- 삭제 감사 로그(`DELETE_DOCUMENT`) 는 이미 구현됨
+- soft delete: `deleted_at`, `deleted_by` 컬럼 — V210 Flyway 마이그레이션 적용
+- `Document` 엔티티: `delete(actorId)` 호출 → `deleted_at` / `deleted_by` 세트 (hard delete 없음)
+- 물리 파일 지연 삭제: `DocumentFileGcService` `@Scheduled(cron="0 0 2 * * *")` — 매일 새벽 2시 실행
+- 삭제 감사 로그(`DELETE_DOCUMENT`): `AuditLogService.logDeleteDocument()` 경유 기록
+- GC 대시보드: `/admin/gc`
 
 ## 6. 로그 정책
 

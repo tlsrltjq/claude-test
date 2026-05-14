@@ -50,11 +50,11 @@ deprecated: EMPLOYMENT_CERTIFICATE
 - `folders.type` 컬럼 + 공용 폴더 시드 (M3-07)
 - `column_view_preferences` (M3-10)
 
-## 7. 흡수 / 보류
+## 7. 흡수 / 완료
 
 - mvp2 08-excel-export → **mvp3 M3-11에 흡수** (체크 선택 + 엑셀)
-- mvp2 09-career-save → **보류** (다음 라운드)
-- mvp2 10-bundle-template → **보류**
+- mvp2 09-career-save → **완료** (`CareerSaveService` + `POST /sales/career-calculator/save`)
+- mvp2 10-bundle-template → **완료** (`BundleDownloadService` + `POST /sales/profiles/bundle-download`, ZIP 묶음 다운로드)
 
 ## 9. 계정 설정 페이지 (Post-MVP3)
 
