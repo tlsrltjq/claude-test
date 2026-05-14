@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import com.eactive.resourcehub.common.util.FileUtils;
+import com.eactive.resourcehub.common.util.FileMagicValidator;
 
 @Slf4j
 @Service
@@ -72,8 +74,12 @@ public class DocumentUploadService {
             versionNo = documentVersionRepository.countByDocumentId(document.getId()) + 1;
             isNew = false;
         } else {
-            document = Document.create(folder, req.getDocumentType(), req.getTitle());
-            documentRepository.saveAndFlush(document);
+            try {
+                document = Document.create(folder, req.getDocumentType(), req.getTitle());
+                documentRepository.saveAndFlush(document);
+            } catch (DataIntegrityViolationException e) {
+                throw new IllegalArgumentException("동일한 문서가 이미 업로드 중입니다. 잠시 후 다시 시도하세요.");
+            }
             versionNo = 1;
             isNew = true;
         }
@@ -147,8 +153,13 @@ public class DocumentUploadService {
 
         validateFile(req.getFile());
 
-        Document document = Document.create(folder, req.getDocumentType(), req.getTitle());
-        documentRepository.saveAndFlush(document);
+        Document document;
+        try {
+            document = Document.create(folder, req.getDocumentType(), req.getTitle());
+            documentRepository.saveAndFlush(document);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("동일한 문서가 이미 업로드 중입니다. 잠시 후 다시 시도하세요.");
+        }
 
         if (req.getExpiresAt() != null) {
             document.updateExpiresAt(req.getExpiresAt());
@@ -212,6 +223,13 @@ public class DocumentUploadService {
         List<String> allowed = Arrays.asList(allowedExtensionsRaw.split(","));
         if (!allowed.contains(ext)) {
             throw new IllegalArgumentException("허용되지 않는 파일 형식입니다: " + ext);
+        }
+        try {
+            if (!FileMagicValidator.validate(file, ext)) {
+                throw new IllegalArgumentException("파일 내용이 확장자(" + ext + ")와 일치하지 않습니다.");
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("파일을 읽을 수 없습니다.");
         }
     }
 
