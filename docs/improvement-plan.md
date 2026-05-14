@@ -15,7 +15,7 @@
 | 보안 1-2 비밀번호 재설정 코드 로그 제거 | ✅ 완료 |
 | 보안 1-3 환경변수 하드코딩 기본값 제거 | ✅ 완료 |
 | 성능 2-1 AdminController N+1 제거 | ✅ 완료 (teamService.findAll() 서비스 경유 — 커밋 001e4cc) |
-| 성능 2-2 읽기 전용 트랜잭션 | 🔲 미완료 (일부 서비스에만 적용, 전면 적용 미완) |
+| 성능 2-2 읽기 전용 트랜잭션 | ✅ 완료 (전체 서비스 읽기 메서드 적용 확인) |
 | 성능 2-3 직원 목록 페이지네이션 | ✅ 완료 (DB 레벨 페이지네이션 — 커밋 001e4cc) |
 | 성능 2-4 썸네일 @Async | ✅ 완료 (ThumbnailService @Async + @EnableAsync — 커밋 포함) |
 | UX 3-1 폼 제출 스피너 | ✅ 완료 (업로드 폼 + admin 전체 + settings) |
@@ -25,7 +25,7 @@
 | 코드품질 4-1 GlobalExceptionHandler 확장 | ✅ 완료 (ResponseStatusException·NoResourceFoundException·Exception 핸들러 추가) |
 | 코드품질 4-2 FileUtils 헬퍼 | ✅ 완료 (FileUtils.java — extension(), isAllowedExtension()) |
 
-**잔여 미완료:** 성능 2-2 읽기 전용 트랜잭션 전면 적용
+**잔여 미완료:** 없음 — 모든 항목 완료
 
 ---
 

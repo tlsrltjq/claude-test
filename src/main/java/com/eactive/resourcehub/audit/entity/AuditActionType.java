@@ -25,6 +25,7 @@ public enum AuditActionType {
     UPDATE_CAREER_PROFILE,
     RESET_PASSWORD,
     EXPORT_PROFILES,
+    BUNDLE_DOWNLOAD,
     DISABLE_USER,
     ENABLE_USER
 }
