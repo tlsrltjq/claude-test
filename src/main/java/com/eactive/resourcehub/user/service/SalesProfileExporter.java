@@ -120,7 +120,6 @@ public class SalesProfileExporter {
     }
 
     private void docCell(Cell cell, ProfileRow row, DocumentType type) {
-        var dv = row.getDoc(type);
-        cell.setCellValue(dv != null ? dv.getOriginalFileName() : "없음");
+        cell.setCellValue(row.getDoc(type) != null ? "O" : "X");
     }
 }
