@@ -77,6 +77,7 @@ public class CareerCalculator {
         }
         public int saveMonths() { return (int)(saveDays() / 365.0 * 12); }
         public int totalRawDays() { return rows.stream().mapToInt(RowResult::totalDays).sum(); }
+        public int rawMonths() { return (int)(totalRawDays() / 365.0 * 12); }
     }
 
     // ── 등급 기준 테이블 (인덱스: 0=초급,1=중급,2=고급,3=특급, 값: 필요 경력 연수, -1=불가) ──

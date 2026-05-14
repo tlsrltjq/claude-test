@@ -463,8 +463,8 @@
                       class="d-flex align-items-end gap-3 flex-wrap">
                     <input type="hidden" name="_csrf"           th:value="${_csrf.token}">
                     <input type="hidden" name="targetUserId"    th:value="${targetUserId}">
-                    <input type="hidden" name="careerMonths"    th:value="${result.saveMonths()}">
-                    <input type="hidden" name="careerTotalDays" th:value="${result.saveDays()}">
+                    <input type="hidden" name="careerMonths"    th:value="${result.rawMonths()}">
+                    <input type="hidden" name="careerTotalDays" th:value="${result.totalRawDays()}">
                     <div>
                         <div class="field-label">개발자 등급 (저장)</div>
                         <select name="developerGrade" class="form-select form-select-sm" style="min-width:110px">
