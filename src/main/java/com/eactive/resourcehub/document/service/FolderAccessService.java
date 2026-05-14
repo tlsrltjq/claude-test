@@ -21,7 +21,7 @@ public class FolderAccessService {
     private final PermissionRepository permissionRepository;
 
     /**
-     * 폴더 읽기 접근 허용: ADMIN / 본인 / 같은 팀 TEAM_LEADER / FOLDER_ACCESS 권한 보유자
+     * 폴더 읽기 접근 허용: ADMIN / SALES / 공용 폴더 / 본인 / FOLDER_ACCESS 권한 보유자
      */
     @Transactional(readOnly = true)
     public Folder getReadableFolder(Long folderId, CustomUserDetails userDetails) {

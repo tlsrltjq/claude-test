@@ -1,7 +1,7 @@
 # 최종 품질 개선 계획 (M3-14)
 
 > 작성일: 2026-05-07  
-> 최종 업데이트: 2026-05-08  
+> 최종 업데이트: 2026-05-14  
 > 검증 스크립트: `bash harness/mvp3/stages/M3-14/verify.sh`  
 > 린터: `bash scripts/security-lint.sh` → **0 FAIL 달성 (15/15 PASS)**
 
@@ -14,16 +14,18 @@
 | 보안 1-1 HTTP 헤더 | ✅ 완료 |
 | 보안 1-2 비밀번호 재설정 코드 로그 제거 | ✅ 완료 |
 | 보안 1-3 환경변수 하드코딩 기본값 제거 | ✅ 완료 |
-| 성능 2-1 AdminController N+1 제거 | 🔲 미완료 |
-| 성능 2-2 읽기 전용 트랜잭션 | 🔲 미완료 |
-| 성능 2-3 직원 목록 페이지네이션 | 🔲 미완료 |
-| 성능 2-4 썸네일 @Async | 🔲 미완료 |
-| UX 3-1 폼 제출 스피너 | ✅ 완료 (업로드 폼) |
-| UX 3-2 네비바 active 상태 | 🔲 미완료 |
+| 성능 2-1 AdminController N+1 제거 | ✅ 완료 (teamService.findAll() 서비스 경유 — 커밋 001e4cc) |
+| 성능 2-2 읽기 전용 트랜잭션 | 🔲 미완료 (일부 서비스에만 적용, 전면 적용 미완) |
+| 성능 2-3 직원 목록 페이지네이션 | ✅ 완료 (DB 레벨 페이지네이션 — 커밋 001e4cc) |
+| 성능 2-4 썸네일 @Async | ✅ 완료 (ThumbnailService @Async + @EnableAsync — 커밋 포함) |
+| UX 3-1 폼 제출 스피너 | ✅ 완료 (업로드 폼 + admin 전체 + settings) |
+| UX 3-2 네비바 active 상태 | ✅ 완료 (admin/*.html 전체 JS active 적용 — 커밋 bbb6ebf) |
 | UX 3-3 빈 목록 Empty State | ✅ 완료 (UI 전면 개선 시 적용) |
 | UX 3-4 커스텀 에러 페이지 | ✅ 완료 (403/404/500) |
-| 코드품질 4-1 GlobalExceptionHandler 확장 | 🔲 미완료 |
-| 코드품질 4-2 FileUtils 헬퍼 | 🔲 미완료 |
+| 코드품질 4-1 GlobalExceptionHandler 확장 | ✅ 완료 (ResponseStatusException·NoResourceFoundException·Exception 핸들러 추가) |
+| 코드품질 4-2 FileUtils 헬퍼 | ✅ 완료 (FileUtils.java — extension(), isAllowedExtension()) |
+
+**잔여 미완료:** 성능 2-2 읽기 전용 트랜잭션 전면 적용
 
 ---
 
