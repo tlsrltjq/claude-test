@@ -5,22 +5,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 워크스페이스 구조
 
 ```
-ai_eactive_hub/
-├─ eactive-resource-hub/   # Spring Boot 소스 (이 폴더)
-│  ├─ docs/                # 스펙·마이그레이션·보안 정책 (색인 아래 참조)
-│  └─ harness/mvp1~3/      # 단계별 자동 검증 스크립트
-├─ mvp1~3/docs/            # 각 MVP 원본 스펙·결정사항
+eactive-resource-hub/
+├─ docs/                   # 현행 참조 문서 (아래 색인)
+│  └─ archive/             # 완료된 MVP 스펙 (읽지 않아도 됨)
+├─ harness/mvp3/           # 검증 스크립트 (MVP1·MVP2는 archive/)
+│  └─ archive/             # mvp1, mvp2 하네스
+└─ scripts/security-lint.sh
 ```
 
 ## 빌드 / 실행
 
 ```bash
-./gradlew bootRun                                    # 로컬 (PostgreSQL localhost:5432)
-docker compose up -d --build                         # Docker 전체 스택
+./gradlew bootRun                          # 로컬 (PostgreSQL localhost:5432)
+docker compose up -d --build               # Docker 전체 스택
 
-bash harness/mvp3/scripts/verify.sh M3-01            # 단계 검증
-bash harness/mvp3/scripts/verify.sh all --with-mvp2  # MVP3 + MVP2 회귀
-bash harness/mvp3/scripts/status.sh                  # 진행 상태
+bash harness/mvp3/scripts/status.sh        # 진행 상태
+bash harness/mvp3/scripts/verify.sh M3-01 # 단계 검증
+bash scripts/security-lint.sh             # 보안 린트 (15개 항목)
 ```
 
 ## 기술 스택
@@ -66,9 +67,10 @@ bash harness/mvp3/scripts/status.sh                  # 진행 상태
 
 ## docs/ 색인
 
-- `mvp1-spec.md` — MVP1 전체 스펙
-- `mvp2-spec.md` / `mvp2-migration.md` — MVP2 스펙·마이그레이션
-- `mvp3-spec.md` / `mvp3-migration.md` — MVP3 4축 요약·마이그레이션
-- `mvp3-decisions.md` — D-01~D-12 결정 사항
-- `mvp3-requirements.md` / `mvp3-stage-plan.md` — 상세 요구사항·단계 계획
-- `security-policy.md` — 파일·권한·로그 보안 정책 + 미구현 TODO
+- `mvp3-spec.md` — 현행 기능 전체 요약 (SSOT)
+- `security-policy.md` — 파일·권한·로그 보안 정책
+- `CHANGELOG.md` — 구현 완료 이력
+- `OPERATION_SECURITY_CHECKLIST.md` — 운영 보안 체크리스트
+- `improvement-plan.md` — 품질 개선 항목 (잔여: readOnly 트랜잭션 전면 적용)
+
+> 완료된 MVP 스펙·마이그레이션·결정 문서는 `docs/archive/` 참조.
