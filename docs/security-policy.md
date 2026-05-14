@@ -1,6 +1,6 @@
 # 보안·권한 정책
 
-> harness/mvp2/stages/14-security-policy/verify.sh 로 자동 검증 가능.
+> `bash scripts/security-lint.sh` 로 자동 검증 가능 (15개 항목).
 
 ## 1. 파일 저장
 
@@ -37,17 +37,15 @@
 - 물리 파일은 배치 또는 별도 cleanup 작업으로 지연 삭제
 - 삭제 감사 로그(`DELETE_DOCUMENT`) 는 이미 구현됨
 
-## 6. 로그 정책 (TODO — 일부 미준수)
+## 6. 로그 정책
 
 **준수**
 - 업로드·다운로드·삭제 이벤트: `AuditLog` 테이블 기록
 - DB 비밀번호: 환경변수 기반 (`SPRING_DATASOURCE_PASSWORD`)
 - 감사 로그에 비밀번호·주민번호 등 민감 정보 기록 금지
 
-**미준수 (수정 필요)**
-- `LocalFileStorage.java:28` — `log.debug("파일 저장: {}", target.toAbsolutePath())` → 절대 경로 제거
-
 **완료**
+- ~~`LocalFileStorage.java:28` — `log.debug("파일 저장: {}", target.toAbsolutePath())`~~ → `storedFileName`(UUID)만 로깅으로 수정 완료
 - ~~`application.yml:53` — `RESOURCEHUB_ADMIN_PASSWORD:Admin1234!`~~ → 하드코딩 기본값 제거 완료 (`security-lint.sh [15]` PASS)
 - ~~`PasswordResetService.java:52` — `log.info("... code={}", code)`~~ → 재설정 코드 로그 제거 완료 (`security-lint.sh [14]` PASS)
 
