@@ -103,44 +103,45 @@ public class DocumentUploadService {
         String storedFileName = UUID.randomUUID() + "." + FileUtils.extension(req.getFile().getOriginalFilename());
         String storagePath = storeFile(req.getFile(), subPath, storedFileName);
 
-        User uploader = userRepository.findById(ownerId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        DocumentVersion version = DocumentVersion.create(
-                document, versionNo,
-                req.getFile().getOriginalFilename(),
-                storedFileName,
-                storagePath,
-                req.getFile().getSize(),
-                req.getFile().getContentType(),
-                checksum,
-                uploader
-        );
-
+        DocumentVersion version;
+        boolean committed = false;
         try {
+            User uploader = userRepository.findById(ownerId)
+                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+            version = DocumentVersion.create(
+                    document, versionNo,
+                    req.getFile().getOriginalFilename(),
+                    storedFileName,
+                    storagePath,
+                    req.getFile().getSize(),
+                    req.getFile().getContentType(),
+                    checksum,
+                    uploader
+            );
+
             documentVersionRepository.save(version);
-        } catch (Exception e) {
-            deleteSilently(storagePath);
-            throw e;
+
+            boolean requiresApproval = req.getFile().getSize() >= LARGE_FILE_THRESHOLD;
+            if (!requiresApproval) {
+                version.autoApprove();
+                document.setCurrentVersion(version);
+            }
+
+            AuditActionType action = isNew ? AuditActionType.UPLOAD : AuditActionType.UPDATE_DOCUMENT;
+            auditService.log(ownerId, action, AuditTargetType.DOCUMENT, document.getId(),
+                    "버전 " + versionNo + " 업로드", httpRequest);
+
+            if (requiresApproval) {
+                auditLogService.logSubmitReview(ownerId, version.getId(), httpRequest);
+            }
+
+            committed = true;
+            log.info("문서 업로드 — ownerId={}, docId={}, version={}, requiresApproval={}",
+                    ownerId, document.getId(), versionNo, requiresApproval);
+        } finally {
+            if (!committed) deleteSilently(storagePath);
         }
-
-        boolean requiresApproval = req.getFile().getSize() >= LARGE_FILE_THRESHOLD;
-
-        if (!requiresApproval) {
-            version.autoApprove();
-            document.setCurrentVersion(version);
-        }
-
-        AuditActionType action = isNew ? AuditActionType.UPLOAD : AuditActionType.UPDATE_DOCUMENT;
-        auditService.log(ownerId, action, AuditTargetType.DOCUMENT, document.getId(),
-                "버전 " + versionNo + " 업로드", httpRequest);
-
-        if (requiresApproval) {
-            auditLogService.logSubmitReview(ownerId, version.getId(), httpRequest);
-        }
-
-        log.info("문서 업로드 — ownerId={}, docId={}, version={}, requiresApproval={}",
-                ownerId, document.getId(), versionNo, requiresApproval);
 
         try {
             thumbnailService.generateAndSave(version);
@@ -183,41 +184,43 @@ public class DocumentUploadService {
         String storedFileName = UUID.randomUUID() + "." + FileUtils.extension(req.getFile().getOriginalFilename());
         String storagePath = storeFile(req.getFile(), subPath, storedFileName);
 
-        User uploader = userRepository.findById(uploaderId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        DocumentVersion version = DocumentVersion.create(
-                document, 1,
-                req.getFile().getOriginalFilename(),
-                storedFileName,
-                storagePath,
-                req.getFile().getSize(),
-                req.getFile().getContentType(),
-                checksum,
-                uploader
-        );
-
+        DocumentVersion version;
+        boolean committed = false;
         try {
+            User uploader = userRepository.findById(uploaderId)
+                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+            version = DocumentVersion.create(
+                    document, 1,
+                    req.getFile().getOriginalFilename(),
+                    storedFileName,
+                    storagePath,
+                    req.getFile().getSize(),
+                    req.getFile().getContentType(),
+                    checksum,
+                    uploader
+            );
+
             documentVersionRepository.save(version);
-        } catch (Exception e) {
-            deleteSilently(storagePath);
-            throw e;
+
+            boolean requiresApproval = req.getFile().getSize() >= LARGE_FILE_THRESHOLD;
+            if (!requiresApproval) {
+                version.autoApprove();
+                document.setCurrentVersion(version);
+            }
+
+            auditService.log(uploaderId, AuditActionType.UPLOAD, AuditTargetType.DOCUMENT, document.getId(),
+                    "공용 폴더 업로드", httpRequest);
+
+            if (requiresApproval) {
+                auditLogService.logSubmitReview(uploaderId, version.getId(), httpRequest);
+            }
+
+            committed = true;
+            log.info("공용 폴더 업로드 — folderId={}, docId={}, uploaderId={}", folderId, document.getId(), uploaderId);
+        } finally {
+            if (!committed) deleteSilently(storagePath);
         }
-
-        boolean requiresApproval = req.getFile().getSize() >= LARGE_FILE_THRESHOLD;
-        if (!requiresApproval) {
-            version.autoApprove();
-            document.setCurrentVersion(version);
-        }
-
-        auditService.log(uploaderId, AuditActionType.UPLOAD, AuditTargetType.DOCUMENT, document.getId(),
-                "공용 폴더 업로드", httpRequest);
-
-        if (requiresApproval) {
-            auditLogService.logSubmitReview(uploaderId, version.getId(), httpRequest);
-        }
-
-        log.info("공용 폴더 업로드 — folderId={}, docId={}, uploaderId={}", folderId, document.getId(), uploaderId);
 
         try {
             thumbnailService.generateAndSave(version);

@@ -58,6 +58,16 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
     @Query("SELECT dv FROM DocumentVersion dv WHERE dv.document.id IN :documentIds")
     List<DocumentVersion> findByDocumentIdIn(@Param("documentIds") List<Long> documentIds);
 
+    // 고아 파일 GC: 스토리지에 알려진 모든 경로 수집
+    @Query("SELECT v.storagePath FROM DocumentVersion v WHERE v.storagePath IS NOT NULL")
+    List<String> findAllStoragePaths();
+
+    @Query("SELECT v.previewStoragePath FROM DocumentVersion v WHERE v.previewStoragePath IS NOT NULL")
+    List<String> findAllPreviewPaths();
+
+    @Query("SELECT v.thumbnailStoragePath FROM DocumentVersion v WHERE v.thumbnailStoragePath IS NOT NULL")
+    List<String> findAllThumbnailPaths();
+
     // 중복 파일 탐지: 동일 폴더 내 같은 체크섬이 존재하는지 확인
     @Query("SELECT dv FROM DocumentVersion dv " +
            "JOIN FETCH dv.document d " +

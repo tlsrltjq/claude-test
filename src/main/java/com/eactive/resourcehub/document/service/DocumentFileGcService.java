@@ -13,9 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 소프트 삭제된 문서의 물리 파일을 주기적으로 정리하는 GC 서비스.
@@ -39,8 +42,9 @@ public class DocumentFileGcService {
     @Scheduled(cron = "0 0 2 * * *")
     public void scheduledGc() {
         log.info("[GC] 정기 파일 GC 시작 (보존 기간 {}일)", retentionDays);
-        int count = runGc();
-        log.info("[GC] 정기 파일 GC 완료 — {}건 처리", count);
+        int deleted = runGc();
+        int orphans = runOrphanScan();
+        log.info("[GC] 정기 파일 GC 완료 — DELETED 문서 {}건, 고아 파일 {}개 처리", deleted, orphans);
     }
 
     /**
@@ -100,6 +104,44 @@ public class DocumentFileGcService {
                 log.warn("[GC] 파일 삭제 실패 (무시하고 계속) — path={}, error={}", path, e.getMessage());
             }
         }
+        return count;
+    }
+
+    /**
+     * 스토리지에 존재하지만 DB에 경로가 없는 고아 파일을 찾아 삭제한다.
+     * 업로드 중인 파일을 보호하기 위해 1시간 이상 된 파일만 대상으로 한다.
+     * LocalFileStorage만 완전 지원 — S3 등은 빈 목록 반환으로 자동 skip.
+     */
+    @Transactional(readOnly = true)
+    public int runOrphanScan() {
+        List<String> fsPaths;
+        try {
+            Instant cutoff = Instant.now().minusSeconds(3600);
+            fsPaths = fileStorage.listAll(cutoff);
+        } catch (IOException e) {
+            log.warn("[GC] 스토리지 파일 목록 조회 실패: {}", e.getMessage());
+            return 0;
+        }
+        if (fsPaths.isEmpty()) return 0;
+
+        Set<String> knownPaths = new HashSet<>();
+        knownPaths.addAll(documentVersionRepository.findAllStoragePaths());
+        knownPaths.addAll(documentVersionRepository.findAllPreviewPaths());
+        knownPaths.addAll(documentVersionRepository.findAllThumbnailPaths());
+
+        int count = 0;
+        for (String path : fsPaths) {
+            if (!knownPaths.contains(path)) {
+                try {
+                    fileStorage.delete(path);
+                    count++;
+                    log.info("[GC] 고아 파일 삭제: {}", path);
+                } catch (IOException e) {
+                    log.warn("[GC] 고아 파일 삭제 실패 (무시하고 계속) — path={}, error={}", path, e.getMessage());
+                }
+            }
+        }
+        if (count > 0) log.info("[GC] 고아 파일 {}개 삭제 완료", count);
         return count;
     }
 

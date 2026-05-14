@@ -9,6 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Stream;
 
 @Slf4j
 public class LocalFileStorage implements FileStorage {
@@ -39,6 +42,25 @@ public class LocalFileStorage implements FileStorage {
         boolean deleted = Files.deleteIfExists(Paths.get(baseDir).resolve(storagePath));
         if (deleted) {
             log.debug("파일 삭제: {}", storagePath);
+        }
+    }
+
+    @Override
+    public List<String> listAll(Instant olderThan) throws IOException {
+        Path base = Paths.get(baseDir);
+        if (!Files.exists(base)) return List.of();
+        try (Stream<Path> stream = Files.walk(base)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .filter(p -> {
+                        try {
+                            return Files.getLastModifiedTime(p).toInstant().isBefore(olderThan);
+                        } catch (IOException e) {
+                            return false;
+                        }
+                    })
+                    .map(p -> base.relativize(p).toString().replace('\\', '/'))
+                    .toList();
         }
     }
 }
