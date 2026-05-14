@@ -270,11 +270,11 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     };
 
     xhr.onload = function() {
-        /* XHR은 redirect를 자동 추적하므로 responseURL로 최종 위치 판별 */
         const finalUrl = xhr.responseURL || '';
         if (finalUrl.includes('/documents/upload')) {
-            /* 서버가 업로드 폼으로 돌려보냄 → 오류 */
-            window.location.href = '/my/folder/documents/upload?err=1';
+            /* 서버가 업로드 폼으로 돌려보냄 → 서버 사이드 오류 */
+            showXhrError('업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.');
+            resetBtn();
         } else {
             window.location.href = finalUrl || '/my/folder';
         }
