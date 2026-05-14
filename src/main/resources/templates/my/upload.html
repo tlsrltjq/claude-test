@@ -270,14 +270,32 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     };
 
     xhr.onload = function() {
-        const finalUrl = xhr.responseURL || '';
-        if (finalUrl.includes('/documents/upload')) {
-            /* 서버가 업로드 폼으로 돌려보냄 → 서버 사이드 오류 */
-            showXhrError('업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.');
-            resetBtn();
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success) {
+                    progressBar.style.width = '100%';
+                    progressBar.classList.remove('progress-bar-animated');
+                    progressBar.classList.add('bg-success');
+                    progressText.textContent = '업로드 완료!';
+                    btn.innerHTML = '<i class="bi bi-check-circle me-1"></i>완료';
+                    setTimeout(function() { window.location.href = '/my/folder'; }, 1200);
+                    return;
+                }
+                showXhrError(data.message || '업로드에 실패했습니다.');
+            } catch (e) {
+                window.location.href = '/my/folder';
+                return;
+            }
         } else {
-            window.location.href = finalUrl || '/my/folder';
+            try {
+                const data = JSON.parse(xhr.responseText);
+                showXhrError(data.message || '업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.');
+            } catch (e) {
+                showXhrError('업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.');
+            }
         }
+        resetBtn();
     };
 
     xhr.onerror = function() {
@@ -286,6 +304,7 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     };
 
     xhr.open('POST', document.getElementById('uploadForm').action);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.send(new FormData(document.getElementById('uploadForm')));
 });
 

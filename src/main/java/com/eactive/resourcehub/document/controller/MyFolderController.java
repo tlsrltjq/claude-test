@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -70,21 +71,33 @@ public class MyFolderController {
     }
 
     @PostMapping("/documents")
-    public String upload(@ModelAttribute DocumentUploadRequest req,
+    public Object upload(@ModelAttribute DocumentUploadRequest req,
                          @AuthenticationPrincipal CustomUserDetails userDetails,
                          HttpServletRequest httpRequest,
                          RedirectAttributes redirectAttributes) {
+        boolean isXhr = "XMLHttpRequest".equals(httpRequest.getHeader("X-Requested-With"));
         try {
             documentUploadService.upload(userDetails.getUser().getId(), req, httpRequest);
+            if (isXhr) {
+                return ResponseEntity.ok(Map.of("success", true, "message", "문서가 업로드되었습니다."));
+            }
             redirectAttributes.addFlashAttribute("successMessage", "문서가 업로드되었습니다.");
+            return "redirect:/my/folder";
         } catch (IllegalArgumentException e) {
+            if (isXhr) {
+                return ResponseEntity.unprocessableEntity()
+                        .body(Map.of("success", false, "message", e.getMessage()));
+            }
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/my/folder/documents/upload";
         } catch (Exception e) {
+            if (isXhr) {
+                return ResponseEntity.internalServerError()
+                        .body(Map.of("success", false, "message", "업로드 중 오류가 발생했습니다."));
+            }
             redirectAttributes.addFlashAttribute("errorMessage", "업로드 중 오류가 발생했습니다: " + e.getMessage());
             return "redirect:/my/folder/documents/upload";
         }
-        return "redirect:/my/folder";
     }
 
     @GetMapping("/documents/{documentId}")
@@ -147,7 +160,13 @@ public class MyFolderController {
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public String handleMaxSize(MaxUploadSizeExceededException e, RedirectAttributes redirectAttributes) {
+    public Object handleMaxSize(MaxUploadSizeExceededException e,
+                                HttpServletRequest request,
+                                RedirectAttributes redirectAttributes) {
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body(Map.of("success", false, "message", "파일 크기가 20MB를 초과합니다."));
+        }
         redirectAttributes.addFlashAttribute("errorMessage", "파일 크기가 20MB를 초과합니다.");
         return "redirect:/my/folder/documents/upload";
     }
