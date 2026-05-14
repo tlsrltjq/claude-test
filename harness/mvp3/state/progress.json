@@ -1,7 +1,7 @@
 {
   "project": "eactive-resource-hub",
   "track": "mvp3",
-  "currentStage": "M3-01",
+  "currentStage": "done",
   "createdAt": "2026-05-04T00:00:00Z",
   "stages": [
     {
@@ -157,14 +157,104 @@
       ]
     },
     {
+      "id": "16-data-integrity",
+      "title": "데이터 무결성 + 런타임 안전성 (toMap 머지함수·중복폴더·Secure쿠키)",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-08T06:00:00.000000Z",
+      "verifiedAt": "2026-05-14T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "PASS=3 WARN=7 FAIL=0 (DB 연결 없어 런타임 검사 생략, 정적 분석 전부 통과)",
+        "WARN [4]: (owner_user_id, type) UNIQUE 제약 — 마이그레이션에 명시적 제약 없음. Optional 사용으로 코드 방어는 됨"
+      ]
+    },
+    {
       "id": "17-gc",
       "title": "파일 GC — 소프트 삭제 문서 물리 파일 자동 정리",
-      "status": "pending",
+      "status": "verified",
       "startedAt": null,
-      "completedAt": null,
-      "verifiedAt": null,
-      "verifyResult": null,
-      "notes": []
+      "completedAt": "2026-05-11T00:00:00.000000Z",
+      "verifiedAt": "2026-05-14T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "PASS=10 WARN=4 FAIL=0 (DB 연결 없어 런타임 검사 생략, 정적 분석 전부 통과)",
+        "커밋 4843234 — feat: 파일 GC 소프트 삭제 문서 물리 파일 자동 정리",
+        "V210 마이그레이션, DocumentFileGcService @Scheduled(cron='0 0 2 * * *'), /admin/gc 대시보드 모두 구현 완료"
+      ]
+    },
+    {
+      "id": "post-mvp3-settings",
+      "title": "설정 페이지 /settings (계정정보·개인정보수정·비밀번호변경)",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-08T00:00:00.000000Z",
+      "verifiedAt": "2026-05-14T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "커밋 9e7e54f — feat: 설정 페이지 추가 + 자격증 종류 필드 제거",
+        "SettingsController, SettingsService, templates/settings.html 구현",
+        "3탭: 계정정보(읽기전용) / 개인정보수정(phone, birthDate, position) / 비밀번호변경",
+        "접근 권한: ADMIN/SALES/EMPLOYEE 모두 가능"
+      ]
+    },
+    {
+      "id": "post-mvp3-arch",
+      "title": "아키텍처 개선 — DB 레벨 필터링·페이지네이션 + 컨트롤러 Repository 직접 주입 제거",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-08T00:00:00.000000Z",
+      "verifiedAt": "2026-05-14T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "커밋 001e4cc — perf: 직원 목록·영업 인력 조회 DB 레벨 필터링·페이지네이션 전환",
+        "커밋 8da9eaa — refactor: 컨트롤러 Repository 직접 주입 제거",
+        "EmployeeManagementService.findActiveFilteredPaged(), SalesMemberService.findActiveMembersFiltered() 추가",
+        "잔여 WARN: AdminController, SharedFolderController, MyFolderController 일부 직접 조회 가능성"
+      ]
+    },
+    {
+      "id": "post-mvp3-ux",
+      "title": "UX 마감 — 관리자 네비바 active·로딩스피너·업로드 진행률바",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-08T00:00:00.000000Z",
+      "verifiedAt": "2026-05-14T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "커밋 ed2c47e — ux: 업로드 진행률 바 추가 (XHR 방식 전환)",
+        "관리자 네비바 window.location.pathname 기반 active 자동 적용 (14개 템플릿)",
+        "POST 폼 submit 시 반투명 오버레이 + Bootstrap spinner (admin/*.html + settings.html)"
+      ]
+    },
+    {
+      "id": "post-mvp3-security-fixes",
+      "title": "보안·접근제어 버그픽스 (본인파일 접근·공용폴더403·역할변경세션만료·직급관리자전용)",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-14T00:00:00.000000Z",
+      "verifiedAt": "2026-05-14T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "커밋 c006715 — fix: 본인 업로드 파일 검토 상태 무관 접근 허용",
+        "커밋 26e6295 — fix: 전 사원 공용 폴더 EMPLOYEE 접근 시 403 수정",
+        "커밋 93bb648 — fix: 역할 변경 시 대상 사용자 세션 즉시 만료",
+        "커밋 3a93907 — feat: 직급 변경 권한 관리자 전용으로 제한"
+      ]
+    },
+    {
+      "id": "18-git-hygiene",
+      "title": "Git 위생 — .gitignore·민감파일 미추적·하드코딩 시크릿·브랜치 정리",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-14T00:00:00.000000Z",
+      "verifiedAt": "2026-05-14T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "PASS=12 WARN=2 FAIL=0",
+        "WARN [4]: progress.json 수정 중 + 18-git-hygiene 단계 신규 추가로 미커밋 상태",
+        "WARN [6]: main에 merge된 feature/* 브랜치 12개 잔존 — 삭제 권장 (기능상 영향 없음)"
+      ]
     }
   ]
 }
