@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.document.repository;
 
 import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
+import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -56,4 +57,15 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
     // GC: 특정 문서들의 모든 버전 경로 조회 (파일 삭제용)
     @Query("SELECT dv FROM DocumentVersion dv WHERE dv.document.id IN :documentIds")
     List<DocumentVersion> findByDocumentIdIn(@Param("documentIds") List<Long> documentIds);
+
+    // 중복 파일 탐지: 동일 폴더 내 같은 체크섬이 존재하는지 확인
+    @Query("SELECT dv FROM DocumentVersion dv " +
+           "JOIN FETCH dv.document d " +
+           "WHERE dv.checksum = :checksum " +
+           "AND d.folder.id = :folderId " +
+           "AND d.status <> :excludedStatus")
+    Optional<DocumentVersion> findFirstByChecksumInFolder(
+            @Param("checksum") String checksum,
+            @Param("folderId") Long folderId,
+            @Param("excludedStatus") DocumentStatus excludedStatus);
 }

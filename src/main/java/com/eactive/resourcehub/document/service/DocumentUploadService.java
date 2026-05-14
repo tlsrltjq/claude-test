@@ -7,6 +7,7 @@ import com.eactive.resourcehub.audit.service.AuditLogService;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.dto.DocumentUploadRequest;
 import com.eactive.resourcehub.document.entity.Document;
+import com.eactive.resourcehub.document.entity.DocumentStatus;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.entity.Folder;
 import com.eactive.resourcehub.document.entity.FolderType;
@@ -62,6 +63,13 @@ public class DocumentUploadService {
 
         validateFile(req.getFile());
 
+        String checksum = checksum(req.getFile());
+        if (checksum != null) {
+            documentVersionRepository.findFirstByChecksumInFolder(checksum, folder.getId(), DocumentStatus.DELETED)
+                    .ifPresent(dup -> { throw new IllegalArgumentException(
+                            "동일한 파일이 이미 '" + dup.getDocument().getTitle() + "'에 업로드되어 있습니다."); });
+        }
+
         Optional<Document> existing = documentRepository
                 .findByFolderIdAndDocumentTypeAndTitle(folder.getId(), req.getDocumentType(), req.getTitle());
 
@@ -97,7 +105,6 @@ public class DocumentUploadService {
 
         User uploader = userRepository.findById(ownerId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        String checksum = checksum(req.getFile());
 
         DocumentVersion version = DocumentVersion.create(
                 document, versionNo,
@@ -153,6 +160,13 @@ public class DocumentUploadService {
 
         validateFile(req.getFile());
 
+        String checksum = checksum(req.getFile());
+        if (checksum != null) {
+            documentVersionRepository.findFirstByChecksumInFolder(checksum, folderId, DocumentStatus.DELETED)
+                    .ifPresent(dup -> { throw new IllegalArgumentException(
+                            "동일한 파일이 이미 '" + dup.getDocument().getTitle() + "'에 업로드되어 있습니다."); });
+        }
+
         Document document;
         try {
             document = Document.create(folder, req.getDocumentType(), req.getTitle());
@@ -171,7 +185,6 @@ public class DocumentUploadService {
 
         User uploader = userRepository.findById(uploaderId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        String checksum = checksum(req.getFile());
 
         DocumentVersion version = DocumentVersion.create(
                 document, 1,
