@@ -28,9 +28,11 @@
       <appender-ref ref="FILE"/>
     </root>
 
-    <logger name="com.eactive.resourcehub" level="WARN"/>
+    <logger name="com.eactive.resourcehub" level="INFO"/>
     <logger name="org.flywaydb" level="INFO"/>
     <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
   </springProfile>
 
   <!-- 개발 프로파일 -->

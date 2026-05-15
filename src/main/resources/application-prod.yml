@@ -13,6 +13,8 @@ server:
 
 logging:
   level:
-    com.eactive.resourcehub: WARN
+    com.eactive.resourcehub: INFO
     org.flywaydb: INFO
     org.hibernate.SQL: WARN
+    org.springframework: WARN
+    com.zaxxer.hikari: WARN
