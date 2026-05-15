@@ -52,6 +52,17 @@ services:
     networks:
       - backend
 
+  certificate:
+    build: ./certificate
+    image: eactive-certificate:latest
+    container_name: resourcehub-certificate
+    restart: unless-stopped
+    volumes:
+      - certificate_employees:/app/employees
+      - certificate_output:/app/output
+    networks:
+      - backend
+
   caddy:
     image: caddy:2-alpine
     container_name: resourcehub-caddy
@@ -77,6 +88,8 @@ volumes:
   resourcehub_logs:
   caddy_data:
   caddy_config:
+  certificate_employees:
+  certificate_output:
 
 networks:
   backend:
