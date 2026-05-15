@@ -4,6 +4,61 @@
 
 ---
 
+## [Post-MVP3] 2026-05-15 (5차 — 업로드 강화 + 운영 준비)
+
+### 업로드 안전성 강화 (하네스 19-upload-hardening)
+
+#### 1. Magic Bytes 검증 (`FileMagicValidator`)
+- `common/util/FileMagicValidator.java` 신규 생성
+- 지원 확장자 9개: pdf, jpg/jpeg, png, docx, pptx, hwpx, hwp, ppt
+- 파일 서명(매직 바이트) 불일치 시 `IllegalArgumentException` — 확장자 위조 차단
+
+#### 2. 경쟁 조건 방어
+- `V211__add_unique_index_documents_folder_type_title.sql`: `(folder_id, document_type, title)` partial unique index (`WHERE status <> 'DELETED'`)
+- `DocumentUploadService`: `saveAndFlush()` 후 `DataIntegrityViolationException` 캐치 → 의미 있는 오류 메시지 반환
+
+#### 3. 중복 파일 사전 탐지
+- `DocumentVersionRepository.findFirstByChecksumInFolder()`: 동일 폴더·SHA-256 체크섬 중복 조회
+- 업로드 전 checksum 계산 → 동일 폴더 내 중복 파일 시 저장 차단
+
+#### 4. 업로드 취소 (XHR abort)
+- `my/upload.html`: `<a>` 취소 버튼 → `<button id="cancelBtn">` 전환
+- `currentXhr` 변수로 진행 중 XHR 관리, 업로드 중 취소 시 `xhr.abort()` 호출
+- `xhr.onabort`: "업로드가 취소됐습니다." 메시지 + 진행바 초기화
+
+#### 5. 고아 파일 GC
+- `FileStorage.listAll(Instant olderThan)` 기본 메서드 추가 (S3 no-op)
+- `LocalFileStorage.listAll()`: `Files.walk()` 기반 구현 (1시간 이전 파일만)
+- `DocumentVersionRepository`: `findAllStoragePaths()`, `findAllPreviewPaths()`, `findAllThumbnailPaths()` 추가
+- `DocumentFileGcService.runOrphanScan()`: DB 경로 SET vs 파일시스템 diff → 고아 파일 삭제
+- `scheduledGc()` 내 `runOrphanScan()` 자동 실행 (새벽 2시)
+
+---
+
+### 운영 배포 준비 (하네스 20-ops-readiness)
+
+#### 1단계 배포 블로커 완료
+- **HTTPS/SSL**: `Caddyfile` + `docker-compose.prod.yml` caddy 서비스 (Let's Encrypt 자동 인증서)
+  - 도메인: `CADDY_DOMAIN` 환경변수 주입 (`{env.CADDY_DOMAIN}` 구문)
+  - app 서비스 외부 포트 비노출 — Caddy 경유 전용
+  - `application-prod.yml`: `server.forward-headers-strategy: native`
+- **운영 compose 가드**: `scripts/deploy.sh` 신규 생성
+  - 필수 env(`POSTGRES_PASSWORD`, `RESOURCEHUB_ADMIN_PASSWORD`, `CADDY_DOMAIN`) 검증
+  - `RESOURCEHUB_SEED_TEST_PASSWORD` 설정 시 경고 + 확인 프롬프트
+  - 120초 헬스체크 루프
+
+#### 2단계 권장 사항 완료
+- **로그 파일 저장**: `src/main/resources/logback-spring.xml` 신규 생성
+  - prod 프로파일: 롤링 파일 appender (50MB 단위, 30일 보관, 1GB 상한)
+  - `docker-compose.prod.yml`: `resourcehub_logs` 볼륨 + `LOG_DIR=/data/logs` 주입
+- **DB 자동 백업**: `scripts/setup-cron.sh` 신규 생성
+  - 매일 03:00 DB 백업 (`backup-db.sh`), 03:30 업로드 백업 (`backup-uploads.sh`)
+  - 중복 등록 방지 (`grep -qF` 검사), 서버 1회 실행으로 완료
+- **SMTP**: `@ConditionalOnMissingBean` 확인 — 미설정 시 콘솔 폴백 자동 동작
+- **Caddy 문서화**: `Caddyfile` 레포 포함, README 배포 섹션 업데이트
+
+---
+
 ## [Post-MVP3] 2026-05-08 (3차 — UX 마감)
 
 ### UX 개선

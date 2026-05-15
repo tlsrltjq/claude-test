@@ -255,6 +255,43 @@
         "WARN [4]: progress.json 수정 중 + 18-git-hygiene 단계 신규 추가로 미커밋 상태",
         "WARN [6]: main에 merge된 feature/* 브랜치 12개 잔존 — 삭제 권장 (기능상 영향 없음)"
       ]
+    },
+    {
+      "id": "19-upload-hardening",
+      "title": "업로드 안전성 강화 — magic bytes·경쟁조건·중복탐지·취소·고아파일GC",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-15T00:00:00.000000Z",
+      "verifiedAt": "2026-05-15T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "PASS=12 WARN=0 FAIL=0",
+        "FileMagicValidator (9개 확장자 magic bytes 검증)",
+        "V211 partial unique index (folder_id, document_type, title WHERE status<>DELETED)",
+        "DataIntegrityViolationException 처리로 DB 레벨 경쟁조건 방어",
+        "SHA-256 체크섬 기반 중복 파일 사전 탐지",
+        "XHR abort() 기반 업로드 취소 + cancelBtn 상태 머신",
+        "DocumentFileGcService.runOrphanScan() + LocalFileStorage.listAll(Instant) — 고아 파일 자동 정리"
+      ]
+    },
+    {
+      "id": "20-ops-readiness",
+      "title": "운영 배포 준비 — Caddy HTTPS·prod compose·로그 파일·백업 크론",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-15T00:00:00.000000Z",
+      "verifiedAt": "2026-05-15T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "PASS=12 WARN=0 FAIL=0",
+        "Caddyfile + docker-compose.prod.yml caddy 서비스 (Let's Encrypt 자동 인증서)",
+        "CADDY_DOMAIN 환경변수로 도메인 주입, app 포트 비노출",
+        "application-prod.yml: forward-headers-strategy: native",
+        "scripts/deploy.sh: 필수 env 검증 + SEED 계정 경고 + 헬스체크",
+        "logback-spring.xml: prod 롤링 파일 appender (50MB/30일/1GB 상한)",
+        "docker-compose.prod.yml: resourcehub_logs 볼륨 + LOG_DIR 환경변수",
+        "scripts/setup-cron.sh: 매일 03:00 DB / 03:30 업로드 백업 크론잡 등록"
+      ]
     }
   ]
 }

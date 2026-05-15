@@ -96,6 +96,76 @@ Spring Security 기본 규칙 적용 — 로그인한 모든 역할(ADMIN/SALES/
 
 ---
 
+## 10. 업로드 안전성 정책 (Post-MVP3 확정)
+
+> 구현 완료: 2026-05-15
+
+### 파일 검증 (이중 검사)
+
+| 순서 | 검사 | 구현 |
+|------|------|------|
+| 1 | 확장자 허용 목록 | `DocumentUploadService.validateFile()` |
+| 2 | Magic bytes 시그니처 | `FileMagicValidator.validate()` — 확장자 위조 차단 |
+
+지원 확장자: `pdf`, `jpg/jpeg`, `png`, `docx`, `pptx`, `hwpx`, `hwp`, `ppt`
+
+### 중복 방어 (이중)
+
+- **DB 레벨**: `V211` partial unique index `(folder_id, document_type, title) WHERE status <> 'DELETED'`  
+  → `DataIntegrityViolationException` 처리로 경쟁 조건에서도 안전
+- **체크섬 레벨**: SHA-256 기반 사전 중복 탐지 (`findFirstByChecksumInFolder`)  
+  → 동일 파일 재업로드 시 즉시 차단
+
+### 업로드 취소
+
+- XHR `abort()` 기반 — 진행 중 업로드 취소 즉시 반영
+- 취소 버튼 상태 머신: 기본(이전 페이지) ↔ 업로드 중(취소 요청)
+
+### 고아 파일 GC
+
+- `DocumentFileGcService.runOrphanScan()`: 매일 새벽 2시 자동 실행
+- 1시간 이상 된 파일만 스캔 (진행 중 업로드 보호)
+- DB 경로 SET과 파일시스템 diff → 불일치 파일 삭제
+- S3 스토리지 사용 시 스캔 건너뜀 (기본 메서드 no-op)
+
+---
+
+## 11. 운영 인프라 (Post-MVP3 확정)
+
+> 구현 완료: 2026-05-15
+
+### HTTPS / 리버스 프록시
+
+- **Caddy 2** (`caddy:2-alpine`) — Let's Encrypt 자동 인증서
+- 도메인: `CADDY_DOMAIN` 환경변수 → `{env.CADDY_DOMAIN}` 구문으로 `Caddyfile`에 주입
+- app 서비스 외부 포트 비노출 — `backend` Docker 네트워크 내부 통신만
+- `application-prod.yml`: `server.forward-headers-strategy: native` (X-Forwarded-Proto 신뢰)
+
+### 배포 절차
+
+```
+bash scripts/deploy.sh          # 항상 이 스크립트로 배포
+```
+
+- 필수 env 미설정 시 배포 중단: `POSTGRES_PASSWORD`, `RESOURCEHUB_ADMIN_PASSWORD`, `CADDY_DOMAIN`
+- `RESOURCEHUB_SEED_TEST_PASSWORD` 설정 감지 시 경고 + 확인 프롬프트
+
+### 로그
+
+- `logback-spring.xml` prod 프로파일: 롤링 파일 (50MB 단위, 30일 보관, 1GB 상한)
+- 경로: `/data/logs/resourcehub.log` (Docker 볼륨 `resourcehub_logs`)
+
+### 백업
+
+| 스크립트 | 실행 | 내용 |
+|----------|------|------|
+| `backup-db.sh` | 매일 03:00 | pg_dump gzip, 30일 보관 |
+| `backup-uploads.sh` | 매일 03:30 | 업로드 디렉토리 tar.gz, 30일 보관 |
+
+크론잡 등록: 서버에서 `bash scripts/setup-cron.sh` 1회 실행
+
+---
+
 ## 8. 모든 단계 공통 보안 (mvp1·mvp2와 동일)
 
 - JWT 금지, Spring Security 세션
