@@ -9,9 +9,9 @@
 
 배포 전 반드시 완료해야 합니다. 미완료 시 배포 불가 또는 보안 사고 위험.
 
-- [ ] **HTTPS / SSL 설정** `보안`  
-  nginx 또는 Caddy를 리버스 프록시로 구성해 SSL 종료 처리.  
-  평문 HTTP 서빙 시 세션 쿠키 탈취 가능.
+- [x] **HTTPS / SSL 설정** `보안`  
+  Caddy 리버스 프록시 + Let's Encrypt 자동 인증서. `CADDY_DOMAIN` 환경변수로 도메인 주입.  
+  `docker-compose.prod.yml`에 caddy 서비스 추가, `application-prod.yml`에 forward-headers-strategy 설정 완료.
 
 - [ ] **운영용 compose 파일 사용 확인** `인프라`  
   반드시 `docker-compose.prod.yml` 사용.  

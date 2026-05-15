@@ -39,8 +39,6 @@ services:
       SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
       SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
-    ports:
-      - "127.0.0.1:8080:8080"  # 프록시(nginx/caddy) 통해서만 노출
     volumes:
       - resourcehub_uploads:/data/uploads
     healthcheck:
@@ -52,9 +50,30 @@ services:
     networks:
       - backend
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: resourcehub-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      CADDY_DOMAIN: ${CADDY_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    networks:
+      - backend
+
 volumes:
   resourcehub_postgres_data:
   resourcehub_uploads:
+  caddy_data:
+  caddy_config:
 
 networks:
   backend:
