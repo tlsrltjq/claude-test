@@ -13,9 +13,9 @@
   Caddy 리버스 프록시 + Let's Encrypt 자동 인증서. `CADDY_DOMAIN` 환경변수로 도메인 주입.  
   `docker-compose.prod.yml`에 caddy 서비스 추가, `application-prod.yml`에 forward-headers-strategy 설정 완료.
 
-- [ ] **운영용 compose 파일 사용 확인** `인프라`  
-  반드시 `docker-compose.prod.yml` 사용.  
-  개발용(`docker-compose.yml`)은 `Secure=false`, 포트 전체 노출.
+- [x] **운영용 compose 파일 사용 확인** `인프라`  
+  `scripts/deploy.sh` 생성 — 항상 `docker-compose.prod.yml` 사용, 필수 env 검증 및 SEED 계정 경고 포함.  
+  `docker-compose.yml` 상단에 개발 전용 경고 주석 추가. README 배포 섹션 업데이트.
 
 - [ ] **`POSTGRES_PASSWORD` 설정** `환경변수`  
   서버 `.env` 또는 환경변수에 미리 설정 필요.  

@@ -384,31 +384,60 @@ docker compose down -v
 
 ## 운영 서버 배포
 
-운영 환경에서는 `docker-compose.prod.yml`을 사용합니다. 앱 포트(8080)가 `127.0.0.1`에만 바인딩되며, Nginx 또는 Caddy 등 리버스 프록시를 통해 HTTPS로 노출해야 합니다.
+> ⚠️ **`docker-compose.yml`은 개발 전용입니다.** 운영 배포는 반드시 아래 절차를 따르세요.
+
+### 1. `.env` 파일 작성
 
 ```bash
-# 1. .env 파일을 서버에 복사하고 운영용 값으로 수정
-scp .env user@server:/path/to/eactive-resource-hub/.env
-ssh user@server
-cd /path/to/eactive-resource-hub
-vim .env   # 강력한 비밀번호로 수정
-
-# 2. 운영 compose로 실행
-docker compose -f docker-compose.prod.yml up -d --build
-
-# 3. 헬스체크
-curl http://localhost:8080/health
+# 서버에서 .env 생성
+cp .env.example .env   # 없으면 직접 생성
+vim .env
 ```
 
-**운영 전환 전 체크리스트:**
+운영용 필수 환경변수:
 
-- [ ] `POSTGRES_PASSWORD` 강력한 랜덤값으로 변경: `openssl rand -base64 32`
-- [ ] `RESOURCEHUB_ADMIN_PASSWORD` 강력한 비밀번호로 변경
-- [ ] `RESOURCEHUB_SEED_TEST_PASSWORD` 미설정 확인 (테스트 계정 생성 금지)
-- [ ] `application.yml` → `cookie.secure: true` 로 변경 (HTTPS 환경)
-- [ ] Nginx/Caddy로 HTTPS 적용 및 HTTP → HTTPS 리다이렉트 설정
-- [ ] 방화벽에서 8080 포트 외부 차단 (리버스 프록시 통해서만 접근)
-- [ ] 정기 DB 백업 스크립트 설정
+```dotenv
+# DB
+POSTGRES_PASSWORD=<openssl rand -base64 32 결과>
+
+# 관리자 계정
+RESOURCEHUB_ADMIN_EMAIL=admin@example.com
+RESOURCEHUB_ADMIN_PASSWORD=<강력한 비밀번호>
+
+# 도메인 (Caddy HTTPS 자동 인증서)
+CADDY_DOMAIN=hub.example.com
+
+# 회사 이메일 도메인
+RESOURCEHUB_COMPANY_EMAIL_DOMAIN=example.com
+
+# SMTP (미설정 시 이메일 알림 비활성)
+SPRING_MAIL_HOST=smtp.example.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=noreply@example.com
+SPRING_MAIL_PASSWORD=<SMTP 비밀번호>
+
+# ⚠️ 운영 환경에서는 반드시 주석 처리 또는 삭제
+# RESOURCEHUB_SEED_TEST_PASSWORD=
+```
+
+### 2. 배포 실행
+
+```bash
+bash scripts/deploy.sh
+```
+
+스크립트가 자동으로:
+- 필수 환경변수 누락 여부 검사
+- `RESOURCEHUB_SEED_TEST_PASSWORD` 설정 시 경고 및 중단
+- `docker-compose.prod.yml`로 빌드·기동
+- 헬스체크 통과 확인
+
+### 3. 확인
+
+```bash
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f app
+```
 
 ---
 

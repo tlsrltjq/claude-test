@@ -1,3 +1,6 @@
+# ⚠️  개발/로컬 전용 — 운영 배포 시 절대 사용 금지
+# 운영 배포: bash scripts/deploy.sh  (docker-compose.prod.yml 사용)
+
 services:
   postgres:
     image: postgres:18
