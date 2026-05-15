@@ -4,6 +4,37 @@
 
 ---
 
+## [Post-MVP3] 2026-05-15 (6차 — 재직증명서 자동 발급)
+
+### 재직증명서 자동 발급 시스템 (하네스 21-certificate)
+
+#### Python CLI + Flask HTTP 서비스 (`certificate/`)
+- `generate.py`: `--name`, `--csv`, `--all`, `--create` 인수 지원
+  - `_replace_in_doc()`: run 분할 대응 치환 (전체 run 텍스트 합산 후 run[0]에 기록)
+  - `{{발급일자}}` PLACEHOLDER → `datetime.today().strftime("%Y년 %m월 %d일")` 치환
+  - LibreOffice headless PDF 변환 (`libreoffice --headless --convert-to pdf`)
+- `app.py`: Flask 라우트 6개 (`/health`, `/generate`, `/create`, `/templates`, `/files`, `/download/<filename>`)
+  - path traversal 방어 (`os.path.basename` + `startswith` 검증)
+- `Dockerfile`: `python:3.12-slim` + `libreoffice-writer` + `fonts-noto-cjk`
+- `employees.csv`: 이름 컬럼 기반 일괄 발급 지원
+- `requirements.txt`: `python-docx==1.1.2`, `flask==3.1.1`
+
+#### Spring Boot 연동 (`certificate/`)
+- `CertificateService.java`: Java `HttpClient` 기반 Flask 호출 (추가 의존성 없음)
+  - `isAvailable()`, `getTemplates()`, `getFiles()`, `generate()`, `generateAll()`, `createTemplate()`, `download()`
+  - `certificate.service.url` 프로퍼티 (기본: `http://certificate:5000`)
+- `CertificateController.java`: `@RequestMapping("/admin/certificate")` — 기존 ADMIN 권한 자동 적용
+  - `GET /` 목록, `POST /generate` 발급, `POST /create` 템플릿 생성, `GET /download/{filename}` 다운로드
+- `templates/admin/certificate.html`: 단건/전체 발급, 템플릿 생성, 파일 목록·다운로드 UI
+
+#### 인프라
+- `docker-compose.prod.yml` + `docker-compose.yml`: `certificate` 서비스 추가
+  - named volumes: `certificate_employees`, `certificate_output`
+  - dev: 포트 `5001:5000` (macOS 5000 포트 충돌 회피)
+- 관리자 전체 16개 템플릿 nav에 재직증명서 링크 추가
+
+---
+
 ## [Post-MVP3] 2026-05-15 (5차 — 업로드 강화 + 운영 준비)
 
 ### 업로드 안전성 강화 (하네스 19-upload-hardening)

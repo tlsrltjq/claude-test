@@ -293,5 +293,23 @@
         "scripts/setup-cron.sh: 매일 03:00 DB / 03:30 업로드 백업 크론잡 등록"
       ]
     }
+  ,
+    {
+      "id": "21-certificate",
+      "title": "재직증명서 자동 발급 시스템 — Python+Flask+LibreOffice Docker 서비스",
+      "status": "verified",
+      "startedAt": null,
+      "completedAt": "2026-05-15T00:00:00.000000Z",
+      "verifiedAt": "2026-05-15T00:00:00.000000Z",
+      "verifyResult": "pass",
+      "notes": [
+        "PASS=14 WARN=1 FAIL=0",
+        "certificate/ 디렉토리: generate.py (python-docx + LibreOffice PDF 변환), app.py (Flask HTTP API), Dockerfile, requirements.txt, employees.csv",
+        "Spring Boot: CertificateController (/admin/certificate), CertificateService (Java HttpClient → Flask), certificate.html 템플릿",
+        "docker-compose.prod.yml + docker-compose.yml: certificate 서비스 추가 (named volumes: certificate_employees, certificate_output)",
+        "관리자 전체 16개 템플릿에 재직증명서 nav 링크 추가",
+        "WARN [15]: 런타임 컨테이너 미실행 — 정적 검사는 전부 통과"
+      ]
+    }
   ]
 }
