@@ -35,20 +35,23 @@
 
 서비스 첫날부터 필요할 수 있습니다. 빠르게 처리 권장.
 
-- [ ] **SMTP 환경변수 설정** `알림`  
-  미설정 시 승인·반려 이메일 알림 발송 불가.  
-  앱 자체는 동작하지만 사용성 저하.
+- [x] **SMTP 환경변수 설정** `알림`  
+  `EmailSenderConfig` — `@ConditionalOnMissingBean` 패턴으로 SMTP 미설정 시 콘솔 출력으로 자동 폴백.  
+  `SPRING_MAIL_HOST/PORT/USERNAME/PASSWORD` 설정 시 실제 메일 발송.
 
-- [ ] **로그 파일 저장 설정** `운영`  
-  현재 콘솔 출력만.  
-  `logback.xml` 파일 appender 또는 Docker 로그 드라이버 설정으로 장기 운영 시 로그 유실 방지.
+- [x] **로그 파일 저장 설정** `운영`  
+  `src/main/resources/logback-spring.xml` 생성 — prod 프로파일에서 롤링 파일 appender 활성화.  
+  파일: `/data/logs/resourcehub.log`, 50MB 롤링, 30일·1GB 상한.  
+  `docker-compose.prod.yml`에 `resourcehub_logs` 볼륨 및 `LOG_DIR=/data/logs` 환경변수 추가.
 
-- [ ] **DB 자동 백업 스크립트** `인프라`  
-  현재 자동 백업 없음.  
-  `pg_dump` 크론잡 등으로 정기 백업 구성 권장.
+- [x] **DB 자동 백업 스크립트** `인프라`  
+  `scripts/backup-db.sh` (DB), `scripts/backup-uploads.sh` (파일) 이미 존재.  
+  `scripts/setup-cron.sh` 생성 — 매일 03:00 DB, 03:30 업로드 크론잡 등록. 30일 자동 삭제.  
+  서버에서 `bash scripts/setup-cron.sh` 한 번만 실행하면 됨.
 
-- [ ] **nginx/Caddy 설정 파일 문서화** `인프라`  
-  리버스 프록시 설정을 프로젝트 레포에 포함하거나 README에 구성 방법 명시.
+- [x] **nginx/Caddy 설정 파일 문서화** `인프라`  
+  `Caddyfile` 레포 포함 완료. `docker-compose.prod.yml`에서 볼륨 마운트.  
+  도메인은 `CADDY_DOMAIN` 환경변수로 주입.
 
 ---
 

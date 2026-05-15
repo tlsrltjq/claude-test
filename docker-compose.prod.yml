@@ -39,8 +39,10 @@ services:
       SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
       SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      LOG_DIR: /data/logs
     volumes:
       - resourcehub_uploads:/data/uploads
+      - resourcehub_logs:/data/logs
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
       interval: 30s
@@ -72,6 +74,7 @@ services:
 volumes:
   resourcehub_postgres_data:
   resourcehub_uploads:
+  resourcehub_logs:
   caddy_data:
   caddy_config:
 
