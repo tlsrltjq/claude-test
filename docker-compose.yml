@@ -70,7 +70,7 @@ services:
       - certificate_employees:/app/employees
       - certificate_output:/app/output
     ports:
-      - "5000:5000"
+      - "5001:5000"
 
 volumes:
   resourcehub_postgres_data:
