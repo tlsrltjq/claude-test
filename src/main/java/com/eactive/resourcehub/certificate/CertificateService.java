@@ -52,8 +52,19 @@ public class CertificateService {
         }
     }
 
-    /** 단건 또는 다건 발급 */
+    /** 단건 또는 다건 발급 — 템플릿 없으면 자동 생성 후 발급 */
     public CertificateResult generate(List<String> names) {
+        List<String> existing = getTemplates();
+        for (String name : names) {
+            if (!existing.contains(name)) {
+                try {
+                    createTemplate(name);
+                    log.info("재직증명서 기본 템플릿 자동 생성: {}", name);
+                } catch (Exception e) {
+                    log.warn("템플릿 자동 생성 실패 — name={}: {}", name, e.getMessage());
+                }
+            }
+        }
         try {
             String body = mapper.writeValueAsString(
                     names.size() == 1
@@ -68,15 +79,9 @@ public class CertificateService {
         }
     }
 
-    /** 전체 직원 발급 */
-    public CertificateResult generateAll() {
-        try {
-            JsonNode node = post("/generate", "{\"all\":true}");
-            return new CertificateResult(toList(node.path("success")), toList(node.path("failed")));
-        } catch (Exception e) {
-            log.error("전체 재직증명서 발급 실패: {}", e.getMessage());
-            return new CertificateResult(List.of(), List.of());
-        }
+    /** 전체 발급 — DB에서 받은 전체 이름 목록 기준 */
+    public CertificateResult generateAll(List<String> allNames) {
+        return generate(allNames);
     }
 
     /** 기본 템플릿 생성 */

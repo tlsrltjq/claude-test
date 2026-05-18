@@ -252,10 +252,12 @@
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-developerGrade" onchange="toggleCol('developerGrade',this.checked)"> 개발자 등급</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-career" onchange="toggleCol('career',this.checked)"> 경력</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-resume" onchange="toggleCol('resume',this.checked)"> 이력서</label>
-                <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-careerDescription" onchange="toggleCol('careerDescription',this.checked)"> 경력기술서</label>
+                <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-careerDescription" onchange="toggleCol('careerDescription',this.checked)"> SW기술자 경력증명서</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-license" onchange="toggleCol('license',this.checked)"> 정보처리기사</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-graduationCertificate" onchange="toggleCol('graduationCertificate',this.checked)"> 졸업증명서</label>
-                <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceProof" onchange="toggleCol('healthInsuranceProof',this.checked)"> 건강보험득실</label>
+                <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-nationalPensionCertificate" onchange="toggleCol('nationalPensionCertificate',this.checked)"> 국민연금가입증명서</label>
+                <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceCertificate" onchange="toggleCol('healthInsuranceCertificate',this.checked)"> 건강보험가입증명서</label>
+                <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceEligibility" onchange="toggleCol('healthInsuranceEligibility',this.checked)"> 건강보험자격득실확인서</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-etc" onchange="toggleCol('etc',this.checked)"> 기타자료</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-updatedAt" onchange="toggleCol('updatedAt',this.checked)"> 업데이트</label>
             </div>
@@ -367,10 +369,12 @@
                            class="sort-link">경력<span th:if="${query.sort == 'career'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
                     </th>
                     <th class="doc-cell" data-col="resume">이력서</th>
-                    <th class="doc-cell" data-col="careerDescription">경력기술서</th>
+                    <th class="doc-cell" data-col="careerDescription">SW기술자 경력증명서</th>
                     <th class="doc-cell" data-col="license">정보처리기사</th>
                     <th class="doc-cell" data-col="graduationCertificate">졸업증명서</th>
-                    <th class="doc-cell" data-col="healthInsuranceProof">건강보험득실</th>
+                    <th class="doc-cell" data-col="nationalPensionCertificate">국민연금가입증명서</th>
+                    <th class="doc-cell" data-col="healthInsuranceCertificate">건강보험가입증명서</th>
+                    <th class="doc-cell" data-col="healthInsuranceEligibility">건강보험자격득실확인서</th>
                     <th class="doc-cell" data-col="etc">기타자료</th>
                     <th data-col="updatedAt">업데이트</th>
                 </tr>
@@ -434,7 +438,7 @@
                         </td>
                     </th:block>
 
-                    <!-- 경력기술서 -->
+                    <!-- SW기술자 경력증명서 -->
                     <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).CAREER_DESCRIPTION)}">
                         <td class="doc-cell" data-col="careerDescription">
                             <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
@@ -467,9 +471,31 @@
                         </td>
                     </th:block>
 
-                    <!-- 건강보험득실 -->
-                    <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).HEALTH_INSURANCE_PROOF)}">
-                        <td class="doc-cell" data-col="healthInsuranceProof">
+                    <!-- 국민연금가입증명서 -->
+                    <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).NATIONAL_PENSION_CERTIFICATE)}">
+                        <td class="doc-cell" data-col="nationalPensionCertificate">
+                            <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
+                            <span th:if="${dv != null}" class="d-flex gap-1">
+                                <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
+                            </span>
+                        </td>
+                    </th:block>
+
+                    <!-- 건강보험가입증명서 -->
+                    <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).HEALTH_INSURANCE_CERTIFICATE)}">
+                        <td class="doc-cell" data-col="healthInsuranceCertificate">
+                            <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
+                            <span th:if="${dv != null}" class="d-flex gap-1">
+                                <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
+                            </span>
+                        </td>
+                    </th:block>
+
+                    <!-- 건강보험자격득실확인서 -->
+                    <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).HEALTH_INSURANCE_ELIGIBILITY)}">
+                        <td class="doc-cell" data-col="healthInsuranceEligibility">
                             <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                             <span th:if="${dv != null}" class="d-flex gap-1">
                                 <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
@@ -502,7 +528,8 @@
 <script>
 const COLS = ['team','position','age','birthDate','phone','email','developerGrade','career',
     'resume','careerDescription','license','graduationCertificate',
-    'healthInsuranceProof','etc','updatedAt'];
+    'nationalPensionCertificate','healthInsuranceCertificate','healthInsuranceEligibility',
+    'etc','updatedAt'];
 
 function getHidden() {
     try { return JSON.parse(localStorage.getItem('profiles_hidden_cols') || '[]'); } catch(e) { return []; }

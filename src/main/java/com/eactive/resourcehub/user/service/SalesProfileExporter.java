@@ -31,11 +31,13 @@ public class SalesProfileExporter {
         new ColDef("developerGrade",        "개발자 등급"),
         new ColDef("career",                "경력"),
         new ColDef("resume",                "이력서"),
-        new ColDef("careerDescription",     "경력기술서"),
+        new ColDef("careerDescription",     "SW기술자 경력증명서"),
         new ColDef("license",               "정보처리기사"),
-        new ColDef("graduationCertificate", "졸업증명서"),
-        new ColDef("healthInsuranceProof",  "건강보험득실"),
-        new ColDef("etc",                   "기타자료")
+        new ColDef("graduationCertificate",         "졸업증명서"),
+        new ColDef("nationalPensionCertificate",    "국민연금가입증명서"),
+        new ColDef("healthInsuranceCertificate",    "건강보험가입증명서"),
+        new ColDef("healthInsuranceEligibility",    "건강보험자격득실확인서"),
+        new ColDef("etc",                           "기타자료")
     );
 
     /** 전체 또는 선택 행 export. visibleCols 비어있으면 전체 컬럼. careerDisplay: ymd/m/d */
@@ -89,9 +91,11 @@ public class SalesProfileExporter {
                         case "resume"               -> docCell(cell, row, DocumentType.RESUME);
                         case "careerDescription"    -> docCell(cell, row, DocumentType.CAREER_DESCRIPTION);
                         case "license"              -> docCell(cell, row, DocumentType.LICENSE);
-                        case "graduationCertificate"-> docCell(cell, row, DocumentType.GRADUATION_CERTIFICATE);
-                        case "healthInsuranceProof" -> docCell(cell, row, DocumentType.HEALTH_INSURANCE_PROOF);
-                        case "etc"                  -> docCell(cell, row, DocumentType.ETC);
+                        case "graduationCertificate"         -> docCell(cell, row, DocumentType.GRADUATION_CERTIFICATE);
+                        case "nationalPensionCertificate"    -> docCell(cell, row, DocumentType.NATIONAL_PENSION_CERTIFICATE);
+                        case "healthInsuranceCertificate"    -> docCell(cell, row, DocumentType.HEALTH_INSURANCE_CERTIFICATE);
+                        case "healthInsuranceEligibility"    -> docCell(cell, row, DocumentType.HEALTH_INSURANCE_ELIGIBILITY);
+                        case "etc"                           -> docCell(cell, row, DocumentType.ETC);
                         default -> {}
                     }
                 }

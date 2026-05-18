@@ -21,6 +21,12 @@ public class AdminTeamController {
 
     private final TeamService teamService;
 
+    @GetMapping("/project-settings")
+    public String projectSettings(Model model) {
+        model.addAttribute("teams", teamService.findAll());
+        return "admin/project-settings";
+    }
+
     @GetMapping
     public String list(Model model) {
         model.addAttribute("teams", teamService.findAll());
@@ -78,6 +84,14 @@ public class AdminTeamController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/teams";
+    }
+
+    @PostMapping("/{teamId}/toggle-project")
+    public String toggleProject(@PathVariable Long teamId, RedirectAttributes ra) {
+        boolean enabled = teamService.toggleProjectTeam(teamId);
+        ra.addFlashAttribute("successMessage",
+                enabled ? "인력표에 포함됩니다." : "인력표에서 제외됩니다.");
+        return "redirect:/admin/teams/project-settings";
     }
 
     @PostMapping("/{teamId}/delete")

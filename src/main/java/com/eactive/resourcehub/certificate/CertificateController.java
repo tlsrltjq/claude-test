@@ -1,5 +1,6 @@
 package com.eactive.resourcehub.certificate;
 
+import com.eactive.resourcehub.user.service.EmployeeManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -20,13 +22,14 @@ import java.util.List;
 public class CertificateController {
 
     private final CertificateService certificateService;
+    private final EmployeeManagementService employeeService;
 
     @GetMapping
     public String index(Model model) {
         boolean available = certificateService.isAvailable();
         model.addAttribute("available", available);
+        model.addAttribute("users", getActiveUserNames());
         if (available) {
-            model.addAttribute("templates", certificateService.getTemplates());
             model.addAttribute("files", certificateService.getFiles());
         }
         return "admin/certificate";
@@ -39,9 +42,11 @@ public class CertificateController {
             @RequestParam(defaultValue = "false") boolean all,
             Model model) {
 
+        List<String> allUserNames = getActiveUserNames();
+
         CertificateService.CertificateResult result;
         if (all) {
-            result = certificateService.generateAll();
+            result = certificateService.generateAll(allUserNames);
         } else if (name != null && !name.isBlank()) {
             result = certificateService.generate(List.of(name.trim()));
         } else if (names != null && !names.isEmpty()) {
@@ -51,7 +56,7 @@ public class CertificateController {
         }
 
         model.addAttribute("available", true);
-        model.addAttribute("templates", certificateService.getTemplates());
+        model.addAttribute("users", allUserNames);
         model.addAttribute("files", certificateService.getFiles());
         model.addAttribute("result", result);
         return "admin/certificate";
@@ -67,7 +72,7 @@ public class CertificateController {
             message = "오류: " + e.getMessage();
         }
         model.addAttribute("available", true);
-        model.addAttribute("templates", certificateService.getTemplates());
+        model.addAttribute("users", getActiveUserNames());
         model.addAttribute("files", certificateService.getFiles());
         model.addAttribute("createMessage", message);
         return "admin/certificate";
@@ -77,8 +82,6 @@ public class CertificateController {
     public ResponseEntity<byte[]> download(@PathVariable String filename) throws IOException {
         byte[] data = certificateService.download(filename);
 
-        String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8)
-                .replace("+", "%20");
         String contentType = filename.endsWith(".pdf")
                 ? "application/pdf"
                 : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -90,5 +93,14 @@ public class CertificateController {
                         .filename(filename, StandardCharsets.UTF_8)
                         .build());
         return ResponseEntity.ok().headers(headers).body(data);
+    }
+
+    private List<String> getActiveUserNames() {
+        return employeeService.findAllActive().stream()
+                .map(u -> u.getName() != null ? u.getName() : "")
+                .filter(n -> !n.isBlank())
+                .sorted(Comparator.naturalOrder())
+                .distinct()
+                .toList();
     }
 }

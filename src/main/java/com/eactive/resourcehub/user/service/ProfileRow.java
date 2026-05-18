@@ -48,18 +48,15 @@ public class ProfileRow {
         return getCareerMonths() % 12;
     }
 
-    /** careerDisplay="ymd" 용: "N년 N개월 N일" */
+    /** careerDisplay="ymd" 용: "N년 N개월" */
     public String getCareerYmd() {
         int days = getCareerTotalDays();
         if (days <= 0) return null;
         int years  = days / 365;
-        int remain = days % 365;
-        int months = remain / 30;
-        int d      = remain % 30;
+        int months = (days % 365) / 30;
         StringBuilder sb = new StringBuilder();
         if (years  > 0) sb.append(years).append("년 ");
-        if (months > 0) sb.append(months).append("개월 ");
-        if (d      > 0) sb.append(d).append("일");
+        if (months > 0) sb.append(months).append("개월");
         return sb.toString().trim();
     }
 

@@ -69,9 +69,10 @@ public class SalesProfileQueryService {
         Map<Long, EmployeeProfile> profileMap = employeeProfileRepository.findByUserIdIn(userIds)
                 .stream().collect(Collectors.toMap(ep -> ep.getUser().getId(), ep -> ep, (a, b) -> a));
 
-        // 5. 조합 + 필터 + 정렬 (ADMIN 역할 제외)
+        // 5. 조합 + 필터 + 정렬 (ADMIN 역할 제외, 비프로젝트 팀 제외)
         List<ProfileRow> rows = users.stream()
                 .filter(u -> u.getRole() != UserRole.ADMIN)
+                .filter(u -> u.getTeam() == null || u.getTeam().isProjectTeam())
                 .map(u -> new ProfileRow(u, profileMap.get(u.getId()),
                         userDocMap.getOrDefault(u.getId(), Collections.emptyMap())))
                 .filter(r -> matches(r, query))

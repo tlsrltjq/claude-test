@@ -61,7 +61,7 @@ public class SalesProfileController {
         model.addAttribute("gradeCounts", profileQueryService.getGradeCountsFromRows(rows));
         model.addAttribute("docTypes", DocumentType.values());
         model.addAttribute("positions", Position.values());
-        model.addAttribute("teams", teamService.findAll());
+        model.addAttribute("teams", teamService.findProjectTeams());
         model.addAttribute("presets", presetService.findByUser(userDetails.getUser().getId()));
         return "sales/profiles";
     }

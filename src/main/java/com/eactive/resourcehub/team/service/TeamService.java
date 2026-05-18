@@ -30,6 +30,19 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
+    public List<Team> findProjectTeams() {
+        return teamRepository.findByProjectTeamTrue();
+    }
+
+    @Transactional
+    public boolean toggleProjectTeam(Long id) {
+        Team team = findById(id);
+        team.toggleProjectTeam();
+        log.info("팀 인력표 노출 토글 — teamId={}, name={}, projectTeam={}", id, team.getName(), team.isProjectTeam());
+        return team.isProjectTeam();
+    }
+
+    @Transactional(readOnly = true)
     public long count() {
         return teamRepository.count();
     }

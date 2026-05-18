@@ -107,7 +107,7 @@
                         <div class="input-group">
                             <select name="name" class="form-select" required>
                                 <option value="">직원 선택</option>
-                                <option th:each="t : ${templates}" th:value="${t}" th:text="${t}"></option>
+                                <option th:each="u : ${users}" th:value="${u}" th:text="${u}"></option>
                             </select>
                             <button type="submit" class="btn btn-primary px-4">
                                 <i class="bi bi-file-earmark-arrow-down me-1"></i>발급
@@ -125,13 +125,13 @@
                 </div>
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <span class="text-muted">
-                        등록된 직원 <strong th:text="${templates.size()}">0</strong>명 전체 발급
+                        전체 직원 <strong th:text="${users.size()}">0</strong>명 전체 발급
                     </span>
                     <form th:action="@{/admin/certificate/generate}" method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input type="hidden" name="all" value="true"/>
                         <button type="submit" class="btn btn-success px-4"
-                                th:disabled="${templates.isEmpty()}"
+                                th:disabled="${users.isEmpty()}"
                                 onclick="return confirm('전체 직원 재직증명서를 발급하시겠습니까?')">
                             <i class="bi bi-collection me-1"></i>전체 발급
                         </button>
@@ -170,18 +170,17 @@
             <div class="card mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>등록 직원</h6>
-                    <span class="badge bg-primary" th:text="${templates.size()}">0</span>
+                    <span class="badge bg-primary" th:text="${users.size()}">0</span>
                 </div>
                 <div class="card-body p-0">
-                    <div th:if="${templates.isEmpty()}" class="text-center text-muted py-4">
+                    <div th:if="${users.isEmpty()}" class="text-center text-muted py-4">
                         <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                        등록된 템플릿이 없습니다.<br>
-                        <small>왼쪽에서 템플릿을 생성하세요.</small>
+                        등록된 직원이 없습니다.
                     </div>
-                    <ul class="list-group list-group-flush" th:unless="${templates.isEmpty()}">
-                        <li class="list-group-item py-2 px-3" th:each="t : ${templates}">
+                    <ul class="list-group list-group-flush" th:unless="${users.isEmpty()}">
+                        <li class="list-group-item py-2 px-3" th:each="u : ${users}">
                             <i class="bi bi-person me-2 text-muted"></i>
-                            <span th:text="${t}"></span>
+                            <span th:text="${u}"></span>
                         </li>
                     </ul>
                 </div>
