@@ -90,25 +90,20 @@ else
 fi
 
 # ─────────────────────────────────────────────
-# 5. 컨트롤러 레이어 직접 Repository 주입 금지 (신규 파일만 FAIL, 기존은 WARN)
+# 5. 컨트롤러 레이어 직접 Repository 주입 금지 (전 컨트롤러 균등)
+#    8da9eaa 커밋(refactor: 컨트롤러 Repository 직접 주입 제거) 이후
+#    MVP1_EXEMPT 면제 목록 폐기. 모든 컨트롤러에서 Repository 직접 주입은 FAIL.
 # ─────────────────────────────────────────────
-echo "[5] 컨트롤러 레이어 직접 Repository 주입 금지 (신규 파일)"
+echo "[5] 컨트롤러 레이어 직접 Repository 주입 금지"
 CONTROLLER_FILES=$(echo "$JAVA_FILES" | grep -E "/controller/" || true)
-# 기술 부채 허용 목록 (Service 레이어 분리 리팩토링 전까지 WARN 처리)
-MVP1_EXEMPT="SharedFolderController|MyFolderController|MyActivityController|AdminController|DashboardController|SalesProfileController|SalesController|CareerCalculatorController|SignupController"
 if [ -n "$CONTROLLER_FILES" ]; then
   all_hits=$(echo "$CONTROLLER_FILES" | xargs grep -lE "private final [A-Za-z]*Repository" 2>/dev/null || true)
-  new_hits=$(echo "$all_hits" | grep -vE "$MVP1_EXEMPT" || true)
-  old_hits=$(echo "$all_hits" | grep -E "$MVP1_EXEMPT" || true)
-  if [ -n "$new_hits" ]; then
-    err "신규 컨트롤러에서 Repository 직접 주입 감지 (Service 레이어 경유 필수):"
-    echo "$new_hits" | sed 's/^/         /'
+  if [ -n "$all_hits" ]; then
+    err "컨트롤러에서 Repository 직접 주입 감지 (Service 레이어 경유 필수, docs/decisions.md ADR-022):"
+    echo "$all_hits" | sed 's/^/         /'
+  else
+    ok "컨트롤러 DB 직접 접근 없음"
   fi
-  if [ -n "$old_hits" ]; then
-    warn "기존 컨트롤러 Repository 직접 주입 (기술 부채 — 리팩토링 대상):"
-    echo "$old_hits" | sed 's/^/         /'
-  fi
-  [ -z "$all_hits" ] && ok "컨트롤러 DB 직접 접근 없음"
 fi
 
 # ─────────────────────────────────────────────
@@ -167,20 +162,30 @@ if [ -n "${CONTROLLER_FILES:-}" ]; then
 fi
 
 # ─────────────────────────────────────────────
-# 10. @Transactional 메서드 내 이메일 발송 격리 누락
+# 10. @Transactional 메서드 내 이메일 발송 격리 누락 (메서드 단위 정밀 검사)
+#    Python 보조 스크립트로 enclosing method/class 의 @Transactional 여부와
+#    try { ... } 감싸짐 여부를 함께 본다. (docs/decisions.md ADR-010)
 # ─────────────────────────────────────────────
-echo "[10] 이메일 발송 트랜잭션 격리 (@Transactional 내 emailSender 직접 호출 시 try/catch 필수)"
-hits=$(echo "$JAVA_FILES" | xargs grep -l "emailSender" 2>/dev/null || true)
-if [ -n "$hits" ]; then
-  for f in $hits; do
-    # emailSender 호출이 try 블록 없이 @Transactional 클래스/메서드 내에 있는지 휴리스틱 검사
-    if grep -q "@Transactional" "$f" && grep -q "emailSender\." "$f"; then
-      if ! grep -qE "try\s*\{" "$f"; then
-        err "이메일 발송 try/catch 누락 ($f) — 트랜잭션 롤백 방지 필요"
-      fi
+echo "[10] 이메일 발송 트랜잭션 격리 (@Transactional 메서드 내 emailSender 호출은 try/catch 필수)"
+EMAIL_CHECKER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lint/check_email_transactional.py"
+if [ ! -f "$EMAIL_CHECKER" ]; then
+  warn "보조 스크립트 누락: $EMAIL_CHECKER — 검사 건너뜀"
+elif ! command -v python3 >/dev/null 2>&1; then
+  warn "python3 미설치 — 검사 건너뜀"
+else
+  EMAIL_FILES=$(echo "$JAVA_FILES" | xargs grep -l "emailSender" 2>/dev/null || true)
+  if [ -z "$EMAIL_FILES" ]; then
+    ok "emailSender 사용 파일 없음"
+  else
+    output=$(python3 "$EMAIL_CHECKER" $EMAIL_FILES 2>&1)
+    rc=$?
+    if [ $rc -eq 0 ]; then
+      ok "이메일 발송 격리 검사 통과 (메서드 단위)"
+    else
+      err "이메일 발송 try/catch 누락 (트랜잭션 롤백 방지 필요, docs/decisions.md ADR-010):"
+      echo "$output" | sed 's/^/         /'
     fi
-  done
-  ok "이메일 발송 격리 검사 완료"
+  fi
 fi
 
 # ─────────────────────────────────────────────
@@ -217,7 +222,7 @@ if [ -n "$SECURITY_CONFIG" ]; then
   if grep -qE "\.headers\(|headersWith" "$SECURITY_CONFIG"; then
     ok "SecurityConfig headers 블록 존재"
   else
-    warn "SecurityConfig에 .headers() 블록 없음 — X-Frame-Options 등 HTTP 보안 헤더 미설정 (docs/security-policy.md §7 참조)"
+    warn "SecurityConfig에 .headers() 블록 없음 — X-Frame-Options 등 HTTP 보안 헤더 미설정 (docs/decisions.md ADR-013 참조)"
   fi
 else
   warn "SecurityConfig.java 를 찾을 수 없음"
@@ -229,7 +234,7 @@ fi
 echo "[14] 비밀번호 재설정 코드 로그 노출 금지"
 hits=$(echo "$JAVA_FILES" | xargs grep -nE 'log\.(info|debug|trace)\s*\(.*code=\{\}' 2>/dev/null || true)
 if [ -n "$hits" ]; then
-  err "재설정 코드를 로그에 출력하는 패턴 감지 (docs/security-policy.md §6):"
+  err "재설정 코드를 로그에 출력하는 패턴 감지 (docs/decisions.md ADR-012):"
   echo "$hits" | sed 's/^/         /'
 else
   ok "재설정 코드 로그 노출 없음"
@@ -242,7 +247,7 @@ fi
 echo "[15] 환경변수 하드코딩 기본값 (비밀번호·시크릿) 금지"
 hits=$(grep -rn '\${[A-Z_]*\(PASSWORD\|SECRET\|KEY\|TOKEN\):[^}][^}]*}' src/main/resources/ 2>/dev/null || true)
 if [ -n "$hits" ]; then
-  err "application.yml 환경변수에 비밀번호 기본값 하드코딩 감지 (docs/security-policy.md §8):"
+  err "application.yml 환경변수에 비밀번호 기본값 하드코딩 감지 (docs/decisions.md ADR-011):"
   echo "$hits" | sed 's/^/         /'
 else
   ok "환경변수 기본값 하드코딩 없음"
