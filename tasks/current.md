@@ -8,9 +8,9 @@
 - [x] 범용 양식 기반으로 새 파일 작성: `CLAUDE.md`, `HARNESS.md`, `CHANGELOG.md`, `tasks/current.md`, `docs/architecture.md`, `docs/decisions.md`
 - [x] 세션 자동화 스크립트 작성: `start_session.sh`, `end_session.sh` (+ `chmod +x`)
 - [x] `.gitignore` 에 `.claude/` 추가
-- [ ] `bash scripts/security-lint.sh` 0 FAIL 재확인
-- [ ] `bash start_session.sh` 출력 정상 확인
-- [ ] 사람 검수 후 커밋: `chore: 하네스 전면 개편(범용 양식 도입)`
+- [x] `bash scripts/security-lint.sh` 0 FAIL 재확인
+- [x] `bash start_session.sh` 출력 정상 확인
+- [x] 사람 검수 후 커밋: `chore: 하네스 전면 개편(범용 양식 도입)`
 
 ## 완료 기준
 - 루트에 `CLAUDE.md`, `HARNESS.md`, `CHANGELOG.md`, `start_session.sh`, `end_session.sh` 존재
