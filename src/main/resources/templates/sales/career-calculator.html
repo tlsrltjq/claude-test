@@ -536,12 +536,12 @@ function selectMember(el) {
     fetch('/sales/career-calculator/autofill?userId=' + selectedUserId)
         .then(r => r.json())
         .then(data => {
-            if (data.degree)   document.getElementById('degreeSelect').value = data.degree;
-            if (data.gradDate) document.querySelector('[name="gradDate"]').value = data.gradDate;
+            document.getElementById('degreeSelect').value = data.degree || '';
+            document.querySelector('[name="gradDate"]').value = data.gradDate || '';
             const hasCert = data.certType && data.certType !== 'NONE';
             document.getElementById('certCheck').checked = hasCert;
             toggleCertDate();
-            if (hasCert && data.certDate) document.getElementById('certDateInput').value = data.certDate;
+            document.getElementById('certDateInput').value = (hasCert && data.certDate) ? data.certDate : '';
             if (data.degree || data.gradDate || data.certType) {
                 badge.innerHTML += ' <span class="badge bg-success" style="font-size:.7rem;border-radius:6px">문서 자동입력</span>';
             }
