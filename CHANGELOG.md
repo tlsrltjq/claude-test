@@ -7,6 +7,7 @@
 
 ## 하네스 개편
 
+2026-05-19 | 정합성 감사 | chore: 소스 기준 하네스·문서 정합성 감사 — templates/team/ 빈 폴더 삭제, security-lint 15/15 PASS 확인, architecture.md 누락 클래스 식별(SalesMemberService·ProfileRow·audit/dto)
 2026-05-18 | 하네스 개편 | chore: 범용 양식 도입 — CLAUDE.md / HARNESS.md / tasks/current.md / docs/architecture.md / docs/decisions.md / start_session.sh / end_session.sh 신설, 옛 자산은 harness/archive/legacy/ 와 docs/archive/ 로 이동
 
 ## 21단계 — 재직증명서 자동 발급

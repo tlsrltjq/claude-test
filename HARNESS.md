@@ -15,7 +15,7 @@ Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway / Thymeleaf + Bootst
 - `docs/`, `harness/archive/legacy/`, `사용법/`
 
 ## 현재 상태
-운영 배포 준비 완료(MVP1·MVP2·MVP3·post-MVP3·19~21단계). 상세는 `CHANGELOG.md`. 진행 중: 하네스 전면 개편(범용 양식 도입). 다음: 운영 도메인 배포(`scripts/deploy.sh`) 또는 신규 기능 — 새 작업 시작 시 `tasks/current.md` 덮어쓰기.
+운영 배포 준비 완료(MVP1·MVP2·MVP3·post-MVP3·19~21단계). 0단계(하네스 전면 개편) 완료. 소스 기준 문서 정합성 감사 완료(불일치 4건 수정, security-lint 15/15 PASS). 다음: 운영 도메인 배포(`scripts/deploy.sh`) 또는 신규 기능 — 새 작업 시작 시 `tasks/current.md` 덮어쓰기.
 
 ## 코딩 규칙
 - JWT 금지(세션만), Remember-me 금지, CSRF 항상 활성화

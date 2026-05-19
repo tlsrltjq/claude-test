@@ -29,12 +29,15 @@
 - `src/main/resources/db/migration/V*.sql`
 
 ## 이전 세션에서 멈춘 곳
-2026-05-18 세션에서 하네스·docs·security-lint 정합성을 점검해 불일치 목록을 보고했고, 이번 세션에서 사용자가 "범용 양식으로 전면 개편" 결정. 결정 사항:
-- 기존 harness 전부 `harness/archive/legacy/` 로 이동 (mvp1/mvp2/mvp3/stages/lib/run_all.sh 모두)
-- 기존 docs 도 `docs/archive/` 로 이동, 필수 정보만 `architecture.md` / `decisions.md` 로 재작성
-- `scripts/` 는 그대로 유지
-- 본 작업 자체를 첫 task 로 등록
+2026-05-19 세션에서 소스코드 기준 하네스·문서·린트 전수 정합성 감사 완료. 수행 내역:
+- `templates/team/` 빈 폴더 삭제
+- `security-lint.sh` 15/15 PASS, `start_session.sh` 정상 출력 확인 → 0단계 전 체크리스트 완료 커밋
+- 발표 브랜치(`presentation`) 생성 → 발표 자료 markdown 8종 작성 → 보안 위반 3건 시연(FAIL→수정→PASS) → 브랜치 삭제
+- `harness/archive/legacy/` + git CLAUDE.md 히스토리 5세대 분석 (발표 자료 참고용)
+- 코드 규모 집계: 소스 18,217줄 / 문서 포함 26,945줄
+- 잔여 불일치: `architecture.md` 에 SalesMemberService·ProfileRow·audit/dto 미기재 (낮은 우선순위)
 
 ## 다음 단계 예고
-- 사람 검수 후 `git add . && git commit -m "chore: 하네스 전면 개편(범용 양식 도입)"`
-- 다음 task 예: 운영 도메인 배포(`scripts/deploy.sh` 실행), 또는 새 기능 도입 — 새 단계를 시작할 때 본 파일을 새 내용으로 덮어쓴다.
+- 운영 도메인 배포(`scripts/deploy.sh`) 또는 신규 기능 도입
+- 선택적: architecture.md 누락 클래스 보완
+- 새 단계 시작 시 본 파일을 새 내용으로 덮어쓰기
