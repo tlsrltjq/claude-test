@@ -71,17 +71,17 @@
                     <!-- 생년월일 -->
                     <div class="col-6">
                         <label for="birthDateDisplay" class="form-label">생년월일 <span class="req">*</span></label>
-                        <div class="input-icon">
-                            <i class="bi bi-calendar3"></i>
+                        <div>
                             <input type="text" id="birthDateDisplay"
                                    class="form-control"
                                    th:classappend="${#fields.hasErrors('birthDateStr')} ? ' is-invalid'"
-                                   placeholder="2001.09.04" maxlength="10" inputmode="numeric" autocomplete="bday"
+                                   placeholder="1999.01.01" maxlength="10" inputmode="numeric" autocomplete="bday"
                                    th:value="${#fields.hasErrors('birthDateStr') and signupRequest.birthDateStr != null} ? ${signupRequest.birthDateStr}">
                             <input type="hidden" id="birthDateStr" th:field="*{birthDateStr}">
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('birthDateStr')}" th:errors="*{birthDateStr}"></div>
                             <div class="invalid-feedback" th:unless="${#fields.hasErrors('birthDateStr')}">생년월일을 입력해주세요.</div>
                         </div>
+                        <div class="pw-hint">8자리 숫자 입력 — 점(.)은 자동으로 추가됩니다</div>
                     </div>
                 </div>
 
@@ -193,6 +193,16 @@
 </div>
 
 <script>
+/* ── 비밀번호 필드 복원 (서버 검증 실패 시) ── */
+(function () {
+    var pw = sessionStorage.getItem('_sup_pw');
+    var pwc = sessionStorage.getItem('_sup_pwc');
+    sessionStorage.removeItem('_sup_pw');
+    sessionStorage.removeItem('_sup_pwc');
+    if (pw)  { var a = document.getElementById('password');        if (a)  a.value = pw;  }
+    if (pwc) { var b = document.getElementById('passwordConfirm'); if (b)  b.value = pwc; }
+})();
+
 /* ── 전화번호 자동 하이픈 ── */
 (function () {
     var el = document.getElementById('phone');
@@ -263,6 +273,11 @@ document.getElementById('signupForm').addEventListener('submit', function (e) {
         return;
     }
     this.classList.add('was-validated');
+    /* 서버 검증 실패 시 복원을 위해 저장 */
+    var pwEl = document.getElementById('password');
+    var pwcEl = document.getElementById('passwordConfirm');
+    if (pwEl && pwEl.value)   sessionStorage.setItem('_sup_pw',  pwEl.value);
+    if (pwcEl && pwcEl.value) sessionStorage.setItem('_sup_pwc', pwcEl.value);
     var btn = this.querySelector('button[type="submit"]');
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 처리 중...'; }
 });
