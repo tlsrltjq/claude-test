@@ -101,11 +101,4 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
            "AND d.deletedAt < :threshold AND d.filesPurgedAt IS NULL")
     List<Document> findPurgeCandidates(@Param("threshold") LocalDateTime threshold);
 
-    // 본인 문서 태그 포함 조회 (detail용)
-    @Query("SELECT d FROM Document d " +
-           "JOIN FETCH d.folder f JOIN FETCH f.owner " +
-           "LEFT JOIN FETCH d.currentVersion " +
-           "LEFT JOIN FETCH d.tags " +
-           "WHERE d.id = :id")
-    Optional<Document> findByIdForDetailWithTags(@Param("id") Long id);
 }

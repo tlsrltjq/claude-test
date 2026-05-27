@@ -1,6 +1,8 @@
 package com.eactive.resourcehub.document.service;
 
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.audit.entity.AuditTargetType;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.common.email.EmailSender;
 import com.eactive.resourcehub.document.entity.Document;
 import com.eactive.resourcehub.document.entity.DocumentReviewStatus;
@@ -27,7 +29,7 @@ public class DocumentReviewService {
     private final DocumentVersionRepository documentVersionRepository;
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
-    private final AuditLogService auditLogService;
+    private final AuditService auditService;
     private final EmailSender emailSender;
 
     @Transactional(readOnly = true)
@@ -60,7 +62,8 @@ public class DocumentReviewService {
         Document document = version.getDocument();
         document.setCurrentVersion(version);
 
-        auditLogService.logApproveDocument(reviewerUserId, documentVersionId, request);
+        auditService.log(reviewerUserId, AuditActionType.APPROVE_DOCUMENT,
+                AuditTargetType.DOCUMENT_VERSION, documentVersionId, "문서 승인", request);
 
         // 이메일 알림 — 실패해도 트랜잭션 영향 없음
         try {
@@ -93,7 +96,8 @@ public class DocumentReviewService {
         version.reject(reviewer, reason.trim());
         // current_version_id 변경 없음
 
-        auditLogService.logRejectDocument(reviewerUserId, documentVersionId, reason.trim(), request);
+        auditService.log(reviewerUserId, AuditActionType.REJECT_DOCUMENT,
+                AuditTargetType.DOCUMENT_VERSION, documentVersionId, "반려: " + reason.trim(), request);
 
         // 이메일 알림 — 실패해도 트랜잭션 영향 없음
         try {

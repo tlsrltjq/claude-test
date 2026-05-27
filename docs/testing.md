@@ -9,17 +9,65 @@
 
 ### 자동화 (현재)
 
-| 범위 | 파일 | 케이스 수 | 비고 |
-|------|------|-----------|------|
-| 경력 계산기 순수 로직 | `CareerCalculatorTest.java` | 6 | 외부 의존 없음, 항상 통과 |
-| 보안 정적 분석 | `scripts/security-lint.sh` | 15개 항목 | Bash grep 기반, 빠른 실행 |
+**공통 유틸**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `FileMagicValidatorTest.java` | 12 | 9개 확장자 magic bytes 정상·불일치 |
+| `FileUtilsTest.java` | 9 | 확장자 추출, 경로 처리 |
+
+**사용자·인증**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `SignupValidationTest.java` | 14 | SignupRequest 유효성 검증 5가지 규칙 |
+| `PasswordResetTokenTest.java` | 8 | 토큰 만료·재사용 불가·consumed 상태 |
+| `PasswordResetServiceTest.java` | 13 | 코드 발급·검증·비밀번호 변경 흐름 |
+| `EmailAllowlistServiceTest.java` | 9 | 허용 이메일 추가·삭제·조회 |
+| `SettingsServiceTest.java` | 6 | 이름·주소·팀·비밀번호 변경 |
+| `UserRoleServiceTest.java` | 5 | 역할 변경, TEAM_LEADER 차단 |
+| `CareerCalculatorTest.java` | 6 | 경력 계산, 중복 구간 제거 |
+
+**문서·폴더**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `DocumentAccessServiceTest.java` | 12 | 역할별 접근 허용·거부, PENDING_REVIEW 제한 |
+| `DocumentDeleteServiceTest.java` | 9 | 본인 삭제, ADMIN 강제 삭제, 공용 폴더 삭제 |
+| `DocumentReviewServiceTest.java` | 5 | 승인·반려 상태 전환 |
+| `FolderAccessServiceTest.java` | 13 | SHARED_PUBLIC read, 개인 폴더 격리, 권한 부여 |
+
+**팀·보안**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `TeamServiceTest.java` | 11 | 팀 CRUD, project_team 토글, 감사 로그 |
+| `SecurityAccessTest.java` | 5 | 미인증·EMPLOYEE·SALES·ADMIN 경로 접근 |
+
+**프로젝트 투입 관리**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `ProjectAssignmentTest.java` | 15 | 엔티티 상태 결정, remainingDays, isActiveOn |
+| `ProjectAssignmentRequestTest.java` | 12 | validate() 5가지 오류 규칙 |
+| `CalendarGridBuilderTest.java` | 11 | 요일 오프셋, 클리핑, CANCELLED 제외 |
+| `ProjectAssignmentServiceTest.java` | 22 | CRUD, 권한, 통계, 선택 로직 |
+| `ProjectAssignmentControllerTest.java` | 13 | HTTP 상태, CSRF, 리다이렉트 |
+
+**보안 정적 분석**
+
+| 도구 | 항목 수 | 비고 |
+|------|---------|------|
+| `scripts/security-lint.sh` | 15 | Bash grep 기반, 0 FAIL 유지 |
+
+> 총 자동화 테스트: **210개** (Java 테스트 195개 + security-lint 15항목)
 
 ### 미커버 영역 (현재)
 
-- 서비스 단위 테스트: SignupService, DocumentAccessService, FolderAccessService, PasswordResetService, FileMagicValidator 등
-- 컨트롤러 슬라이스 테스트: 역할별 접근 제어, CSRF 검증
+- 서비스 단위 테스트: `SignupService`, `DocumentUploadService`, `SalesProfileQueryService`, `BundleDownloadService`, `SalesProfileExporter`, `SalesMemberService`, `SharedFolderService`, `DocumentFileGcService`, `ColumnViewPreferenceService`, `CertificateService`
+- 컨트롤러 슬라이스 테스트: `AdminController`. `/sales/**` EMPLOYEE 역할 차단은 `@WebMvcTest` 슬라이스 제약으로 검증 불가 → 수동 QA 보완
 - 통합 테스트: 업로드→검토→승인 전체 흐름, 폴더 권한 부여→접근 흐름
-- E2E 테스트: 없음
+- E2E 테스트: 없음 (Playwright 등 미도입)
 
 ---
 
@@ -71,35 +119,22 @@ bash scripts/security-lint.sh
 
 ---
 
-## 단위 테스트 우선순위 (추가 예정)
+## 테스트 추가 우선순위
 
 ### 즉시 추가 가능 (순수 로직, 외부 의존 없음)
 
 | 대상 | 검증 항목 |
 |------|----------|
-| `SignupService` | 이메일 중복, 비밀번호 복잡도 검증, 코드 만료 |
-| `PasswordResetService` | 토큰 발급·만료·재사용 불가 |
-| `FileMagicValidator` | 9개 확장자 magic bytes 정상·불일치 케이스 |
-| `CareerCalculator` | 기존 6개 + 엣지케이스 추가 |
-| `FileUtils` | 확장자 추출, 경로 처리 |
-
-### `@DataJpaTest` + H2 또는 Testcontainers 필요
-
-| 대상 | 검증 항목 |
-|------|----------|
-| `DocumentAccessService` | 역할별 접근 허용·거부, PENDING_REVIEW 접근 제한 |
-| `FolderAccessService` | SHARED_PUBLIC read, 개인 폴더 격리, 권한 부여 후 접근 |
-| `DocumentUploadService` | 중복 업로드 차단(checksum), 허용 확장자 검증 |
-| `DocumentReviewService` | 승인·반려 상태 전환, 재승인 불가 |
-| `FolderPermissionService` | 권한 부여·회수·조회 |
+| `SignupService` | 이메일 중복, 허용 목록 차단, 코드 만료 |
+| `DocumentUploadService` | magic bytes 검증, 중복 체크섬 차단, 허용 확장자 |
+| `SalesMemberService` | 회원 목록 필터·정렬, 자동채움 데이터 |
 
 ### `@WebMvcTest` + MockMvc 필요
 
 | 대상 | 검증 항목 |
 |------|----------|
-| `SecurityConfig` | 미인증 → 리다이렉트, EMPLOYEE → `/admin/**` 403, SALES → `/admin/**` 403 |
-| `SignupController` | CSRF 없는 POST → 403, 유효성 오류 → 폼 재표시 |
 | `AdminController` | ADMIN 역할 정상 접근, 비ADMIN 403 |
+| `SignupController` | CSRF 없는 POST → 403, 유효성 오류 → 폼 재표시 |
 
 ---
 
@@ -107,13 +142,13 @@ bash scripts/security-lint.sh
 
 | 영역 | 이유 | 대체 검증 |
 |------|------|----------|
-| Python Flask 재직증명서 생성 | 별도 컨테이너, LibreOffice 런타임 필요 | 수동 QA (`docs/qa-checklist.md`) |
+| Python Flask 재직증명서 생성 | 별도 컨테이너, LibreOffice 런타임 필요 | 수동 QA (`docs/archive/qa/qa-checklist.md`) |
 | 이메일 발송 | 운영 SMTP 의존 | `ConsoleEmailSender` 프로파일로 로그 확인 |
 | 파일 GC cron | 스케줄 시간(02:00) 의존 | 수동 GC 실행(`/admin/gc`) 또는 단위 테스트에서 메서드 직접 호출 |
 | 썸네일 비동기 생성 | `@Async`, LibreOffice 도구 필요 | 단위 테스트에서 Mock, 운영 환경 수동 확인 |
 | S3 파일 스토리지 | 외부 서비스 | `LocalFileStorage` + 임시 디렉토리로 대체 테스트 |
 | 세션 만료 (DISABLED 계정) | 실시간 세션 레지스트리 | MockMvc + Mock SessionRegistry |
-| E2E 브라우저 흐름 | Playwright 등 미도입 | 수동 QA (`docs/qa-checklist.md`) |
+| E2E 브라우저 흐름 | Playwright 등 미도입 | 수동 QA (`docs/archive/qa/qa-checklist.md`) |
 
 ---
 

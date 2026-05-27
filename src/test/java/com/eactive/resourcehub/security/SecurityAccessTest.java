@@ -12,7 +12,7 @@ import com.eactive.resourcehub.user.service.SettingsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,10 +30,10 @@ class SecurityAccessTest {
 
     @Autowired MockMvc mockMvc;
 
-    @MockBean SettingsService settingsService;
-    @MockBean CareerSaveService careerSaveService;
-    @MockBean ProjectAssignmentService projectAssignmentService;
-    @MockBean CustomUserDetailsService customUserDetailsService;
+    @MockitoBean SettingsService settingsService;
+    @MockitoBean CareerSaveService careerSaveService;
+    @MockitoBean ProjectAssignmentService projectAssignmentService;
+    @MockitoBean CustomUserDetailsService customUserDetailsService;
 
     // ── 미인증 접근 ─────────────────────────────────────────────
     // @WebMvcTest 슬라이스에서는 formLogin 대신 HTTP Basic이 적용되어 401 반환.

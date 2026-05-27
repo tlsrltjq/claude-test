@@ -1,6 +1,6 @@
 package com.eactive.resourcehub.user.service;
 
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class UserRoleServiceTest {
 
     @Mock UserRepository userRepository;
-    @Mock AuditLogService auditLogService;
+    @Mock AuditService auditService;
     @Mock HttpServletRequest request;
 
     @InjectMocks UserRoleService service;

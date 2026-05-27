@@ -1,37 +1,124 @@
-# eActive Resource Hub
+# eActive Resource Hub — 작업 가이드
 
-## 한 줄 설명
-이액티브 사내 직원·문서·인력 관리 포털. 회원가입·문서 업로드/검토·공용 폴더·영업 인력표·경력 계산기·재직증명서 자동 발급까지 한 곳에서 처리.
+## 프로젝트 목적
 
-## 기술 스택
-Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway / Thymeleaf + Bootstrap 5 / Spring Security 세션. 운영은 Caddy(HTTPS) + Docker Compose. 상세는 `build.gradle`, `application.yml`, `docs/architecture.md`.
+이액티브 사내 직원·문서·인력 관리 포털. 회원가입·문서 업로드/검토·공용 폴더·영업 인력표·프로젝트 투입 관리·경력 계산기·재직증명서 자동 발급을 한 곳에서 처리.
 
-## 디렉토리 구조 (핵심만)
-- `src/main/java/com/eactive/resourcehub/` — 도메인별(`user`, `document`, `team`, `permission`, `audit`, `template`, `employee`, `certificate`, `common`)
-- `src/main/resources/templates/` — Thymeleaf (`admin/`, `sales/`, `my/`, `shared/`) — `workspace.html` 신설
-- `src/main/resources/db/migration/` — Flyway V1~V215 (다음은 V216부터)
-- `certificate/` — 재직증명서 Python+Flask 서비스 (별도 Docker)
-- `scripts/` — `security-lint.sh`, `deploy.sh`, `backup-*.sh`, `setup-cron.sh`
-- `docs/`, `harness/archive/legacy/`, `사용법/`
+---
 
-## 현재 상태
-기능 개편 완료(회원가입·설정·대시보드·통계·재직증명서·가입허용 이메일 관리). 주요 변경: V214(users.address)·V215(allowed_emails) 마이그레이션, 이메일 사전등록 방식 회원가입, 공유 폴더(Permission 기반) 제거, 공용 폴더 유지, /workspace 통합 워크스페이스 신설, 통계 화면 업로드 통계 추가. security-lint 15/15 PASS · BUILD SUCCESSFUL. 다음: 운영 도메인 배포(`scripts/deploy.sh`) 또는 추가 기능.
+## 현재 구현 범위 (V218 기준)
 
-## 코딩 규칙
-- JWT 금지(세션만), Remember-me 금지, CSRF 항상 활성화
-- 파일은 컨트롤러 경유만(정적 노출 금지), 저장명 UUID, 원본명은 DB
-- 권한 검사는 Service(`DocumentAccessService` / `FolderAccessService`), 컨트롤러에서 `role` 직접 비교·Repository 직접 주입 금지
-- 스키마 변경은 Flyway만 (`ddl-auto: validate`), 감사 로그는 `REQUIRES_NEW`
-- 화면 역할 표기는 한글(관리자/영업/사원), enum은 영문(`ADMIN/SALES/EMPLOYEE`)
-- 커밋 접두어: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
-- 결정 근거는 `docs/decisions.md` (ADR-001~035)
+| 도메인 | 주요 기능 |
+|--------|----------|
+| 인증 | 회원가입(이메일 인증), 로그인(세션), 비밀번호 찾기, 설정 |
+| 가입 제어 | `allowed_emails` 사전등록 방식 (`/admin/allowed-emails`) |
+| 내 폴더 | 개인 문서 CRUD, magic bytes 이중 검증, 썸네일 비동기 생성 |
+| 공용 폴더 | SHARED_PUBLIC — 전 사원 업로드, 업로더·ADMIN만 삭제 |
+| 문서 검토 | PENDING_REVIEW → APPROVED/REJECTED, 파일 GC(cron 02:00) |
+| 영업 | 인력표(필터·컬럼·프리셋·투입정보), 경력 계산기, 엑셀/번들 다운로드 |
+| 투입 관리 | 캘린더(`/sales/calendar`), 배정 CRUD, 대시보드 통계 |
+| 관리자 | 직원·팀·문서 검토·통계·재직증명서·파일 GC·이메일 허용 목록 |
 
-## 절대 건드리면 안 되는 것
-`src/main/resources/db/migration/V*.sql`(적용 번호), `SecurityConfig.java`, `.env`·`.env.example`, `Caddyfile`, `docker-compose.prod.yml`, `application-prod.yml`, `harness/archive/legacy/**`
+기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V218 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-## 참고 문서
-- `docs/architecture.md` — 패키지·라우트·DB·운영 인프라 상세
-- `docs/decisions.md` — 기술 결정 ADR
-- `tasks/current.md` — 현재 단계 작업 컨텍스트
-- `CHANGELOG.md` — 변경 이력(한 줄 누적)
-- `docs/archive/`, `harness/archive/legacy/` — 옛 자료
+상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
+
+---
+
+## 작업 원칙
+
+1. **계획 먼저** — 파일 목록 확인 후 수정. 불확실한 부분은 가정하지 말고 질문
+2. **최소 변경** — 새 기능 추가, UI 재설계, 대규모 리팩터링 금지
+3. **테스트 유지** — 변경 후 `./gradlew build` + `bash scripts/security-lint.sh` 필수
+4. **문서 동기화** — 코드 변경 시 관련 문서도 같이 수정
+5. **완료 기준 달성 시 멈추기** — 지시 범위를 벗어난 추가 구현 금지
+
+---
+
+## 절대 금지 사항
+
+| 대상 | 이유 |
+|------|------|
+| `src/main/resources/db/migration/V*.sql` 기존 번호 수정 | 운영 DB 파괴 위험 |
+| `SecurityConfig.java` 수정 | 전체 보안 정책 변경 위험 |
+| `.env`, `.env.example` | 시크릿 노출 |
+| `Caddyfile`, `docker-compose.prod.yml`, `application-prod.yml` | 운영 인프라 |
+| `harness/archive/legacy/**` | 옛 하네스 보존 (읽기 전용) |
+| JWT 도입, Remember-Me 활성화, CSRF 비활성화 | ADR-001~003 |
+| 컨트롤러에서 Repository 직접 주입 | ADR-006, ADR-022 |
+| 컨트롤러에서 `role` 직접 비교 | ADR-006 |
+| `ddl-auto: create/create-drop` | ADR-007 |
+
+---
+
+## 기능 추가 절차
+
+```
+1. 관련 파일 목록 파악 (Controller·Service·Repository·Template·Migration)
+2. Flyway 마이그레이션 작성 (V218부터, 기존 번호 수정 금지)
+3. JPA 엔티티 → Service → Controller 순으로 구현
+4. 테스트 작성 (순수 로직은 단위 테스트, Service는 Mockito, Controller는 @WebMvcTest)
+5. 보안 정적 분석: bash scripts/security-lint.sh (0 FAIL 유지)
+6. 전체 빌드: ./gradlew build (BUILD SUCCESSFUL 유지)
+7. 관련 문서 업데이트 (spec.md, architecture.md, data-model.md, frontend.md)
+8. 결과 보고 (아래 형식 참조)
+```
+
+---
+
+## 문서 수정 기준
+
+- 실제 구현된 코드와 일치해야 함
+- 미구현 기능은 "향후 계획"으로 분리
+- API 경로·DTO 필드명·화면 경로는 소스 기준
+- Flyway 버전: 현재 V218. 다음은 **V219**부터
+- ADR 번호: 현재 ADR-038까지. 다음은 ADR-039부터
+
+---
+
+## 테스트 기준
+
+| 구분 | 도구 | 기준 |
+|------|------|------|
+| 단위 테스트 | JUnit 5 + Mockito | 순수 로직, 외부 의존 없음 |
+| 서비스 통합 | Mockito + @ExtendWith | Repository·외부 서비스 Mock |
+| 컨트롤러 슬라이스 | @WebMvcTest + MockMvc | HTTP 상태·CSRF·리다이렉트 |
+| 보안 정적 분석 | scripts/security-lint.sh | 15개 항목, 0 FAIL 유지 |
+| 전체 빌드 | ./gradlew build | BUILD SUCCESSFUL 유지 |
+
+- 테스트가 깨지면 무시하지 말고 원인 분석
+- 실패하는 테스트 커밋 금지
+
+---
+
+## 권한·보안 주의사항
+
+→ `docs/SECURITY_AND_PERMISSION.md` 참조
+
+---
+
+## AI 작업 결과 보고 형식
+
+작업 완료 후 다음 항목을 보고:
+
+1. 수정한 파일 목록 (경로 + 한 줄 요약)
+2. 주요 변경 내용
+3. 삭제한 코드/파일
+4. 검토 필요로 남긴 항목
+5. 실행한 검증 명령어 + 결과
+6. 남은 문제점 또는 다음 단계
+
+---
+
+## 참고 파일
+
+| 파일 | 내용 |
+|------|------|
+| `docs/architecture.md` | 패키지 구조·라우트 맵·DB 스키마·운영 인프라 |
+| `docs/spec.md` | 기능 SSOT (전체 API·규칙) |
+| `docs/decisions.md` | ADR — 기술 결정 근거 |
+| `docs/data-model.md` | 테이블 상세·ERD·Flyway 이력 |
+| `docs/testing.md` | 테스트 전략·테스트 파일 목록 |
+| `docs/SECURITY_AND_PERMISSION.md` | 역할·접근 규칙·보안 코딩 규칙 |
+| `tasks/current.md` | 현재 단계 작업 컨텍스트 |
+| `CHANGELOG.md` | 변경 이력 한 줄 누적 |

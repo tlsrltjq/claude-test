@@ -1,6 +1,8 @@
 package com.eactive.resourcehub.user.service;
 
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.audit.entity.AuditTargetType;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.repository.UserRepository;
@@ -14,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserRoleService {
 
     private final UserRepository userRepository;
-    private final AuditLogService auditLogService;
+    private final AuditService auditService;
 
     @Transactional
     public void changeRole(Long targetUserId, UserRole newRole, Long actorUserId,
@@ -29,7 +31,7 @@ public class UserRoleService {
         UserRole oldRole = user.getRole();
         user.changeRole(newRole);
 
-        auditLogService.logChangeRole(actorUserId, targetUserId,
-                "역할 변경: " + oldRole + " → " + newRole, request);
+        auditService.log(actorUserId, AuditActionType.CHANGE_ROLE, AuditTargetType.USER,
+                targetUserId, "역할 변경: " + oldRole + " → " + newRole, request);
     }
 }

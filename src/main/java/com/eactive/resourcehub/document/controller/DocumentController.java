@@ -1,7 +1,9 @@
 package com.eactive.resourcehub.document.controller;
 
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.file.FileStorage;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.service.DocumentAccessService;
@@ -33,7 +35,7 @@ public class DocumentController {
     private static final Set<String> OFFICE_EXTS = Set.of("docx", "hwp", "hwpx");
 
     private final DocumentAccessService accessService;
-    private final AuditLogService auditLogService;
+    private final AuditService auditService;
     private final FileStorage fileStorage;
     private final ThumbnailService thumbnailService;
 
@@ -68,7 +70,8 @@ public class DocumentController {
             return ResponseEntity.notFound().build();
         }
 
-        auditLogService.logView(userDetails.getUser().getId(), documentVersionId, request);
+        auditService.log(userDetails.getUser().getId(), AuditActionType.VIEW,
+                AuditTargetType.DOCUMENT_VERSION, documentVersionId, null, request);
 
         return ResponseEntity.ok()
                 .contentType(mediaType)
@@ -95,8 +98,8 @@ public class DocumentController {
             return ResponseEntity.notFound().build();
         }
 
-        auditLogService.logDownload(userDetails.getUser().getId(), documentVersionId,
-                version.getOriginalFileName(), request);
+        auditService.log(userDetails.getUser().getId(), AuditActionType.DOWNLOAD,
+                AuditTargetType.DOCUMENT_VERSION, documentVersionId, version.getOriginalFileName(), request);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,

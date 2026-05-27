@@ -1,6 +1,6 @@
 package com.eactive.resourcehub.document.service;
 
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.*;
 import com.eactive.resourcehub.document.repository.DocumentRepository;
@@ -35,7 +35,7 @@ class DocumentDeleteServiceTest {
 
     @Mock DocumentRepository documentRepository;
     @Mock DocumentVersionRepository documentVersionRepository;
-    @Mock AuditLogService auditLogService;
+    @Mock AuditService auditService;
     @Mock HttpServletRequest request;
 
     @InjectMocks DocumentDeleteService service;

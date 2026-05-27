@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "documents")
@@ -62,12 +60,6 @@ public class Document extends BaseEntity {
     @Column(name = "files_purged_at")
     private LocalDateTime filesPurgedAt;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "document_tags",
-               joinColumns = @JoinColumn(name = "document_id"),
-               inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    private Set<Tag> tags = new HashSet<>();
-
     public static Document create(Folder folder, DocumentType documentType, String title) {
         Document document = new Document();
         document.folder = folder;
@@ -83,14 +75,6 @@ public class Document extends BaseEntity {
 
     public void updateTitle(String title) {
         this.title = title;
-    }
-
-    public void moveToTrash() {
-        this.status = DocumentStatus.IN_TRASH;
-    }
-
-    public void restore() {
-        this.status = DocumentStatus.ACTIVE;
     }
 
     public void delete(Long deletedByUserId) {
@@ -113,11 +97,4 @@ public class Document extends BaseEntity {
     public void updateDegreeType(String degreeType)    { this.degreeType = degreeType; }
     public void updateCertTypeMeta(String certTypeMeta){ this.certTypeMeta = certTypeMeta; }
 
-    public void addTag(Tag tag) {
-        this.tags.add(tag);
-    }
-
-    public void removeTag(Tag tag) {
-        this.tags.remove(tag);
-    }
 }

@@ -177,6 +177,18 @@
 - 트레이드오프: 직원 추가 시 이메일 사전등록 절차 추가. 기존 환경변수(`RESOURCEHUB_COMPANY_EMAIL_DOMAIN`) 제거.
 - 정적 검사: 없음 (DB 레벨 제어).
 
+## ADR-037: 투입 중복은 경고만, 차단 안 함
+- 결정: 같은 직원이 겹치는 기간에 여러 프로젝트에 배정되는 것을 DB 레벨에서 차단하지 않는다. 겹치는 배정이 감지되면 `overlapWarning` flash 속성으로 경고 메시지만 표시하고 저장은 허용한다.
+- 이유: 분할 투입(A 프로젝트 50% + B 프로젝트 50%) 이 현실에서 발생함. 100% 투입률 합계 초과를 DB 제약으로 막으면 정상 업무 흐름을 차단하게 됨. 책임은 등록자(ADMIN)에게.
+- 트레이드오프: 투입률 합계 검증 없음 — 200% 투입도 저장 가능. 향후 합계 경고 추가 가능.
+- 재검토 조건: 인력 자원 관리(HR) 시스템 연동 또는 투입률 합계 100% 초과가 운영 이슈가 될 때.
+
+## ADR-038: CalendarGridBuilder는 package-private 클래스로 분리
+- 결정: `ProjectAssignmentController` 의 캘린더 그리드 빌드 로직(`buildCalendarWeeks`, `buildDayMap`)을 같은 패키지 내 별도 클래스 `CalendarGridBuilder`(package-private) 로 추출한다.
+- 이유: 정적 private 메서드는 컨트롤러를 `@WebMvcTest` 로 올려야만 테스트 가능. 순수 로직(`buildWeeks`, `buildDayMap`)은 Spring 컨텍스트 없이 검증돼야 한다. package-private 분리로 `src/test/java` 동일 패키지에서 직접 접근 가능.
+- 트레이드오프: 컨트롤러 파일이 하나 늘어남. public 도우미 클래스가 아니므로 외부 패키지 접근 불가.
+- 적용 범위: 주 1회 빌드 실패 방지보다 테스트 가능성(testability) 이 높은 가치임. 향후 캘린더 로직 변경 시 `CalendarGridBuilderTest` 먼저 수정.
+
 ## ADR-035: 옛 stage별 verify.sh 하네스 폐기 → 범용 양식
 - 결정: MVP1~MVP3·post-MVP3·19~21 단계별 `harness/*/verify.sh` + `progress.json` 방식을 폐기. 대신 `CLAUDE.md` + `HARNESS.md` + `tasks/current.md` + `docs/architecture.md` + `docs/decisions.md` + `CHANGELOG.md` 범용 양식 사용. 옛 자산은 `harness/archive/legacy/` 보존.
 - 이유: 121개 커밋 누적 후 단계별 verify 가 코드 변경을 따라가지 못해 false positive·outdated 메타데이터(progress.json) 가 누적. 검증은 `scripts/security-lint.sh` + `./gradlew build` 로 충분.

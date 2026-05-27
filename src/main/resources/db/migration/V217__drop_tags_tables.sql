@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS document_tags;
+DROP TABLE IF EXISTS tags;

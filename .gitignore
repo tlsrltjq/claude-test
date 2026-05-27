@@ -31,3 +31,4 @@ Thumbs.db
 
 # Local test notes
 테스트/
+*.args

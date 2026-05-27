@@ -127,6 +127,16 @@
 - 저장: EmployeeProfile 업데이트
 - 자동채움: 기존 저장값 불러오기
 
+### 투입 캘린더 (`/sales/calendar`)
+- 템플릿: `sales/calendar.html`
+- 접근: ADMIN, SALES
+- 월별 직원 배정 현황 그리드 (일요일 시작)
+- 상태 칩: `.chip-planned`(파랑) / `.chip-active`(초록) / `.chip-ended`(회색) / `.chip-cancelled`(빨강)
+- CANCELLED 배정은 그리드 미표시, 목록에는 표시
+- 기간이 월 경계를 벗어나면 해당 월 범위만 클리핑
+- 직원명·프로젝트명·상태 필터
+- ADMIN: 배정 등록·수정·삭제 폼 표시
+
 ---
 
 ## 관리자 화면 (ADMIN 전용)

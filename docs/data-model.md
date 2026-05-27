@@ -1,6 +1,6 @@
 # 데이터 모델
 
-> Flyway V1~V215 기준. 엔티티·테이블·관계·주요 제약조건.
+> Flyway V1~V216 기준. 엔티티·테이블·관계·주요 제약조건.
 > 참고 소스: `src/main/resources/db/migration/V*.sql`, `src/main/java/**/entity/*.java`
 
 ---
@@ -23,6 +23,8 @@ resume_templates (독립)
 password_reset_tokens ──> users
 email_verification_tokens ──> users (확인 필요: 별도 테이블)
 column_view_preferences ──> users
+project_assignments ──> users
+
 allowed_emails (독립 — 회원가입 사전 허용 이메일 목록)
 ```
 
@@ -279,6 +281,29 @@ UNIQUE: `(user_id, name)`
 
 ---
 
+### project_assignments
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | BIGSERIAL PK | NOT NULL | |
+| user_id | BIGINT FK | NOT NULL | users.id |
+| project_name | VARCHAR(200) | NOT NULL | 프로젝트명 |
+| client_name | VARCHAR(200) | | 고객사명 |
+| role | VARCHAR(100) | | 역할 |
+| start_date | DATE | NOT NULL | 투입 시작일 |
+| end_date | DATE | NOT NULL | 투입 종료일. CHECK(end_date >= start_date) |
+| allocation_rate | INTEGER | NOT NULL | 투입률(%). CHECK(0 ≤ allocation_rate ≤ 100) |
+| status | VARCHAR(20) | NOT NULL | PLANNED / ACTIVE / ENDED / CANCELLED |
+| memo | TEXT | | 비고 |
+| created_at | TIMESTAMPTZ | | |
+| updated_at | TIMESTAMPTZ | | |
+
+**인덱스:** `idx_pa_user_id`, `idx_pa_status`, `idx_pa_dates(start_date, end_date)`, `idx_pa_user_dates`
+
+> V216 신설. 프로젝트 투입 이력 관리. 같은 직원·같은 기간 중복 저장 허용(분할 투입). 상세: `docs/archive/feature-design/PROJECT_ASSIGNMENT.md`.
+
+---
+
 ## Flyway 마이그레이션 이력 요약
 
 | 버전 | 주요 내용 |
@@ -310,5 +335,6 @@ UNIQUE: `(user_id, name)`
 | V213 | 기존 HEALTH_INSURANCE_PROOF 문서 일괄 soft-delete |
 | V214 | users.address 컬럼 추가 |
 | V215 | allowed_emails 테이블 신설 (이메일 사전등록 방식) |
+| V216 | project_assignments 테이블 신설 (프로젝트 투입 관리) |
 
-> 다음 마이그레이션은 **V216**부터.
+> 다음 마이그레이션은 **V217**부터.

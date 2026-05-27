@@ -1,7 +1,7 @@
 # 제품 기능 스펙
 
-> 현재 코드(V215 기준) 기반 기능 SSOT. "왜"는 `docs/decisions.md`, "어디"는 `docs/architecture.md`, "화면"은 `docs/frontend.md`.
-> 참고 소스: 각 Controller/Service, `SecurityConfig.java`, Flyway V1~V215
+> 현재 코드(V217 기준) 기반 기능 SSOT. "왜"는 `docs/decisions.md`, "어디"는 `docs/architecture.md`, "화면"은 `docs/frontend.md`.
+> 참고 소스: 각 Controller/Service, `SecurityConfig.java`, Flyway V1~V217
 
 ---
 
@@ -41,7 +41,7 @@
 
 ### 1-4. 계정 설정
 
-- 경로: `GET /settings`, `POST /settings/info`, `POST /settings/profile`, `POST /settings/password`
+- 경로: `GET /settings`, `POST /settings/profile`, `POST /settings/team`, `POST /settings/password`
 - 탭: 기본정보(`?tab=info` — 이름·주소·팀), 개인정보(`?tab=profile` — 연락처·생년월일), 비밀번호 변경(`?tab=password`)
 - 모든 역할 접근 가능
 - 직급은 관리자만 변경 가능 (ADMIN `/admin/employees/{id}/change-position`)
@@ -148,6 +148,19 @@
 - 저장: `EmployeeProfile.careerMonths`, `careerTotalDays` 업데이트
 - 자동채움: 기존 저장된 경력 구간 불러오기
 
+### 8-4. 프로젝트 투입 관리
+
+- 경로: `GET /sales/calendar`
+- `POST /sales/assignments` (ADMIN만)
+- `POST /sales/assignments/{id}` (ADMIN만)
+- `POST /sales/assignments/{id}/delete` (ADMIN만)
+- 캘린더: 월별 직원 배정 현황. 일요일 시작, 기간 클리핑. CANCELLED 제외.
+- 배정 등록: 대상 직원·프로젝트명·기간·투입률(0~100)·역할·고객사·메모
+- 상태 자동 결정: 오늘 기준 `today < startDate` → PLANNED, `today >= startDate` → ACTIVE
+- 중복 투입: 저장 허용, `overlapWarning` flash로 경고만 표시 (ADR-037)
+- 인력표 투입 정보 컬럼: 투입 중(ACTIVE) / 투입 예정(PLANNED) / 미투입 배지로 표시
+- 대시보드 투입 요약 카드: 현재 투입 중·이번달 시작/종료·미투입 인원 수, 종료 임박 5건
+
 ---
 
 ## 9. 관리자 기능 (ADMIN 전용)
@@ -171,7 +184,7 @@
 
 ### 9-3. 팀 관리
 
-- 경로: `GET/POST /admin/teams`, `GET/POST /admin/teams/{teamId}/update`
+- 경로: `GET/POST /admin/teams`, `GET /admin/teams/{teamId}/edit`, `POST /admin/teams/{teamId}/update`
 - `POST /admin/teams/{teamId}/toggle-project`, `POST /admin/teams/{teamId}/delete`
 - `GET /admin/teams/project-settings` (인력표 노출 팀 설정)
 
@@ -193,7 +206,7 @@
 
 ### 9-7. 재직증명서
 
-- 경로: `GET/POST /admin/certificate`, `POST /admin/certificate/generate`
+- 경로: `GET /admin/certificate`, `POST /admin/certificate/generate`, `POST /admin/certificate/create`
 - `GET /admin/certificate/download/{filename}`
 - Python Flask 컨테이너 호출 → DOCX·PDF 생성. 최신 파일 강조 표시
 
@@ -213,27 +226,13 @@
 
 ## 10. 접근 제어 요약
 
-| 경로 패턴 | 허용 역할 |
-|-----------|----------|
-| `/login/**`, `/signup/**`, `/health` | 인증 불필요 |
-| `/admin/**` | ADMIN |
-| `/sales/**` | ADMIN, SALES |
-| 그 외 모든 경로 | 인증된 모든 역할 |
-
-> 파일 다운로드·미리보기는 URL 패턴 이외에 `DocumentAccessService`에서 추가 권한 검사.
+→ `docs/SECURITY_AND_PERMISSION.md` 참조 (역할별 URL 패턴, 문서 접근 규칙, 서비스 레이어 검증 포인트)
 
 ---
 
 ## 11. 보안 정책 (코딩 규칙)
 
-- JWT 금지 — 세션만 사용
-- Remember-Me 금지
-- CSRF 항상 활성화
-- 파일 정적 노출 금지 — 모든 파일 접근은 컨트롤러 경유
-- Repository 컨트롤러 직접 주입 금지
-- 역할 비교 컨트롤러 직접 비교 금지 — Service 위임
-- 스키마 변경 Flyway만 (`ddl-auto: validate`)
-- 감사 로그 `REQUIRES_NEW` 트랜잭션
+→ `docs/SECURITY_AND_PERMISSION.md` 섹션 7 참조
 
 ---
 

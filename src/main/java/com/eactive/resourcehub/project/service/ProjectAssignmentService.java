@@ -64,6 +64,16 @@ public class ProjectAssignmentService {
                         (a, b) -> a));
     }
 
+    /** 인력표용: userId → 가장 가까운 다음 PLANNED 배정 (없으면 null) */
+    @Transactional(readOnly = true)
+    public Map<Long, ProjectAssignment> getNextAssignmentsByUserId() {
+        return assignmentRepository.findPlannedFrom(LocalDate.now()).stream()
+                .collect(Collectors.toMap(
+                        pa -> pa.getUser().getId(),
+                        pa -> pa,
+                        (a, b) -> a));  // ORDER BY startDate ASC이므로 첫 번째가 가장 빠름
+    }
+
     /** 대시보드 통계 */
     @Transactional(readOnly = true)
     public DeployStats getDeployStats() {
@@ -100,7 +110,7 @@ public class ProjectAssignmentService {
     /** 배정 등록 폼용 활성 직원 목록 */
     @Transactional(readOnly = true)
     public List<User> findAssignableUsers() {
-        return userRepository.findByStatus(UserStatus.ACTIVE).stream()
+        return userRepository.findByStatusWithTeam(UserStatus.ACTIVE).stream()
                 .filter(u -> u.getRole() != UserRole.ADMIN)
                 .sorted(Comparator.comparing(User::getName))
                 .collect(Collectors.toList());

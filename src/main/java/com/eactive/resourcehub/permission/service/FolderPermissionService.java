@@ -1,7 +1,8 @@
 package com.eactive.resourcehub.permission.service;
 
+import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.entity.Folder;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.permission.entity.Permission;
@@ -25,7 +26,7 @@ public class FolderPermissionService {
     private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;
     private final FolderRepository folderRepository;
-    private final AuditLogService auditLogService;
+    private final AuditService auditService;
 
     @Transactional(readOnly = true)
     public List<Permission> findPermissionsByUser(Long userId) {
@@ -61,7 +62,8 @@ public class FolderPermissionService {
                 PermissionTargetType.FOLDER, folderId, actor);
         Permission saved = permissionRepository.save(permission);
 
-        auditLogService.logGrantPermission(actorUserId, saved.getId(),
+        auditService.log(actorUserId, AuditActionType.GRANT_PERMISSION,
+                AuditTargetType.PERMISSION, saved.getId(),
                 "FOLDER_ACCESS 부여: userId=" + targetUserId + ", folderId=" + folderId, request);
     }
 
@@ -75,7 +77,8 @@ public class FolderPermissionService {
         permissionRepository.deleteByUserIdAndPermissionTypeAndTargetTypeAndTargetId(
                 targetUserId, PermissionType.FOLDER_ACCESS, PermissionTargetType.FOLDER, folderId);
 
-        auditLogService.logRevokePermission(actorUserId, targetUserId,
+        auditService.log(actorUserId, AuditActionType.REVOKE_PERMISSION,
+                AuditTargetType.PERMISSION, targetUserId,
                 "FOLDER_ACCESS 회수: userId=" + targetUserId + ", folderId=" + folderId, request);
     }
 }

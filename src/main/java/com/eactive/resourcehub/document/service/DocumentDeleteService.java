@@ -1,6 +1,8 @@
 package com.eactive.resourcehub.document.service;
 
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.audit.entity.AuditTargetType;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.Document;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
@@ -24,7 +26,7 @@ public class DocumentDeleteService {
 
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
-    private final AuditLogService auditLogService;
+    private final AuditService auditService;
 
     @Transactional
     public void deleteDocument(Long documentId, CustomUserDetails actor, HttpServletRequest request) {
@@ -41,7 +43,7 @@ public class DocumentDeleteService {
         document.delete(actorId);
         documentRepository.save(document);
 
-        auditLogService.logDeleteDocument(actorId, documentId, "문서 삭제: " + title, request);
+        auditService.log(actorId, AuditActionType.DELETE_DOCUMENT, AuditTargetType.DOCUMENT, documentId, "문서 삭제: " + title, request);
         log.info("문서 소프트 삭제 완료 — documentId={}, title={}, adminId={}", documentId, title, actorId);
     }
 
@@ -59,7 +61,7 @@ public class DocumentDeleteService {
         document.delete(userId);
         documentRepository.save(document);
 
-        auditLogService.logDeleteDocument(userId, documentId, "본인 문서 삭제: " + title, request);
+        auditService.log(userId, AuditActionType.DELETE_DOCUMENT, AuditTargetType.DOCUMENT, documentId, "본인 문서 삭제: " + title, request);
         log.info("본인 문서 소프트 삭제 완료 — documentId={}, title={}, userId={}", documentId, title, userId);
     }
 
@@ -85,7 +87,7 @@ public class DocumentDeleteService {
         document.delete(actorId);
         documentRepository.save(document);
 
-        auditLogService.logDeleteDocument(actorId, documentId, "공용 폴더 문서 삭제: " + title, request);
+        auditService.log(actorId, AuditActionType.DELETE_DOCUMENT, AuditTargetType.DOCUMENT, documentId, "공용 폴더 문서 삭제: " + title, request);
         log.info("공용 폴더 문서 소프트 삭제 완료 — documentId={}, title={}, actorId={}", documentId, title, actorId);
     }
 }

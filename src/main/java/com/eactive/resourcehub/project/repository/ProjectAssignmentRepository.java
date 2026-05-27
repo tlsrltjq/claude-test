@@ -16,7 +16,7 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
     List<ProjectAssignment> findByUserId(@Param("userId") Long userId);
 
     /** 해당 월과 기간이 겹치는 배정 (CANCELLED 포함, 필터는 서비스에서) */
-    @Query("SELECT pa FROM ProjectAssignment pa JOIN FETCH pa.user u " +
+    @Query("SELECT pa FROM ProjectAssignment pa JOIN FETCH pa.user u LEFT JOIN FETCH u.team " +
            "WHERE pa.startDate <= :monthEnd AND pa.endDate >= :monthStart " +
            "ORDER BY pa.startDate, u.name")
     List<ProjectAssignment> findForMonth(@Param("monthStart") LocalDate monthStart,
@@ -65,4 +65,10 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
            "ORDER BY pa.endDate ASC")
     List<ProjectAssignment> findEndingSoon(@Param("today")    LocalDate today,
                                             @Param("soonDate") LocalDate soonDate);
+
+    /** 다음 투입 예정 배정: PLANNED 상태이고 startDate > today (인력표 '투입 정보' 컬럼용) */
+    @Query("SELECT pa FROM ProjectAssignment pa JOIN FETCH pa.user u " +
+           "WHERE pa.status = 'PLANNED' AND pa.startDate > :today " +
+           "ORDER BY pa.startDate ASC")
+    List<ProjectAssignment> findPlannedFrom(@Param("today") LocalDate today);
 }

@@ -65,6 +65,13 @@
 
         .empty-state { text-align: center; padding: 3rem 2rem; color: #adb5bd; }
         .empty-state i { font-size: 3rem; margin-bottom: .75rem; display: block; }
+
+        /* 투입 정보 컬럼 */
+        .assign-cell { white-space: normal !important; min-width: 130px; }
+        .assign-name { font-size: .78rem; font-weight: 600; color: #1e293b; }
+        .assign-sub  { font-size: .72rem; color: #6c757d; }
+        .assign-end-urgent { font-size: .72rem; font-weight: 700; color: #dc2626; }
+        .assign-end-normal { font-size: .72rem; color: #6c757d; }
     </style>
 </head>
 <body>
@@ -260,6 +267,7 @@
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceEligibility" onchange="toggleCol('healthInsuranceEligibility',this.checked)"> 건강보험자격득실확인서</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-etc" onchange="toggleCol('etc',this.checked)"> 기타자료</label>
                 <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-updatedAt" onchange="toggleCol('updatedAt',this.checked)"> 업데이트</label>
+                <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-assignmentInfo" onchange="toggleCol('assignmentInfo',this.checked)"> 투입 정보</label>
             </div>
         </div>
     </div>
@@ -377,6 +385,7 @@
                     <th class="doc-cell" data-col="healthInsuranceEligibility">건강보험자격득실확인서</th>
                     <th class="doc-cell" data-col="etc">기타자료</th>
                     <th data-col="updatedAt">업데이트</th>
+                    <th data-col="assignmentInfo">투입 정보</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -516,6 +525,29 @@
                     </th:block>
 
                     <td data-col="updatedAt" th:text="${row.user.updatedAt != null ? #temporals.format(row.user.updatedAt, 'yy.MM.dd') : '-'}"></td>
+
+                    <!-- 투입 정보 -->
+                    <td class="assign-cell" data-col="assignmentInfo">
+                        <th:block th:with="cur=${currentAssignments != null ? currentAssignments[row.user.id] : null},
+                                           nxt=${nextAssignments != null ? nextAssignments[row.user.id] : null}">
+                            <span th:if="${cur != null}" class="d-flex flex-column gap-1">
+                                <span><span class="badge bg-success" style="font-size:.7rem">투입 중</span></span>
+                                <span class="assign-name" th:text="${cur.projectName}"></span>
+                                <span class="assign-sub" th:text="${cur.clientName}"></span>
+                                <span th:with="days=${cur.remainingDays()}"
+                                      th:class="${days <= 14 ? 'assign-end-urgent' : 'assign-end-normal'}"
+                                      th:text="${'~' + #temporals.format(cur.endDate, 'MM/dd') + ' (' + days + '일)'}"></span>
+                            </span>
+                            <span th:if="${cur == null and nxt != null}" class="d-flex flex-column gap-1">
+                                <span><span class="badge bg-primary" style="font-size:.7rem">투입 예정</span></span>
+                                <span class="assign-name" th:text="${nxt.projectName}"></span>
+                                <span class="assign-sub" th:text="${#temporals.format(nxt.startDate, 'MM/dd') + ' 시작'}"></span>
+                            </span>
+                            <span th:if="${cur == null and nxt == null}">
+                                <span class="badge bg-secondary" style="font-size:.7rem">미투입</span>
+                            </span>
+                        </th:block>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -529,7 +561,7 @@
 const COLS = ['team','position','age','birthDate','phone','email','developerGrade','career',
     'resume','careerDescription','license','graduationCertificate',
     'nationalPensionCertificate','healthInsuranceCertificate','healthInsuranceEligibility',
-    'etc','updatedAt'];
+    'etc','updatedAt','assignmentInfo'];
 
 function getHidden() {
     try { return JSON.parse(localStorage.getItem('profiles_hidden_cols') || '[]'); } catch(e) { return []; }

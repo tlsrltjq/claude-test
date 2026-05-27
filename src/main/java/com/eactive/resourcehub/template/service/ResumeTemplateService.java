@@ -1,6 +1,8 @@
 package com.eactive.resourcehub.template.service;
 
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.audit.entity.AuditTargetType;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.common.file.FileStorage;
 import com.eactive.resourcehub.template.entity.ResumeTemplate;
 import com.eactive.resourcehub.template.entity.ResumeTemplateStatus;
@@ -33,7 +35,7 @@ public class ResumeTemplateService {
     private final ResumeTemplateRepository repository;
     private final FileStorage fileStorage;
     private final UserRepository userRepository;
-    private final AuditLogService auditLogService;
+    private final AuditService auditService;
 
     private static final long MAX_SIZE = 20L * 1024 * 1024;
     private static final Set<String> ALLOWED_EXT = Set.of("pdf", "doc", "docx", "hwp", "hwpx");
@@ -64,7 +66,8 @@ public class ResumeTemplateService {
                 file.getSize(), null, uploader);
         repository.save(template);
 
-        auditLogService.logUploadResumeTemplate(actorUserId, template.getId(), request);
+        auditService.log(actorUserId, AuditActionType.UPLOAD_RESUME_TEMPLATE,
+                AuditTargetType.RESUME_TEMPLATE, template.getId(), null, request);
         return template;
     }
 
@@ -83,7 +86,8 @@ public class ResumeTemplateService {
             throw new IllegalStateException("파일을 불러올 수 없습니다.", e);
         }
 
-        auditLogService.logDownloadResumeTemplate(actorUserId, template.getId(), request);
+        auditService.log(actorUserId, AuditActionType.DOWNLOAD_RESUME_TEMPLATE,
+                AuditTargetType.RESUME_TEMPLATE, template.getId(), null, request);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,

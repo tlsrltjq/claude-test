@@ -180,7 +180,6 @@ curl http://localhost:8080/health
 | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/resourcehub` | DB 접속 URL |
 | `SPRING_DATASOURCE_USERNAME` | `resourcehub` | DB 사용자명 |
 | `RESOURCEHUB_UPLOAD_BASE_DIR` | `./storage/uploads` | 업로드 파일 저장 경로 |
-| `RESOURCEHUB_COMPANY_EMAIL_DOMAIN` | `eactive.co.kr` | 회원가입 허용 이메일 도메인 |
 | `RESOURCEHUB_ADMIN_EMAIL` | `admin@eactive.co.kr` | 최초 관리자 이메일 |
 | `APP_PORT` | `8080` | 호스트 포트 |
 

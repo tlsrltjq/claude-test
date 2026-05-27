@@ -5,6 +5,20 @@
 
 ---
 
+## 하네스 문서 정리 + Docker 기동 버그 수정
+
+2026-05-27 | 문서 정리 | docs: 하네스 문서 재편 — 6개 파일 archive 이동, SECURITY_AND_PERMISSION.md 신설, spec·architecture·HARNESS 보안 섹션 링크 전환
+2026-05-27 | 문서 정리 | fix: Docker 기동 오류 3건 수정 — Flyway V218(allocation_rate INTEGER), findByIdForDetailWithTags 쿼리 제거, 이미지 재빌드
+
+## 프로젝트 정리 — 문서 최신화·미사용 코드 제거
+
+2026-05-27 | 정리 | docs: HARNESS.md 전면 개편 — workspace 미구현 표시, V216 반영, 절차 구조화
+2026-05-27 | 정리 | docs: spec.md V216 기준·project_assignments 섹션 추가, frontend.md 캘린더 화면 추가
+2026-05-27 | 정리 | docs: architecture.md SalesMemberService·ProfileRow·audit/dto·DeployStats 위치 정확히 기재
+2026-05-27 | 정리 | docs: testing.md 미기재 14개 테스트 파일(131 케이스) 목록 추가, 미커버 영역 현행화
+2026-05-27 | 정리 | refactor: Document.java — Tag ManyToMany·addTag·removeTag·moveToTrash·restore 제거 (호출 없음)
+2026-05-27 | 정리 | chore: HomeController Javadoc 스테일 주석 제거, package-info.java 9개 phase 번호 → 현행 설명으로 수정
+
 ## 기능 개편 — 회원가입·설정·폴더·인증서·통계
 
 2026-05-27 | 기능 개편 | feat: 이메일 사전등록(allowed_emails) 방식 회원가입·관리자 허용 이메일 UI 추가 (V214·V215 마이그레이션 포함)

@@ -2,7 +2,7 @@ package com.eactive.resourcehub.document.service;
 
 import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
-import com.eactive.resourcehub.audit.service.AuditLogService;
+import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.common.file.FileStorage;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
@@ -45,7 +45,7 @@ public class ThumbnailService {
 
     private final FileStorage fileStorage;
     private final DocumentVersionRepository documentVersionRepository;
-    private final AuditLogService auditLogService;
+    private final AuditService auditService;
 
     /**
      * 업로드 직후 썸네일 생성 — 실패해도 업로드는 성공으로 유지.
@@ -99,7 +99,8 @@ public class ThumbnailService {
 
         generateAndSave(version);
 
-        auditLogService.logRegenerate(actorId, documentVersionId,
+        auditService.log(actorId, AuditActionType.REGENERATE_THUMBNAIL,
+                AuditTargetType.DOCUMENT_VERSION, documentVersionId,
                 "썸네일 재생성: versionId=" + documentVersionId, request);
     }
 

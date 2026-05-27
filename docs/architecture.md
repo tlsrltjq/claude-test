@@ -17,7 +17,7 @@
           ▼
   ┌────────────────┐      ┌────────────────────────┐
   │  Spring Boot   │◀────▶│  PostgreSQL 18         │
-  │  (Java 21)     │      │  + Flyway V1~V215      │
+  │  (Java 21)     │      │  + Flyway V1~V217      │
   └───┬────────┬───┘      └────────────────────────┘
       │        │
       │        └───────▶  Local FS (storage/) or S3/R2 (S3FileStorage)
@@ -46,13 +46,14 @@ com.eactive.resourcehub
 │  ├─ service/                       # SignupService, PasswordResetService, EmployeeManagementService,
 │  │                                 # SettingsService, SalesProfileQueryService, SalesProfileExporter,
 │  │                                 # BundleDownloadService, CareerCalculator, ColumnViewPreferenceService,
-│  │                                 # AdminInitializer, UserRoleService
-│  ├─ service/                       # ...(생략)..., EmailAllowlistService
+│  │                                 # AdminInitializer, UserRoleService, EmailAllowlistService,
+│  │                                 # SalesMemberService (회원 목록·문서 조회·자동채움)
 │  ├─ entity/                        # User, UserRole(ADMIN/SALES/EMPLOYEE/@Deprecated TEAM_LEADER),
 │  │                                 # UserStatus, Position(9개 직급 — 사원~상무), PasswordResetToken,
 │  │                                 # EmailVerificationToken, ColumnViewPreference, AllowedEmail
 │  ├─ repository/                    # *Repository, AllowedEmailRepository
-│  └─ dto/                           # SignupRequest, VerifyCodeRequest, SalesProfileQuery
+│  ├─ dto/                           # SignupRequest, VerifyCodeRequest, SalesProfileQuery
+│  └─ service/ProfileRow             # 인력표 행 데이터 객체 (User + EmployeeProfile + 문서 Map)
 │
 ├─ document/                         # 문서·폴더·검토·GC·검색·공용폴더
 │  ├─ controller/                    # DocumentController, MyFolderController, MyActivityController,
@@ -67,7 +68,7 @@ com.eactive.resourcehub
 │  │                                 # DocumentType (RESUME/CAREER_DESCRIPTION/GRADUATION_CERTIFICATE/
 │  │                                 # LICENSE/HEALTH_INSURANCE_PROOF/PROFILE_PHOTO/ETC,
 │  │                                 # @Deprecated EMPLOYMENT_CERTIFICATE),
-│  │                                 # DocumentStatus, DocumentReviewStatus, Tag(미사용)
+│  │                                 # DocumentStatus, DocumentReviewStatus
 │  └─ repository/                    # *Repository
 │
 ├─ team/                             # 팀(부서) 관리
@@ -82,17 +83,30 @@ com.eactive.resourcehub
 │  └─ repository/                    # PermissionRepository
 │
 ├─ audit/                            # 감사 로그·통계
-│  ├─ entity/                        # AuditLog, AuditActionType (LOGIN, UPLOAD, DOWNLOAD,
-│  │                                 # DELETE_DOCUMENT, DELETE_DOCUMENT_SELF, RESET_PASSWORD,
-│  │                                 # CHANGE_USER_STATUS, EXPORT_PROFILES, ENABLE/DISABLE_USER 등),
+│  ├─ entity/                        # AuditLog, AuditActionType (VIEW, DOWNLOAD, UPLOAD,
+│  │                                 # UPDATE_DOCUMENT, DELETE_DOCUMENT, APPROVE_DOCUMENT,
+│  │                                 # REJECT_DOCUMENT, CHANGE_ROLE, GRANT_PERMISSION,
+│  │                                 # REVOKE_PERMISSION, REGENERATE_THUMBNAIL, SUBMIT_REVIEW,
+│  │                                 # UPLOAD/DOWNLOAD_RESUME_TEMPLATE, UPDATE_CAREER_PROFILE,
+│  │                                 # RESET_PASSWORD, EXPORT_PROFILES, BUNDLE_DOWNLOAD,
+│  │                                 # DISABLE_USER, ENABLE_USER, CREATE, UPDATE, DELETE,
+│  │                                 # ASSIGN_PROJECT, UPDATE_ASSIGNMENT, DELETE_ASSIGNMENT),
 │  │                                 # AuditTargetType
-│  ├─ service/                       # AuditLogService (REQUIRES_NEW), StatisticsService
-│  └─ repository/                    # AuditLogRepository
+│  ├─ service/                       # StatisticsService (AuditService는 common/service로 통합)
+│  ├─ repository/                    # AuditLogRepository
+│  └─ dto/                           # DownloadStatsDto, TopDocumentDto
 │
 ├─ employee/                         # 직원 프로필·경력
 │  ├─ entity/                        # EmployeeProfile, AvailableStatus
 │  ├─ service/                       # CareerSaveService
 │  └─ repository/                    # EmployeeProfileRepository
+│
+├─ project/                          # 프로젝트 투입 관리 (V216)
+│  ├─ controller/                    # ProjectAssignmentController, CalendarGridBuilder (package-private)
+│  ├─ service/                       # ProjectAssignmentService, DeployStats (record)
+│  ├─ entity/                        # ProjectAssignment, AssignmentStatus
+│  ├─ repository/                    # ProjectAssignmentRepository
+│  └─ dto/                           # ProjectAssignmentRequest
 │
 ├─ template/                         # 이력서 템플릿
 │  ├─ controller/                    # AdminResumeTemplateController, ResumeTemplateDownloadController
@@ -133,8 +147,11 @@ com.eactive.resourcehub
 | 공용 폴더 | GET/POST | `/shared/folders/public`, `/shared/folders/public/documents/**` | 전 사원 read, ADMIN write/delete |
 | 검색 | GET | `/search` | 본인 권한 모든 문서 + 필터 |
 | 영업 | GET/POST | `/sales/members`, `/sales/profiles`, `/sales/profiles/export`, `/sales/profiles/bundle-download`, `/sales/profiles/preset`, `/sales/career-calculator`, `/sales/career-calculator/save`, `/sales/career-calculator/autofill` | SALES + ADMIN |
+| 투입 관리 | GET | `/sales/calendar` | SALES + ADMIN |
+| 투입 관리 | POST | `/sales/assignments`, `/sales/assignments/{id}`, `/sales/assignments/{id}/delete` | ADMIN 전용 (서비스 레이어 검증) |
 | 관리자 | GET/POST | `/admin/employees`, `/admin/employees/{id}/toggle-status\|change-team\|change-position`, `/admin/teams`, `/admin/teams/project-settings`, `/admin/user-role`, `/admin/user-permissions`, `/admin/documents/review/**`, `/admin/documents/expiry`, `/admin/statistics`, `/admin/resume-template`, `/admin/gc`, `/admin/gc/run`, `/admin/certificate`, `/admin/allowed-emails`, `/admin/allowed-emails/{id}/delete` | ADMIN |
-| 문서 | GET/POST | `/documents/upload`, `/documents/{id}`, `/documents/{id}/delete`, `/documents/{v}/download`, `/documents/{v}/preview`, `/documents/{v}/thumbnail`, `/documents/{v}/thumbnail/regenerate` | 컨트롤러 경유 다운로드만 허용 |
+| 문서 | GET | `/documents/{v}/download`, `/documents/{v}/preview`, `/documents/{v}/thumbnail` | 컨트롤러 경유 다운로드만 허용 |
+| 문서 | POST | `/documents/{v}/thumbnail/regenerate` | ADMIN 또는 폴더 소유자만 가능 |
 
 ---
 
@@ -169,8 +186,10 @@ com.eactive.resourcehub
 | V213 | post-21 | 의료보험증명 문서 일괄 삭제 |
 | V214 | 기능 개편 | users.address 컬럼 추가 |
 | V215 | 기능 개편 | allowed_emails 테이블 신설 (이메일 사전등록 방식) |
+| V216 | post-MVP3 | project_assignments 테이블 신설 (프로젝트 투입 관리) |
+| V217 | cleanup | tags, document_tags 테이블 DROP (Tag 엔티티 제거) |
 
-> 새 마이그레이션은 V216부터.
+> 새 마이그레이션은 V218부터.
 
 ---
 
@@ -186,12 +205,12 @@ com.eactive.resourcehub
 
 ## 보안 / 권한 흐름
 
-- 진입: `SecurityConfig.securityFilterChain` — CSRF on, 세션 30분, sessionFixation `changeSessionId`, maximumSessions(-1) + SessionRegistry
-- 인증: `CustomUserDetailsService` → `CustomUserDetails` (Spring Security)
-- 권한: 모든 파일 접근은 `DocumentAccessService.getVersionWithAccessCheck()` 경유
-- 폴더 접근: `FolderAccessService` (역할별 read/write 판정)
-- HTTP 헤더: `X-Frame-Options=DENY`, `X-Content-Type-Options=nosniff`, `Referrer-Policy=strict-origin-when-cross-origin`, CSP(`script-src 'self' cdn.jsdelivr.net 'unsafe-inline'` 등)
-- 감사: `AuditLogService` (`REQUIRES_NEW`) — UPLOAD/DOWNLOAD/DELETE/RESET_PASSWORD/EXPORT_PROFILES 등
+→ 상세: `docs/SECURITY_AND_PERMISSION.md`
+
+- 진입: `SecurityConfig.securityFilterChain` — CSRF on, 세션 30분, sessionFixation `changeSessionId`
+- 인증: `CustomUserDetailsService` → `CustomUserDetails`
+- 파일 접근: `DocumentAccessService.getVersionWithAccessCheck()` 경유 필수
+- 감사: `AuditService` (`REQUIRES_NEW`)
 
 ---
 

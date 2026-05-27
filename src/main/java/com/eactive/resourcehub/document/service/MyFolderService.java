@@ -50,7 +50,7 @@ public class MyFolderService {
 
     @Transactional(readOnly = true)
     public Document findDocumentDetail(Long documentId) {
-        return documentRepository.findByIdForDetailWithTags(documentId)
+        return documentRepository.findByIdForDetail(documentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."));
     }
 

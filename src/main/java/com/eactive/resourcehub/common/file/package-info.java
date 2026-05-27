@@ -1,6 +1,5 @@
 /**
- * 파일 저장소 추상화. 5단계에서 FileStorage / LocalFileStorage 가 들어온다.
- *
- * <p>나중에 NAS / MinIO / S3 로 교체 가능하도록 인터페이스로 분리할 자리.
+ * 파일 저장소 추상화. FileStorage 인터페이스 + LocalFileStorage / S3FileStorage 구현.
+ * RESOURCEHUB_STORAGE_TYPE 환경변수로 전환 (ADR-021).
  */
 package com.eactive.resourcehub.common.file;

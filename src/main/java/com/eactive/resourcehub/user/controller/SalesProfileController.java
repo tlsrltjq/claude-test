@@ -5,6 +5,7 @@ import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.entity.DocumentType;
+import com.eactive.resourcehub.project.service.ProjectAssignmentService;
 import com.eactive.resourcehub.team.service.TeamService;
 import com.eactive.resourcehub.user.dto.SalesProfileQuery;
 import com.eactive.resourcehub.user.entity.ColumnViewPreference;
@@ -51,6 +52,7 @@ public class SalesProfileController {
     private final AuditService auditService;
     private final TeamService teamService;
     private final ObjectMapper objectMapper;
+    private final ProjectAssignmentService projectAssignmentService;
 
     @GetMapping("/sales/profiles")
     public String profiles(@ModelAttribute("query") SalesProfileQuery query,
@@ -63,6 +65,8 @@ public class SalesProfileController {
         model.addAttribute("positions", Position.values());
         model.addAttribute("teams", teamService.findProjectTeams());
         model.addAttribute("presets", presetService.findByUser(userDetails.getUser().getId()));
+        model.addAttribute("currentAssignments", projectAssignmentService.getActiveAssignmentsByUserId());
+        model.addAttribute("nextAssignments",    projectAssignmentService.getNextAssignmentsByUserId());
         return "sales/profiles";
     }
 

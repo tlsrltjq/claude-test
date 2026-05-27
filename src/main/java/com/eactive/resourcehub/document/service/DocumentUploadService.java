@@ -3,7 +3,6 @@ package com.eactive.resourcehub.document.service;
 import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.file.FileStorage;
-import com.eactive.resourcehub.audit.service.AuditLogService;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.dto.DocumentUploadRequest;
 import com.eactive.resourcehub.document.entity.Document;
@@ -50,7 +49,6 @@ public class DocumentUploadService {
     private final DocumentVersionRepository documentVersionRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
-    private final AuditLogService auditLogService;
     private final ThumbnailService thumbnailService;
 
     @Value("${resourcehub.upload.allowed-extensions:pdf,jpg,jpeg,png,docx,hwp,hwpx}")
@@ -133,7 +131,8 @@ public class DocumentUploadService {
                     "버전 " + versionNo + " 업로드", httpRequest);
 
             if (requiresApproval) {
-                auditLogService.logSubmitReview(ownerId, version.getId(), httpRequest);
+                auditService.log(ownerId, AuditActionType.SUBMIT_REVIEW,
+                        AuditTargetType.DOCUMENT_VERSION, version.getId(), "검토 요청", httpRequest);
             }
 
             committed = true;
@@ -213,7 +212,8 @@ public class DocumentUploadService {
                     "공용 폴더 업로드", httpRequest);
 
             if (requiresApproval) {
-                auditLogService.logSubmitReview(uploaderId, version.getId(), httpRequest);
+                auditService.log(uploaderId, AuditActionType.SUBMIT_REVIEW,
+                        AuditTargetType.DOCUMENT_VERSION, version.getId(), "검토 요청", httpRequest);
             }
 
             committed = true;
