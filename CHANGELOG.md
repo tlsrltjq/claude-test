@@ -5,10 +5,9 @@
 
 ---
 
-## 하네스 문서 정리 + Docker 기동 버그 수정
+## 전체 정리 — 미사용 코드 제거·문서 재편·Docker 버그 수정·테스트 보강
 
-2026-05-27 | 문서 정리 | docs: 하네스 문서 재편 — 6개 파일 archive 이동, SECURITY_AND_PERMISSION.md 신설, spec·architecture·HARNESS 보안 섹션 링크 전환
-2026-05-27 | 문서 정리 | fix: Docker 기동 오류 3건 수정 — Flyway V218(allocation_rate INTEGER), findByIdForDetailWithTags 쿼리 제거, 이미지 재빌드
+2026-05-27 | 정리 | chore: 전체 정리 커밋 — AuditLogService·Tag 제거, V217·V218, LazyInit 수정, docs/SECURITY_AND_PERMISSION.md, 테스트 212케이스 (48575e5)
 
 ## 프로젝트 정리 — 문서 최신화·미사용 코드 제거
 

@@ -38,7 +38,9 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-27: 하네스 문서 재편 완료 + Docker 기동 버그 3건 수정 후 정상 가동 확인.
-- 문서: 6개 파일 docs/archive/{feature-design,qa}/로 이동, docs/SECURITY_AND_PERMISSION.md 신설, spec/architecture/HARNESS 보안 섹션 링크 전환
-- 버그: V218 마이그레이션(allocation_rate SMALLINT→INTEGER), findByIdForDetailWithTags 쿼리 잔존 제거
-- Flyway: 현재 V218. 다음은 V219부터. security-lint 15/15 PASS. Docker /health OK.
+2026-05-27: 전체 정리 커밋(48575e5) 완료.
+- 코드: AuditLogService 제거, Tag 제거(V217), AuditActionType 4개 제거, @MockitoBean 전환
+- 버그: V218(allocation_rate INTEGER), findByIdForDetailWithTags 제거, calendar LazyInit 수정(findForMonth + findAssignableUsers JOIN FETCH 추가)
+- 문서: SECURITY_AND_PERMISSION.md 신설, 6개 파일 archive 이동
+- 테스트: 투입 관련 5개 클래스 신규(212케이스), 캘린더 템플릿 렌더링 검증 추가
+- Flyway 현재 V218, 다음 V219부터. security-lint 15/15 PASS. Docker /health OK.
