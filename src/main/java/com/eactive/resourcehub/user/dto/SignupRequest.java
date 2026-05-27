@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.user.dto;
 
 import com.eactive.resourcehub.user.entity.Position;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -22,10 +23,11 @@ public class SignupRequest {
     @Pattern(regexp = "^[0-9\\-+() ]{7,20}$", message = "올바른 연락처 형식이 아닙니다.")
     private String phone;
 
-    // 이메일 앞부분만 받고 서버에서 도메인을 붙여 풀 이메일 생성
-    @NotBlank(message = "이메일 앞부분을 입력해주세요.")
-    @Pattern(regexp = "^[a-zA-Z0-9._%+\\-]+$", message = "이메일 앞부분에 잘못된 문자가 포함되어 있습니다.")
-    private String emailPrefix;
+    private String address;
+
+    @NotBlank(message = "이메일을 입력해주세요.")
+    @Email(message = "올바른 이메일 형식이 아닙니다.")
+    private String email;
 
     private Long teamId;
 
@@ -37,4 +39,6 @@ public class SignupRequest {
 
     @NotBlank(message = "비밀번호 확인을 입력해주세요.")
     private String passwordConfirm;
+
+    private boolean privacyConsent;
 }

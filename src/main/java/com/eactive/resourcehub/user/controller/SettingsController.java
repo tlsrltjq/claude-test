@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
+import com.eactive.resourcehub.team.service.TeamService;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.service.SettingsService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 public class SettingsController {
 
     private final SettingsService settingsService;
+    private final TeamService teamService;
 
     @GetMapping
     public String settingsPage(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -27,16 +29,28 @@ public class SettingsController {
         User user = settingsService.getUser(userDetails.getUser().getId());
         model.addAttribute("user", user);
         model.addAttribute("tab", tab);
+        model.addAttribute("teams", teamService.findAll());
         return "settings";
     }
 
     @PostMapping("/profile")
     public String updateProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                @RequestParam(required = false) String name,
                                 @RequestParam(required = false) String phone,
                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDate,
+                                @RequestParam(required = false) String address,
                                 RedirectAttributes redirectAttributes) {
-        settingsService.updateProfile(userDetails.getUser().getId(), phone, birthDate);
+        settingsService.updateProfile(userDetails.getUser().getId(), name, phone, birthDate, address);
         redirectAttributes.addFlashAttribute("successMessage", "개인정보가 저장되었습니다.");
+        return "redirect:/settings?tab=profile";
+    }
+
+    @PostMapping("/team")
+    public String updateTeam(@AuthenticationPrincipal CustomUserDetails userDetails,
+                             @RequestParam(required = false) Long teamId,
+                             RedirectAttributes redirectAttributes) {
+        settingsService.updateTeam(userDetails.getUser().getId(), teamId);
+        redirectAttributes.addFlashAttribute("successMessage", "소속 팀이 변경되었습니다.");
         return "redirect:/settings?tab=profile";
     }
 

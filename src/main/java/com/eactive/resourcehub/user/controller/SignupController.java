@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Controller
@@ -34,9 +32,6 @@ public class SignupController {
 
     private final SignupService signupService;
     private final TeamService teamService;
-
-    @Value("${resourcehub.company-email-domain}")
-    private String emailDomain;
 
     @GetMapping
     public String signupForm(Model model) {
@@ -93,7 +88,6 @@ public class SignupController {
     private void loadFormModel(Model model) {
         model.addAttribute("positions", Position.values());
         model.addAttribute("teams", teamService.findAll());
-        model.addAttribute("emailDomain", emailDomain);
     }
 
     @GetMapping("/verify")
@@ -103,7 +97,7 @@ public class SignupController {
             return "redirect:/signup";
         }
         LocalDateTime expiry = (LocalDateTime) session.getAttribute(SESSION_EXPIRY);
-        model.addAttribute("pendingEmail", signupService.buildEmail(pending.getEmailPrefix()));
+        model.addAttribute("pendingEmail", pending.getEmail());
         model.addAttribute("expireAt", expiry != null
                 ? expiry.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() : 0L);
         return "signup-verify";
@@ -122,7 +116,7 @@ public class SignupController {
             return "redirect:/signup";
         }
 
-        String pendingEmail = signupService.buildEmail(pending.getEmailPrefix());
+        String pendingEmail = pending.getEmail();
 
         if (LocalDateTime.now().isAfter(expiry)) {
             clearPendingSession(session);
@@ -161,7 +155,7 @@ public class SignupController {
             session.setAttribute(SESSION_CODE, code);
             LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
             session.setAttribute(SESSION_EXPIRY, expiry);
-            model.addAttribute("pendingEmail", signupService.buildEmail(pending.getEmailPrefix()));
+            model.addAttribute("pendingEmail", pending.getEmail());
             model.addAttribute("expireAt", expiry.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             model.addAttribute("infoMessage", "인증 코드를 재발송했습니다.");
         } catch (IllegalArgumentException e) {

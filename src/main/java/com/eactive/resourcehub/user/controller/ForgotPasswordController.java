@@ -4,7 +4,6 @@ import com.eactive.resourcehub.user.service.PasswordResetService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,22 +22,17 @@ public class ForgotPasswordController {
 
     private final PasswordResetService passwordResetService;
 
-    @Value("${resourcehub.company-email-domain}")
-    private String emailDomain;
-
     @GetMapping
-    public String forgotForm(Model model) {
-        model.addAttribute("emailDomain", emailDomain);
+    public String forgotForm() {
         return "login-forgot";
     }
 
     @PostMapping
-    public String forgotSubmit(@RequestParam String emailPrefix,
+    public String forgotSubmit(@RequestParam String email,
                                HttpSession session,
                                RedirectAttributes ra) {
-        String email = emailPrefix.trim() + "@" + emailDomain;
-        passwordResetService.requestReset(email);
-        session.setAttribute(SESSION_RESET_EMAIL, email);
+        passwordResetService.requestReset(email.trim().toLowerCase());
+        session.setAttribute(SESSION_RESET_EMAIL, email.trim().toLowerCase());
         session.removeAttribute(SESSION_RESET_VERIFIED);
         ra.addFlashAttribute("infoMessage", "인증코드를 발송했습니다. 이메일을 확인해 주세요. (로컬: 서버 로그 확인)");
         return "redirect:/login/forgot/verify";
@@ -49,7 +43,6 @@ public class ForgotPasswordController {
         String email = (String) session.getAttribute(SESSION_RESET_EMAIL);
         if (email == null) return "redirect:/login/forgot";
         model.addAttribute("email", email);
-        model.addAttribute("emailDomain", emailDomain);
         return "login-forgot-verify";
     }
 
@@ -64,7 +57,6 @@ public class ForgotPasswordController {
         if (email == null) return "redirect:/login/forgot";
 
         model.addAttribute("email", email);
-        model.addAttribute("emailDomain", emailDomain);
 
         if (!newPassword.equals(newPasswordConfirm)) {
             model.addAttribute("errorMessage", "새 비밀번호가 일치하지 않습니다.");

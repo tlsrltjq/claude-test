@@ -8,10 +8,10 @@ import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.team.repository.TeamRepository;
 import com.eactive.resourcehub.user.dto.SignupRequest;
 import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.repository.AllowedEmailRepository;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,21 +33,15 @@ public class SignupService {
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
     private final FolderRepository folderRepository;
-
-    @Value("${resourcehub.company-email-domain}")
-    private String companyEmailDomain;
-
-    public String buildEmail(String prefix) {
-        return prefix + "@" + companyEmailDomain;
-    }
+    private final AllowedEmailRepository allowedEmailRepository;
 
     /**
-     * 1단계: 폼 유효성 검증 + 인증 코드 발송. DB에 저장하지 않음.
+     * 1단계: 폼 유효성 검증 + 허용 이메일 확인 + 인증 코드 발송. DB에 저장하지 않음.
      * @return 생성된 6자리 인증 코드
      */
     @Transactional(readOnly = true)
     public String initiateSignup(SignupRequest request) {
-        String email = buildEmail(request.getEmailPrefix());
+        String email = request.getEmail().trim().toLowerCase();
         parseBirthDate(request.getBirthDateStr());
         validateSignupRequest(request, email);
 
@@ -66,7 +60,7 @@ public class SignupService {
      */
     @Transactional
     public void completeSignup(SignupRequest request) {
-        String email = buildEmail(request.getEmailPrefix());
+        String email = request.getEmail().trim().toLowerCase();
         if (userRepository.existsByEmail(email)) {
             throw new IllegalStateException("이미 사용 중인 이메일입니다.");
         }
@@ -78,6 +72,9 @@ public class SignupService {
         User user = User.create(email, encodedPassword, request.getName(), email, team,
                 request.getPosition(), birthDate, request.getPhone());
         user.verifyEmail();
+        if (request.getAddress() != null && !request.getAddress().isBlank()) {
+            user.updateProfile(null, null, null, request.getAddress());
+        }
         userRepository.save(user);
         if (!folderRepository.existsByOwnerIdAndType(user.getId(), FolderType.PERSONAL)) {
             folderRepository.save(Folder.create(user, user.getName() + " 개인 폴더"));
@@ -86,8 +83,14 @@ public class SignupService {
     }
 
     private void validateSignupRequest(SignupRequest request, String email) {
+        if (!allowedEmailRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("가입이 허용되지 않은 이메일입니다. 관리자에게 문의하세요.");
+        }
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+        if (!request.isPrivacyConsent()) {
+            throw new IllegalArgumentException("개인정보 수집·이용에 동의해주세요.");
         }
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
@@ -113,14 +116,14 @@ public class SignupService {
             throw new IllegalArgumentException("생년월일을 입력해주세요.");
         String digits = birthDateStr.replace(".", "");
         if (!digits.matches("\\d{8}"))
-            throw new IllegalArgumentException("생년월일 형식이 올바르지 않습니다. 예: 2001.09.04");
+            throw new IllegalArgumentException("생년월일 형식이 올바르지 않습니다. 예: 1999.01.01");
         try {
             LocalDate date = LocalDate.parse(digits, BIRTH_FMT);
             if (date.isBefore(LocalDate.of(1900, 1, 1)) || date.isAfter(LocalDate.now()))
                 throw new IllegalArgumentException("유효하지 않은 생년월일입니다.");
             return date;
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("생년월일 형식이 올바르지 않습니다. 예: 2001.09.04");
+            throw new IllegalArgumentException("생년월일 형식이 올바르지 않습니다. 예: 1999.01.01");
         }
     }
 

@@ -31,19 +31,18 @@ public class AdminInitializer {
     @Value("${resourcehub.admin.password}")
     private String adminPassword;
 
-    @Value("${resourcehub.company-email-domain}")
-    private String companyEmailDomain;
-
     @Value("${resourcehub.seed.test-password:#{null}}")
     private String testPassword;
+
+    @Value("${resourcehub.seed.test-email:test@example.com}")
+    private String testEmail;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void init() {
         User admin = ensureSeedUser(adminEmail, adminPassword, "관리자", UserRole.ADMIN, Position.REPRESENTATIVE);
         if (testPassword != null && !testPassword.isBlank()) {
-            String salesEmail = "test@" + companyEmailDomain;
-            ensureSeedUser(salesEmail, testPassword, "테스트영업", UserRole.SALES, Position.MANAGER);
+            ensureSeedUser(testEmail, testPassword, "테스트영업", UserRole.SALES, Position.MANAGER);
         }
         ensurePublicFolder(admin);
     }
