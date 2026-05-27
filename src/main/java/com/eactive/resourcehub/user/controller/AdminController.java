@@ -14,6 +14,7 @@ import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
+import com.eactive.resourcehub.user.service.EmailAllowlistService;
 import com.eactive.resourcehub.user.service.EmployeeManagementService;
 import com.eactive.resourcehub.user.service.UserRoleService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +38,7 @@ public class AdminController {
 
     private final EmployeeManagementService employeeService;
     private final UserRoleService userRoleService;
+    private final EmailAllowlistService emailAllowlistService;
     private final FolderPermissionService folderPermissionService;
     private final TeamService teamService;
     private final DocumentReviewService documentReviewService;
@@ -332,9 +334,43 @@ public class AdminController {
     @GetMapping("/statistics")
     public String statistics(Model model) {
         model.addAttribute("downloadStats", statisticsService.getDownloadStats());
+        model.addAttribute("uploadStats", statisticsService.getUploadStats());
         model.addAttribute("topDocuments", statisticsService.getTopDownloadedDocuments(10));
         model.addAttribute("recentDownloads", statisticsService.findRecentDownloads(30));
+        model.addAttribute("recentUploads", statisticsService.findRecentUploads(20));
         return "admin/statistics";
+    }
+
+    // ── 허용 이메일 관리: /admin/allowed-emails ──────────────────
+    @GetMapping("/allowed-emails")
+    public String allowedEmails(Model model) {
+        model.addAttribute("allowedEmails", emailAllowlistService.findAll());
+        return "admin/allowed-emails";
+    }
+
+    @PostMapping("/allowed-emails")
+    public String addAllowedEmail(@RequestParam String email,
+                                  @RequestParam(required = false) String note,
+                                  @AuthenticationPrincipal CustomUserDetails actor,
+                                  RedirectAttributes ra) {
+        try {
+            emailAllowlistService.add(email, note, actor.getUser().getId());
+            ra.addFlashAttribute("successMessage", "이메일을 등록했습니다: " + email);
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/allowed-emails";
+    }
+
+    @PostMapping("/allowed-emails/{id}/delete")
+    public String removeAllowedEmail(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            emailAllowlistService.remove(id);
+            ra.addFlashAttribute("successMessage", "이메일 등록을 삭제했습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/allowed-emails";
     }
 
     // ── GC 대시보드: /admin/gc ────────────────────────────────────

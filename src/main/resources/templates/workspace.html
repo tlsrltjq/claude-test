@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워크스페이스 — eActive Resource Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .topnav { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: .6rem 0; }
+        .topnav .brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
+        .user-chip { display: flex; align-items: center; gap: .5rem; background: rgba(255,255,255,.15); border-radius: 50px; padding: .3rem .75rem .3rem .4rem; }
+        .user-chip .avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; font-size: .85rem; color: #fff; font-weight: 700; }
+        .user-chip .uname { color: #fff; font-size: .85rem; font-weight: 600; }
+        .btn-logout { border-color: rgba(255,255,255,.5); color: #fff; font-size: .8rem; padding: .3rem .75rem; border-radius: 6px; }
+        .btn-logout:hover { background: rgba(255,255,255,.15); color: #fff; }
+        .btn-back { border-color: rgba(255,255,255,.4); color: #fff; font-size: .8rem; }
+        .btn-back:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+        .section-header { background: #fff; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); display: flex; align-items: center; justify-content: between; }
+        .section-title { font-weight: 700; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: .5rem; }
+        .section-badge { font-size: .75rem; font-weight: 600; padding: .25rem .55rem; border-radius: 6px; }
+
+        .doc-card { border: 1.5px solid #e9ecef; border-radius: 12px; overflow: hidden; background: #fff; transition: box-shadow .18s, transform .18s; height: 100%; display: flex; flex-direction: column; }
+        .doc-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.12); transform: translateY(-2px); }
+        .doc-thumb { width: 100%; height: 130px; object-fit: cover; display: block; }
+        .doc-icon-area { width: 100%; height: 130px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; }
+        .doc-ext { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; }
+        .ext-pdf  { background: #ffe4e4; color: #c92a2a; }
+        .ext-img  { background: #e7f0ff; color: #1c7ed6; }
+        .ext-word { background: #e8f0fa; color: #2b579a; }
+        .ext-hwp  { background: #e4f7eb; color: #1e7e34; }
+        .ext-etc  { background: #f0f2f5; color: #6c757d; }
+        .doc-body { padding: .7rem .75rem; flex: 1; }
+        .doc-title { font-size: .85rem; font-weight: 600; color: #212529; margin: 0 0 .2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .doc-meta { font-size: .72rem; color: #adb5bd; }
+        .doc-footer { padding: .45rem .75rem; border-top: 1px solid #f0f2f5; display: flex; gap: .35rem; }
+        .doc-footer .btn { font-size: .75rem; border-radius: 6px; padding: .25rem .55rem; }
+
+        .empty-box { text-align: center; padding: 3rem 1rem; color: #adb5bd; background: #fff; border-radius: 12px; border: 1.5px dashed #dee2e6; }
+        .empty-box .bi { font-size: 2rem; display: block; margin-bottom: .5rem; }
+    </style>
+</head>
+<body>
+
+<nav class="topnav">
+    <div class="container d-flex align-items-center gap-3">
+        <a th:href="@{/dashboard}" class="brand me-auto">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
+        </a>
+        <a th:href="@{/dashboard}" class="btn btn-sm btn-back">
+            <i class="bi bi-house me-1"></i>대시보드
+        </a>
+        <a th:href="@{/settings}" class="btn btn-sm btn-back">
+            <i class="bi bi-gear me-1"></i>설정
+        </a>
+        <div class="user-chip">
+            <div class="avatar" th:text="${#strings.substring(user.name, 0, 1)}">홍</div>
+            <span class="uname" th:text="${user.name}">홍길동</span>
+        </div>
+        <form th:action="@{/logout}" method="post" class="mb-0">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+            <button type="submit" class="btn btn-logout btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+            </button>
+        </form>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <!-- ── 내 폴더 섹션 ── -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-folder-fill text-primary"></i>내 폴더
+            <span class="badge bg-primary rounded-pill" th:if="${myDocuments != null}"
+                  th:text="${#lists.size(myDocuments)}">0</span>
+        </h5>
+        <div class="d-flex gap-2">
+            <a th:href="@{/my/folder/documents/upload}" class="btn btn-sm btn-primary">
+                <i class="bi bi-upload me-1"></i>업로드
+            </a>
+            <a th:href="@{/my/folder}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-right me-1"></i>전체 보기
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${myFolder == null}" class="empty-box mb-4">
+        <i class="bi bi-folder-x"></i>
+        <p class="mb-0 small">개인 폴더가 없습니다. 관리자에게 문의하세요.</p>
+    </div>
+
+    <div th:if="${myFolder != null and #lists.isEmpty(myDocuments)}" class="empty-box mb-4">
+        <i class="bi bi-folder2-open"></i>
+        <p class="mb-0 small">아직 업로드한 문서가 없습니다.</p>
+    </div>
+
+    <div th:if="${myFolder != null and !#lists.isEmpty(myDocuments)}"
+         class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 mb-4">
+        <div class="col" th:each="doc : ${myDocuments}">
+            <div th:with="lv=${latestVersions[doc.id]},
+                          ext=${lv != null ? lv.originalFileName.substring(lv.originalFileName.lastIndexOf('.')+1).toLowerCase() : 'etc'}"
+                 class="doc-card">
+                <a th:href="@{/my/folder/documents/{id}(id=${doc.id})}" class="text-decoration-none text-dark">
+                    <div th:if="${lv != null and lv.previewStoragePath != null}" class="position-relative">
+                        <img th:src="@{/documents/{id}/preview(id=${lv.id})}"
+                             class="doc-thumb" alt="미리보기" loading="lazy">
+                    </div>
+                    <div th:unless="${lv != null and lv.previewStoragePath != null}" class="doc-icon-area">
+                        <div th:class="'doc-ext ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                             th:text="${ext.toUpperCase()}">EXT</div>
+                    </div>
+                    <div class="doc-body">
+                        <div class="doc-title" th:text="${doc.title}">문서 제목</div>
+                        <div class="doc-meta" th:if="${lv != null}"
+                             th:text="${#temporals.format(lv.createdAt, 'yyyy.MM.dd')}">2024.01.01</div>
+                    </div>
+                </a>
+                <div class="doc-footer">
+                    <a th:href="@{/documents/{id}/download(id=${lv?.id})}"
+                       th:if="${lv != null}"
+                       class="btn btn-outline-primary flex-fill">
+                        <i class="bi bi-download me-1"></i>다운로드
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- ── 공용 폴더 섹션 ── -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-folder-symlink-fill text-teal" style="color:#0d9488;"></i>공용 폴더
+            <span class="badge rounded-pill" style="background:#0d9488;"
+                  th:text="${#lists.size(publicDocuments)}">0</span>
+        </h5>
+        <div class="d-flex gap-2">
+            <a th:href="@{/shared/folders/public}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-right me-1"></i>전체 보기 · 업로드
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(publicDocuments)}" class="empty-box mb-4">
+        <i class="bi bi-folder-symlink"></i>
+        <p class="mb-0 small">공용 폴더에 문서가 없습니다.</p>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(publicDocuments)}"
+         class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 mb-4">
+        <div class="col" th:each="doc : ${publicDocuments}">
+            <div th:with="lv=${doc.currentVersion},
+                          ext=${lv != null ? lv.originalFileName.substring(lv.originalFileName.lastIndexOf('.')+1).toLowerCase() : 'etc'}"
+                 class="doc-card">
+                <div class="text-decoration-none text-dark">
+                    <div th:if="${lv != null and lv.previewStoragePath != null}">
+                        <img th:src="@{/documents/{id}/preview(id=${lv.id})}"
+                             class="doc-thumb" alt="미리보기" loading="lazy">
+                    </div>
+                    <div th:unless="${lv != null and lv.previewStoragePath != null}" class="doc-icon-area">
+                        <div th:class="'doc-ext ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                             th:text="${ext.toUpperCase()}">EXT</div>
+                    </div>
+                    <div class="doc-body">
+                        <div class="doc-title" th:text="${doc.title}">문서 제목</div>
+                        <div class="doc-meta" th:if="${lv != null}">
+                            <span th:text="${doc.folder.owner.name}">업로더</span>
+                            · <span th:text="${#temporals.format(lv.createdAt, 'yyyy.MM.dd')}">2024.01.01</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="doc-footer">
+                    <a th:href="@{/documents/{id}/download(id=${lv?.id})}"
+                       th:if="${lv != null}"
+                       class="btn btn-outline-secondary flex-fill">
+                        <i class="bi bi-download me-1"></i>다운로드
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

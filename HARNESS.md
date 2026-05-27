@@ -8,14 +8,14 @@ Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway / Thymeleaf + Bootst
 
 ## 디렉토리 구조 (핵심만)
 - `src/main/java/com/eactive/resourcehub/` — 도메인별(`user`, `document`, `team`, `permission`, `audit`, `template`, `employee`, `certificate`, `common`)
-- `src/main/resources/templates/` — Thymeleaf (`admin/`, `sales/`, `my/`, `shared/`)
-- `src/main/resources/db/migration/` — Flyway V1~V213 (다음은 V214부터)
+- `src/main/resources/templates/` — Thymeleaf (`admin/`, `sales/`, `my/`, `shared/`) — `workspace.html` 신설
+- `src/main/resources/db/migration/` — Flyway V1~V215 (다음은 V216부터)
 - `certificate/` — 재직증명서 Python+Flask 서비스 (별도 Docker)
 - `scripts/` — `security-lint.sh`, `deploy.sh`, `backup-*.sh`, `setup-cron.sh`
 - `docs/`, `harness/archive/legacy/`, `사용법/`
 
 ## 현재 상태
-운영 배포 준비 완료(MVP1·MVP2·MVP3·post-MVP3·19~21단계). 0단계(하네스 전면 개편) 완료. 소스 기준 문서 정합성 감사 완료(불일치 4건 수정, security-lint 15/15 PASS). 다음: 운영 도메인 배포(`scripts/deploy.sh`) 또는 신규 기능 — 새 작업 시작 시 `tasks/current.md` 덮어쓰기.
+기능 개편 완료(회원가입·설정·대시보드·통계·재직증명서·가입허용 이메일 관리). 주요 변경: V214(users.address)·V215(allowed_emails) 마이그레이션, 이메일 사전등록 방식 회원가입, 공유 폴더(Permission 기반) 제거, 공용 폴더 유지, /workspace 통합 워크스페이스 신설, 통계 화면 업로드 통계 추가. security-lint 15/15 PASS · BUILD SUCCESSFUL. 다음: 운영 도메인 배포(`scripts/deploy.sh`) 또는 추가 기능.
 
 ## 코딩 규칙
 - JWT 금지(세션만), Remember-me 금지, CSRF 항상 활성화

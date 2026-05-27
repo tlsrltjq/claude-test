@@ -9,7 +9,6 @@ import com.eactive.resourcehub.document.service.DocumentUploadService;
 import com.eactive.resourcehub.document.service.SharedFolderService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,26 +26,6 @@ public class SharedFolderController {
     private final SharedFolderService sharedFolderService;
     private final DocumentUploadService documentUploadService;
     private final DocumentDeleteService documentDeleteService;
-
-    @GetMapping("/folders")
-    public String sharedFolders(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        model.addAttribute("folders",
-                sharedFolderService.findAccessibleFolders(userDetails.getUser().getId()));
-        return "shared/folders";
-    }
-
-    @GetMapping("/folders/{folderId}/documents")
-    public String sharedFolderDocuments(@PathVariable Long folderId,
-                                        @AuthenticationPrincipal CustomUserDetails userDetails,
-                                        Model model) {
-        Long userId = userDetails.getUser().getId();
-        if (!sharedFolderService.hasAccess(userId, folderId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
-        }
-        model.addAttribute("folder", sharedFolderService.findFolderById(folderId));
-        model.addAttribute("documents", sharedFolderService.findFolderDocuments(folderId));
-        return "shared/folder-documents";
-    }
 
     /** 전 사원 공용 폴더 목록 */
     @GetMapping("/folders/public")

@@ -145,9 +145,7 @@
         <a th:each="doc : ${results}"
            th:href="${doc.folder.type.name() == 'PERSONAL' and doc.folder.owner.id == userId}
                     ? @{/my/folder/documents/{id}(id=${doc.id})}
-                    : (${doc.folder.type.name() == 'SHARED_PUBLIC'}
-                       ? @{/shared/folders/public}
-                       : @{/shared/folders/{fid}/documents(fid=${doc.folder.id})})"
+                    : @{/shared/folders/public}"
            class="result-item"
            th:with="lv=${doc.currentVersion},
                     ext=${doc.currentVersion != null ? doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1).toLowerCase() : 'etc'}">

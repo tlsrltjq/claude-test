@@ -61,6 +61,26 @@ public class StatisticsService {
     }
 
     @Transactional(readOnly = true)
+    public DownloadStatsDto getUploadStats() {
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        LocalDateTime weekStart  = LocalDate.now().minusDays(6).atStartOfDay();
+        LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+
+        long total = auditLogRepository.countByActionType(AuditActionType.UPLOAD);
+        long today = auditLogRepository.countByActionTypeAndCreatedAtAfter(AuditActionType.UPLOAD, todayStart);
+        long week  = auditLogRepository.countByActionTypeAndCreatedAtAfter(AuditActionType.UPLOAD, weekStart);
+        long month = auditLogRepository.countByActionTypeAndCreatedAtAfter(AuditActionType.UPLOAD, monthStart);
+
+        return new DownloadStatsDto(total, today, week, month);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AuditLog> findRecentUploads(int limit) {
+        return auditLogRepository.findByActionTypeWithUser(
+                AuditActionType.UPLOAD, PageRequest.of(0, limit)).getContent();
+    }
+
+    @Transactional(readOnly = true)
     public List<TopDocumentDto> getTopDownloadedDocuments(int limit) {
         List<Object[]> rows = auditLogRepository.findTopTargetsByActionType(
                 AuditActionType.DOWNLOAD, PageRequest.of(0, limit));
