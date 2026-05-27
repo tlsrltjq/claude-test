@@ -10,11 +10,10 @@
 - [x] **2단계** — V221·V222: `project_assignments.project_id` 추가 + 기존 데이터 마이그레이션
 - [x] **3단계** — `ProjectService` 구현 (생성·수정·삭제·인원 일괄 등록·추가·해제)
 - [x] **4단계** — `ProjectController` 구현 (CRUD API + 상세 페이지)
-- [ ] **5단계** — V223: `project_assignments`에서 비정규화 컬럼 제거 (project_name·client_name·memo)
+- [x] **5+9단계** — V223: 비정규화 컬럼 제거 + 구 배정 CRUD 엔드포인트 삭제
 - [ ] **6단계** — `CalendarGridBuilder` 재설계 (Project 기반 dayMap)
-- [ ] **7단계** — `sales/project-detail.html` 신규 화면 (투입 직원 테이블·수정 모달)
+- [x] **7단계** — `sales/project-detail.html` 신규 화면 (투입 직원 테이블·수정 모달)
 - [ ] **8단계** — `sales/calendar.html` 바(bar) 렌더링 적용
-- [ ] **9단계** — 기존 `/sales/assignments/**` 핸들러 정리
 - [ ] **10단계** — 테스트 작성 (Project 엔티티·서비스·컨트롤러)
 
 ## 완료 기준
@@ -59,9 +58,11 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-27: 전체 정리 커밋(48575e5) 완료.
-- 코드: AuditLogService 제거, Tag 제거(V217), AuditActionType 4개 제거, @MockitoBean 전환
-- 버그: V218(allocation_rate INTEGER), findByIdForDetailWithTags 제거, calendar LazyInit 수정(findForMonth + findAssignableUsers JOIN FETCH 추가)
-- 문서: SECURITY_AND_PERMISSION.md 신설, 6개 파일 archive 이동
-- 테스트: 투입 관련 5개 클래스 신규(212케이스), 캘린더 템플릿 렌더링 검증 추가
-- Flyway 현재 V218, 다음 V219부터. security-lint 15/15 PASS. Docker /health OK.
+2026-05-28: 5+9단계 커밋(3aea5c0) 완료.
+- V223 적용 — project_assignments에서 project_name·client_name·memo 컬럼 DROP
+- ProjectAssignment 엔티티: Project FK 기반으로 재편, create/update 팩토리 삭제
+- ProjectAssignmentService/Controller: create·update 메서드 삭제, delete만 유지
+- calendar.html: "투입 등록" → "프로젝트 등록" 모달 (POST /admin/projects)
+- 테스트: ProjectAssignmentRequest 관련 테스트 전량 삭제, makeAssignment() 헬퍼 업데이트
+- Flyway 현재 V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. Docker v223 적용 확인.
+- 다음: 6단계(CalendarGridBuilder 재설계) 또는 8단계(bar 렌더링)
