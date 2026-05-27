@@ -83,6 +83,13 @@ public class ProjectAssignmentService {
         return new DeployStats(startingThisMonth, endingThisMonth, currentlyDeployed, notDeployed);
     }
 
+    /** 종료 임박 배정 목록 (대시보드 경고용) */
+    @Transactional(readOnly = true)
+    public List<ProjectAssignment> findEndingSoon(int withinDays) {
+        LocalDate today = LocalDate.now();
+        return assignmentRepository.findEndingSoon(today, today.plusDays(withinDays));
+    }
+
     /** 중복 경고 조회 — 저장을 막지는 않음 */
     @Transactional(readOnly = true)
     public List<ProjectAssignment> checkOverlap(Long userId, LocalDate start,

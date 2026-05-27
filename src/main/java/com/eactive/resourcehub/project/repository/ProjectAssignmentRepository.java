@@ -57,4 +57,12 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
            "WHERE pa.status != 'CANCELLED' AND pa.endDate BETWEEN :from AND :to")
     List<ProjectAssignment> findEndingBetween(@Param("from") LocalDate from,
                                                @Param("to")   LocalDate to);
+
+    /** 종료 임박 배정: ACTIVE 상태이고 endDate가 today~soonDate 사이 (대시보드 경고 목록용) */
+    @Query("SELECT pa FROM ProjectAssignment pa JOIN FETCH pa.user u " +
+           "WHERE pa.status = 'ACTIVE' " +
+           "  AND pa.endDate BETWEEN :today AND :soonDate " +
+           "ORDER BY pa.endDate ASC")
+    List<ProjectAssignment> findEndingSoon(@Param("today")    LocalDate today,
+                                            @Param("soonDate") LocalDate soonDate);
 }

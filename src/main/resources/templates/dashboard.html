@@ -69,13 +69,30 @@
         .mi-violet:hover { border-color: #7c3aed30; background: #f5f3ff; }
 
         /* ── 투입 현황 통계 카드 ── */
-        .deploy-stat { background: #fff; border-radius: 10px; border: 1.5px solid #e9ecef; padding: .7rem .85rem; }
+        .deploy-stat { background: #fff; border-radius: 10px; border: 1.5px solid #e9ecef; padding: .7rem .85rem; transition: border-color .15s, box-shadow .15s; }
+        .deploy-stat.clickable { cursor: pointer; text-decoration: none; display: block; }
+        .deploy-stat.clickable:hover { border-color: #c7d2fe; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
         .deploy-stat .ds-num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
         .deploy-stat .ds-label { font-size: .72rem; color: #6c757d; margin-top: .15rem; }
         .ds-blue   .ds-num { color: #2563eb; }
         .ds-orange .ds-num { color: #d97706; }
         .ds-green  .ds-num { color: #16a34a; }
         .ds-gray   .ds-num { color: #6b7280; }
+
+        /* ── 종료 임박 카드 ── */
+        .ending-soon-card { background: #fff; border-radius: 10px; border: 1.5px solid #fed7aa; padding: .65rem .85rem; }
+        .ending-soon-card .esc-header { font-size: .72rem; font-weight: 700; color: #c2410c; margin-bottom: .45rem; display: flex; align-items: center; gap: .3rem; }
+        .esc-row { display: flex; align-items: center; gap: .5rem; padding: .3rem 0; border-bottom: 1px solid #fef3c7; font-size: .78rem; }
+        .esc-row:last-child { border-bottom: none; }
+        .esc-name { font-weight: 600; color: #374151; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .esc-project { color: #6b7280; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .esc-days { font-weight: 700; font-size: .75rem; white-space: nowrap; padding: .1rem .4rem; border-radius: 4px; }
+        .esc-days.urgent { background: #fee2e2; color: #dc2626; }
+        .esc-days.warning { background: #fef3c7; color: #d97706; }
+        .esc-empty { font-size: .78rem; color: #9ca3af; text-align: center; padding: .4rem 0; }
+        .esc-footer { margin-top: .4rem; text-align: right; }
+        .esc-footer a { font-size: .72rem; color: #7c3aed; text-decoration: none; font-weight: 600; }
+        .esc-footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -220,31 +237,70 @@
             <div th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}">
                 <div class="menu-section-label"><i class="bi bi-bar-chart-line-fill"></i> 영업·인력</div>
 
-                <!-- 투입 현황 요약 카드 -->
+                <!-- ── 투입 현황 요약 카드 (숫자 클릭 → 캘린더) ── -->
                 <div th:if="${deployStats != null}" class="row g-2 mb-2">
                     <div class="col-6 col-sm-3">
-                        <div class="deploy-stat ds-blue">
-                            <div class="ds-num" th:text="${deployStats.startingThisMonth}">0</div>
-                            <div class="ds-label"><i class="bi bi-play-fill me-1"></i>이번달 투입 시작</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-3">
-                        <div class="deploy-stat ds-orange">
-                            <div class="ds-num" th:text="${deployStats.endingThisMonth}">0</div>
-                            <div class="ds-label"><i class="bi bi-stop-fill me-1"></i>이번달 투입 종료</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-3">
-                        <div class="deploy-stat ds-green">
+                        <a th:href="@{/sales/calendar(status='ACTIVE')}"
+                           class="deploy-stat ds-green clickable">
                             <div class="ds-num" th:text="${deployStats.currentlyDeployed}">0</div>
                             <div class="ds-label"><i class="bi bi-person-check-fill me-1"></i>현재 투입 중</div>
-                        </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <a th:href="@{/sales/calendar(status='PLANNED')}"
+                           class="deploy-stat ds-blue clickable">
+                            <div class="ds-num" th:text="${deployStats.startingThisMonth}">0</div>
+                            <div class="ds-label"><i class="bi bi-play-fill me-1"></i>이번달 투입 예정</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <a th:href="@{/sales/calendar}"
+                           class="deploy-stat ds-orange clickable">
+                            <div class="ds-num" th:text="${deployStats.endingThisMonth}">0</div>
+                            <div class="ds-label"><i class="bi bi-stop-fill me-1"></i>이번달 종료 예정</div>
+                        </a>
                     </div>
                     <div class="col-6 col-sm-3">
                         <div class="deploy-stat ds-gray">
                             <div class="ds-num" th:text="${deployStats.notDeployed}">0</div>
                             <div class="ds-label"><i class="bi bi-person-dash me-1"></i>미투입</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- ── 종료 14일 이내 임박 경고 ── -->
+                <div class="ending-soon-card mb-2">
+                    <div class="esc-header">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        종료 14일 이내
+                        <span class="ms-auto fw-normal text-muted"
+                              th:text="${#lists.isEmpty(endingSoon) ? '' : (#lists.size(endingSoon) + '건')}"></span>
+                    </div>
+
+                    <!-- 목록 있음 -->
+                    <div th:each="pa, paStat : ${endingSoon}" th:if="${paStat.index < 5}">
+                        <div class="esc-row">
+                            <span class="esc-name" th:text="${pa.user.name}">이름</span>
+                            <span class="esc-project" th:text="${pa.projectName}">프로젝트</span>
+                            <span class="esc-days"
+                                  th:classappend="${pa.remainingDays() <= 7} ? 'urgent' : 'warning'"
+                                  th:text="${pa.remainingDays() + '일'}">D</span>
+                        </div>
+                    </div>
+
+                    <!-- 목록 없음 -->
+                    <div th:if="${#lists.isEmpty(endingSoon)}" class="esc-empty">
+                        <i class="bi bi-check-circle me-1"></i>종료 임박 배정 없음
+                    </div>
+
+                    <!-- 5건 초과 시 + 캘린더 이동 -->
+                    <div class="esc-footer">
+                        <span th:if="${#lists.size(endingSoon) > 5}" class="text-muted me-2"
+                              style="font-size:.72rem;"
+                              th:text="${'외 ' + (#lists.size(endingSoon) - 5) + '건'}"></span>
+                        <a th:href="@{/sales/calendar}">
+                            캘린더에서 전체 보기 <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
 
