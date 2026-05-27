@@ -50,6 +50,25 @@ public class ProjectAssignment extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String memo;
 
+    /** Project 엔티티 기반 배정 생성 (3단계 이후 신규 등록 경로). */
+    public static ProjectAssignment createForProject(Project project, User user,
+                                                      String role,
+                                                      LocalDate startDate, LocalDate endDate) {
+        ProjectAssignment pa = new ProjectAssignment();
+        pa.project     = project;
+        pa.user        = user;
+        pa.role        = role;
+        pa.startDate   = startDate;
+        pa.endDate     = endDate;
+        // 이전 컬럼(V223에서 제거 예정) 호환 유지
+        pa.projectName = project.getName();
+        pa.clientName  = project.getClientName();
+        pa.memo        = null;
+        pa.status      = LocalDate.now().isBefore(startDate)
+                         ? AssignmentStatus.PLANNED : AssignmentStatus.ACTIVE;
+        return pa;
+    }
+
     public static ProjectAssignment create(User user, String projectName, String clientName,
                                            String role, LocalDate startDate, LocalDate endDate,
                                            String memo) {
@@ -76,6 +95,15 @@ public class ProjectAssignment extends BaseEntity {
         this.endDate     = endDate;
         this.status      = status;
         this.memo        = memo;
+    }
+
+    /** 멤버 개인 기간·역할 수정 (ProjectService 전용). */
+    public void updateMember(String role, LocalDate startDate, LocalDate endDate,
+                              AssignmentStatus status) {
+        this.role      = role;
+        this.startDate = startDate;
+        this.endDate   = endDate;
+        if (status != null) this.status = status;
     }
 
     public void cancel() {

@@ -10,6 +10,12 @@ import java.util.List;
 
 public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssignment, Long> {
 
+    /** 특정 프로젝트의 전체 배정 목록 (이름순) */
+    @Query("SELECT pa FROM ProjectAssignment pa JOIN FETCH pa.user u LEFT JOIN FETCH u.team " +
+           "WHERE pa.project.id = :projectId AND pa.status != 'CANCELLED' " +
+           "ORDER BY u.name")
+    List<ProjectAssignment> findByProjectId(@Param("projectId") Long projectId);
+
     /** 특정 직원의 전체 배정 이력 (최신순) */
     @Query("SELECT pa FROM ProjectAssignment pa JOIN FETCH pa.user " +
            "WHERE pa.user.id = :userId ORDER BY pa.startDate DESC")
