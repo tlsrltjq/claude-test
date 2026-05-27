@@ -3,8 +3,7 @@ package com.eactive.resourcehub.project.service;
 import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.service.AuditService;
-import com.eactive.resourcehub.project.dto.ProjectAssignmentRequest;
-import com.eactive.resourcehub.project.entity.AssignmentStatus;
+import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.repository.ProjectAssignmentRepository;
 import com.eactive.resourcehub.user.entity.Position;
@@ -66,55 +65,6 @@ class ProjectAssignmentServiceTest {
         disabledUser = makeUser(4L, UserRole.EMPLOYEE, UserStatus.DISABLED);
     }
 
-    // ── 투입 등록 (create) ───────────────────────────────────────────
-
-    @Test
-    void ADMIN이_배정_등록하면_저장되고_감사_로그_기록() {
-        ProjectAssignmentRequest req = validReq(empUser.getId());
-        ProjectAssignment saved = makeAssignment(10L, empUser, TODAY, TODAY.plusDays(30));
-
-        when(userRepository.findById(empUser.getId())).thenReturn(Optional.of(empUser));
-        when(assignmentRepository.save(any())).thenReturn(saved);
-
-        ProjectAssignment result = service.create(req, adminUser.getId(), UserRole.ADMIN, httpReq);
-
-        assertNotNull(result);
-        verify(assignmentRepository).save(any(ProjectAssignment.class));
-        verify(auditService).log(eq(adminUser.getId()),
-                eq(AuditActionType.ASSIGN_PROJECT),
-                eq(AuditTargetType.PROJECT_ASSIGNMENT),
-                anyLong(), anyString(), eq(httpReq));
-    }
-
-    @Test
-    void ADMIN이_아니면_배정_등록_시_403() {
-        ProjectAssignmentRequest req = validReq(empUser.getId());
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.create(req, salesUser.getId(), UserRole.SALES, httpReq));
-        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
-        verify(assignmentRepository, never()).save(any());
-    }
-
-    @Test
-    void 비활성화_직원에게_배정_등록_시_예외() {
-        ProjectAssignmentRequest req = validReq(disabledUser.getId());
-        when(userRepository.findById(disabledUser.getId())).thenReturn(Optional.of(disabledUser));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> service.create(req, adminUser.getId(), UserRole.ADMIN, httpReq));
-        verify(assignmentRepository, never()).save(any());
-    }
-
-    @Test
-    void 존재하지_않는_직원에게_배정_등록_시_예외() {
-        ProjectAssignmentRequest req = validReq(999L);
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class,
-                () -> service.create(req, adminUser.getId(), UserRole.ADMIN, httpReq));
-    }
-
     // ── 투입 조회 ────────────────────────────────────────────────────
 
     @Test
@@ -160,40 +110,6 @@ class ProjectAssignmentServiceTest {
         service.findEndingSoon(14);
 
         verify(assignmentRepository).findEndingSoon(eq(TODAY), eq(TODAY.plusDays(14)));
-    }
-
-    // ── 투입 수정 (update) ───────────────────────────────────────────
-
-    @Test
-    void ADMIN이_배정_수정하면_감사_로그_기록() {
-        ProjectAssignment pa = makeAssignment(10L, empUser, TODAY, TODAY.plusDays(30));
-        when(assignmentRepository.findById(10L)).thenReturn(Optional.of(pa));
-
-        ProjectAssignmentRequest req = validReq(empUser.getId());
-        service.update(10L, req, adminUser.getId(), UserRole.ADMIN, httpReq);
-
-        verify(auditService).log(eq(adminUser.getId()),
-                eq(AuditActionType.UPDATE_ASSIGNMENT),
-                eq(AuditTargetType.PROJECT_ASSIGNMENT),
-                eq(10L), anyString(), eq(httpReq));
-    }
-
-    @Test
-    void ADMIN이_아니면_배정_수정_시_403() {
-        ProjectAssignmentRequest req = validReq(empUser.getId());
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.update(10L, req, salesUser.getId(), UserRole.SALES, httpReq));
-        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
-    }
-
-    @Test
-    void 존재하지_않는_배정_수정_시_예외() {
-        when(assignmentRepository.findById(999L)).thenReturn(Optional.empty());
-        ProjectAssignmentRequest req = validReq(empUser.getId());
-
-        assertThrows(IllegalArgumentException.class,
-                () -> service.update(999L, req, adminUser.getId(), UserRole.ADMIN, httpReq));
     }
 
     // ── 투입 삭제 (delete) ───────────────────────────────────────────
@@ -360,19 +276,9 @@ class ProjectAssignmentServiceTest {
     }
 
     private ProjectAssignment makeAssignment(long id, User user, LocalDate start, LocalDate end) {
-        ProjectAssignment pa = ProjectAssignment.create(
-                user, "테스트 프로젝트", "테스트 고객사", "개발자", start, end, null);
+        Project project = Project.create("테스트 프로젝트", "테스트 고객사", start, end, null);
+        ProjectAssignment pa = ProjectAssignment.createForProject(project, user, "개발자", start, end);
         ReflectionTestUtils.setField(pa, "id", id);
         return pa;
-    }
-
-    private ProjectAssignmentRequest validReq(Long userId) {
-        ProjectAssignmentRequest req = new ProjectAssignmentRequest();
-        req.setUserId(userId);
-        req.setProjectName("테스트 프로젝트");
-        req.setClientName("테스트 고객사");
-        req.setStartDate(TODAY);
-        req.setEndDate(TODAY.plusDays(30));
-        return req;
     }
 }

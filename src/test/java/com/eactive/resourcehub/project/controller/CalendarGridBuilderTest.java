@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.project.controller;
 
 import com.eactive.resourcehub.project.entity.AssignmentStatus;
+import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
@@ -165,9 +166,7 @@ class CalendarGridBuilderTest {
         ProjectAssignment pa = make(
                 LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 15));
         // ENDED는 그리드에 표시 (CANCELLED만 제외)
-        pa.update(pa.getProjectName(), pa.getClientName(), pa.getRole(),
-                pa.getStartDate(), pa.getEndDate(),
-                AssignmentStatus.ENDED, null);
+        pa.updateMember(pa.getRole(), pa.getStartDate(), pa.getEndDate(), AssignmentStatus.ENDED);
 
         Map<LocalDate, List<ProjectAssignment>> dayMap =
                 CalendarGridBuilder.buildDayMap(List.of(pa), ym);
@@ -179,7 +178,7 @@ class CalendarGridBuilderTest {
     // ── 헬퍼 ────────────────────────────────────────────────────────
 
     private ProjectAssignment make(LocalDate start, LocalDate end) {
-        return ProjectAssignment.create(user, "테스트 프로젝트", "테스트 고객사",
-                "개발자", start, end, null);
+        Project project = Project.create("테스트 프로젝트", "테스트 고객사", start, end, null);
+        return ProjectAssignment.createForProject(project, user, "개발자", start, end);
     }
 }

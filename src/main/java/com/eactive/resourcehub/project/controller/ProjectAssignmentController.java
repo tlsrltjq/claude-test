@@ -1,7 +1,6 @@
 package com.eactive.resourcehub.project.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
-import com.eactive.resourcehub.project.dto.ProjectAssignmentRequest;
 import com.eactive.resourcehub.project.entity.AssignmentStatus;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.service.ProjectAssignmentService;
@@ -57,52 +56,7 @@ public class ProjectAssignmentController {
         return "sales/calendar";
     }
 
-    // ── 배정 CRUD (ADMIN 전용 — 서비스에서 역할 검증) ────────────
-
-    @PostMapping("/sales/assignments")
-    public String create(
-            @ModelAttribute ProjectAssignmentRequest req,
-            @AuthenticationPrincipal CustomUserDetails details,
-            HttpServletRequest httpReq,
-            RedirectAttributes ra) {
-        try {
-            List<ProjectAssignment> overlaps = assignmentService.checkOverlap(
-                    req.getUserId(), req.getStartDate(), req.getEndDate(), null);
-            if (!overlaps.isEmpty()) {
-                ra.addFlashAttribute("overlapWarning",
-                        "겹치는 배정이 " + overlaps.size() + "건 있습니다. 확인 후 조정하세요.");
-            }
-            assignmentService.create(req, details.getUser().getId(),
-                    details.getUser().getRole(), httpReq);
-            ra.addFlashAttribute("success", "배정이 등록되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/sales/calendar";
-    }
-
-    @PostMapping("/sales/assignments/{id}")
-    public String update(
-            @PathVariable Long id,
-            @ModelAttribute ProjectAssignmentRequest req,
-            @AuthenticationPrincipal CustomUserDetails details,
-            HttpServletRequest httpReq,
-            RedirectAttributes ra) {
-        try {
-            List<ProjectAssignment> overlaps = assignmentService.checkOverlap(
-                    req.getUserId(), req.getStartDate(), req.getEndDate(), id);
-            if (!overlaps.isEmpty()) {
-                ra.addFlashAttribute("overlapWarning",
-                        "겹치는 배정이 " + overlaps.size() + "건 있습니다.");
-            }
-            assignmentService.update(id, req, details.getUser().getId(),
-                    details.getUser().getRole(), httpReq);
-            ra.addFlashAttribute("success", "배정이 수정되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/sales/calendar";
-    }
+    // ── 배정 삭제 (ADMIN 전용 — 서비스에서 역할 검증) ────────────
 
     @PostMapping("/sales/assignments/{id}/delete")
     public String delete(
@@ -119,5 +73,4 @@ public class ProjectAssignmentController {
         }
         return "redirect:/sales/calendar";
     }
-
 }

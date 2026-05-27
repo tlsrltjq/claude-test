@@ -25,14 +25,8 @@ public class ProjectAssignment extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
+    @JoinColumn(name = "project_id", nullable = false)
     private Project project;
-
-    @Column(nullable = false, length = 200)
-    private String projectName;
-
-    @Column(length = 200)
-    private String clientName;
 
     @Column(length = 100)
     private String role;
@@ -47,54 +41,18 @@ public class ProjectAssignment extends BaseEntity {
     @Column(nullable = false, length = 20)
     private AssignmentStatus status;
 
-    @Column(columnDefinition = "TEXT")
-    private String memo;
-
-    /** Project 엔티티 기반 배정 생성 (3단계 이후 신규 등록 경로). */
     public static ProjectAssignment createForProject(Project project, User user,
                                                       String role,
                                                       LocalDate startDate, LocalDate endDate) {
         ProjectAssignment pa = new ProjectAssignment();
-        pa.project     = project;
-        pa.user        = user;
-        pa.role        = role;
-        pa.startDate   = startDate;
-        pa.endDate     = endDate;
-        // 이전 컬럼(V223에서 제거 예정) 호환 유지
-        pa.projectName = project.getName();
-        pa.clientName  = project.getClientName();
-        pa.memo        = null;
-        pa.status      = LocalDate.now().isBefore(startDate)
-                         ? AssignmentStatus.PLANNED : AssignmentStatus.ACTIVE;
+        pa.project   = project;
+        pa.user      = user;
+        pa.role      = role;
+        pa.startDate = startDate;
+        pa.endDate   = endDate;
+        pa.status    = LocalDate.now().isBefore(startDate)
+                       ? AssignmentStatus.PLANNED : AssignmentStatus.ACTIVE;
         return pa;
-    }
-
-    public static ProjectAssignment create(User user, String projectName, String clientName,
-                                           String role, LocalDate startDate, LocalDate endDate,
-                                           String memo) {
-        ProjectAssignment pa = new ProjectAssignment();
-        pa.user           = user;
-        pa.projectName    = projectName;
-        pa.clientName     = clientName;
-        pa.role           = role;
-        pa.startDate      = startDate;
-        pa.endDate        = endDate;
-        pa.memo           = memo;
-        pa.status         = LocalDate.now().isBefore(startDate)
-                            ? AssignmentStatus.PLANNED : AssignmentStatus.ACTIVE;
-        return pa;
-    }
-
-    public void update(String projectName, String clientName, String role,
-                       LocalDate startDate, LocalDate endDate,
-                       AssignmentStatus status, String memo) {
-        this.projectName = projectName;
-        this.clientName  = clientName;
-        this.role        = role;
-        this.startDate   = startDate;
-        this.endDate     = endDate;
-        this.status      = status;
-        this.memo        = memo;
     }
 
     /** 멤버 개인 기간·역할 수정 (ProjectService 전용). */

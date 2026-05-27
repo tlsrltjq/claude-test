@@ -281,7 +281,7 @@
                     <div th:each="pa, paStat : ${endingSoon}" th:if="${paStat.index < 5}">
                         <div class="esc-row">
                             <span class="esc-name" th:text="${pa.user.name}">이름</span>
-                            <span class="esc-project" th:text="${pa.projectName}">프로젝트</span>
+                            <span class="esc-project" th:text="${pa.project.name}">프로젝트</span>
                             <span class="esc-days"
                                   th:classappend="${pa.remainingDays() <= 7} ? 'urgent' : 'warning'"
                                   th:text="${pa.remainingDays() + '일'}">D</span>

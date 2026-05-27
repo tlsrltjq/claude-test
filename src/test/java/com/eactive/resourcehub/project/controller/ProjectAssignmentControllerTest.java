@@ -2,7 +2,7 @@ package com.eactive.resourcehub.project.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.common.security.CustomUserDetailsService;
-import com.eactive.resourcehub.project.entity.AssignmentStatus;
+import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.service.ProjectAssignmentService;
 import com.eactive.resourcehub.team.entity.Team;
@@ -14,12 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -135,10 +132,11 @@ class ProjectAssignmentControllerTest {
         when(assignmentService.findAssignableUsers())
                 .thenReturn(List.of(userWithoutTeam));
 
+        // 팀 없는 유저도 NPE 없이 200 OK 반환되고, 모달 체크박스에 이름이 렌더링됨
         mockMvc.perform(get("/sales/calendar")
                         .with(user(new CustomUserDetails(adminUser))))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("미배정")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("사용자5")));
     }
 
     // ── POST /sales/assignments — CSRF 검증 ─────────────────────────
@@ -167,99 +165,6 @@ class ProjectAssignmentControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    // ── POST /sales/assignments — 등록 흐름 ─────────────────────────
-
-    @Test
-    void ADMIN_CSRF_포함_배정_등록_성공_후_리다이렉트() throws Exception {
-        ProjectAssignment saved = makeAssignment(empUser);
-        when(assignmentService.checkOverlap(any(), any(), any(), any())).thenReturn(List.of());
-        when(assignmentService.create(any(), anyLong(), any(), any())).thenReturn(saved);
-
-        mockMvc.perform(post("/sales/assignments")
-                        .with(user(new CustomUserDetails(adminUser)))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("userId",         String.valueOf(empUser.getId()))
-                        .param("projectName",    "테스트 프로젝트")
-                        .param("startDate",      TODAY.toString())
-                        .param("endDate",        TODAY.plusDays(30).toString()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/sales/calendar"));
-    }
-
-    @Test
-    void SALES_CSRF_포함_배정_등록_시_서비스가_403_반환() throws Exception {
-        when(assignmentService.checkOverlap(any(), any(), any(), any())).thenReturn(List.of());
-        when(assignmentService.create(any(), anyLong(), any(), any()))
-                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "관리자만 배정을 관리할 수 있습니다."));
-
-        mockMvc.perform(post("/sales/assignments")
-                        .with(user(new CustomUserDetails(salesUser)))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("userId",         String.valueOf(empUser.getId()))
-                        .param("projectName",    "테스트 프로젝트")
-                        .param("startDate",      TODAY.toString())
-                        .param("endDate",        TODAY.plusDays(30).toString()))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void 겹치는_배정이_있으면_등록_후_경고_플래시_속성_설정() throws Exception {
-        ProjectAssignment overlap = makeAssignment(empUser);
-        ProjectAssignment saved   = makeAssignment(empUser);
-        when(assignmentService.checkOverlap(any(), any(), any(), any())).thenReturn(List.of(overlap));
-        when(assignmentService.create(any(), anyLong(), any(), any())).thenReturn(saved);
-
-        mockMvc.perform(post("/sales/assignments")
-                        .with(user(new CustomUserDetails(adminUser)))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("userId",         String.valueOf(empUser.getId()))
-                        .param("projectName",    "테스트 프로젝트")
-                        .param("startDate",      TODAY.toString())
-                        .param("endDate",        TODAY.plusDays(30).toString()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attributeExists("overlapWarning"));
-    }
-
-    @Test
-    void 입력_오류이면_에러_플래시_속성_설정() throws Exception {
-        when(assignmentService.checkOverlap(any(), any(), any(), any()))
-                .thenThrow(new IllegalArgumentException("투입 기간을 입력해야 합니다."));
-
-        mockMvc.perform(post("/sales/assignments")
-                        .with(user(new CustomUserDetails(adminUser)))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("userId",      String.valueOf(empUser.getId()))
-                        .param("projectName", "테스트 프로젝트"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attributeExists("error"));
-    }
-
-    // ── POST /sales/assignments/{id} — 수정 흐름 ────────────────────
-
-    @Test
-    void ADMIN_CSRF_포함_배정_수정_성공() throws Exception {
-        ProjectAssignment updated = makeAssignment(empUser);
-        when(assignmentService.checkOverlap(any(), any(), any(), any())).thenReturn(List.of());
-        when(assignmentService.update(anyLong(), any(), anyLong(), any(), any())).thenReturn(updated);
-
-        mockMvc.perform(post("/sales/assignments/10")
-                        .with(user(new CustomUserDetails(adminUser)))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("userId",         String.valueOf(empUser.getId()))
-                        .param("projectName",    "수정 프로젝트")
-                        .param("startDate",      TODAY.toString())
-                        .param("endDate",        TODAY.plusDays(60).toString())
-                        .param("status",         AssignmentStatus.ACTIVE.name()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/sales/calendar"));
-    }
-
     // ── POST /sales/assignments/{id}/delete — 삭제 흐름 ─────────────
 
     @Test
@@ -283,9 +188,10 @@ class ProjectAssignmentControllerTest {
     }
 
     private ProjectAssignment makeAssignment(User user) {
-        ProjectAssignment pa = ProjectAssignment.create(
-                user, "테스트 프로젝트", "테스트 고객사", "개발자",
+        Project project = Project.create("테스트 프로젝트", "테스트 고객사",
                 TODAY, TODAY.plusDays(30), null);
+        ProjectAssignment pa = ProjectAssignment.createForProject(
+                project, user, "개발자", TODAY, TODAY.plusDays(30));
         ReflectionTestUtils.setField(pa, "id", 10L);
         return pa;
     }

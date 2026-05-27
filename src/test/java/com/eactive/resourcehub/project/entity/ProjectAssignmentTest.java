@@ -1,5 +1,6 @@
 package com.eactive.resourcehub.project.entity;
 
+import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,24 +58,27 @@ class ProjectAssignmentTest {
         assertEquals(AssignmentStatus.CANCELLED, pa.getStatus());
     }
 
-    // ── update() ────────────────────────────────────────────────────
+    // ── updateMember() ──────────────────────────────────────────────
 
     @Test
-    void update_호출_시_모든_필드_반영() {
+    void updateMember_호출_시_역할_기간_상태_반영() {
         ProjectAssignment pa = make(TODAY, TODAY.plusDays(30));
-        pa.update("신프로젝트", "신고객사", "신역할",
-                TODAY.plusDays(5), TODAY.plusDays(60),
-                AssignmentStatus.ENDED, "신메모");
+        pa.updateMember("신역할", TODAY.plusDays(5), TODAY.plusDays(60), AssignmentStatus.ENDED);
 
         assertAll(
-                () -> assertEquals("신프로젝트",           pa.getProjectName()),
-                () -> assertEquals("신고객사",             pa.getClientName()),
                 () -> assertEquals("신역할",               pa.getRole()),
                 () -> assertEquals(TODAY.plusDays(5),     pa.getStartDate()),
                 () -> assertEquals(TODAY.plusDays(60),    pa.getEndDate()),
-                () -> assertEquals(AssignmentStatus.ENDED, pa.getStatus()),
-                () -> assertEquals("신메모",               pa.getMemo())
+                () -> assertEquals(AssignmentStatus.ENDED, pa.getStatus())
         );
+    }
+
+    @Test
+    void updateMember_status_null이면_기존_상태_유지() {
+        ProjectAssignment pa = make(TODAY, TODAY.plusDays(30));
+        AssignmentStatus before = pa.getStatus();
+        pa.updateMember("역할변경", TODAY, TODAY.plusDays(30), null);
+        assertEquals(before, pa.getStatus());
     }
 
     // ── remainingDays() ─────────────────────────────────────────────
@@ -146,7 +150,8 @@ class ProjectAssignmentTest {
     // ── 헬퍼 ────────────────────────────────────────────────────────
 
     private ProjectAssignment make(LocalDate start, LocalDate end) {
-        return ProjectAssignment.create(user, "테스트 프로젝트", "테스트 고객사",
-                "개발자", start, end, null);
+        Project project = Project.create("테스트 프로젝트", "테스트 고객사",
+                start, end, null);
+        return ProjectAssignment.createForProject(project, user, "개발자", start, end);
     }
 }

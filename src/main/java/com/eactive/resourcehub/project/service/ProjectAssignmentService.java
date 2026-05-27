@@ -3,7 +3,6 @@ package com.eactive.resourcehub.project.service;
 import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.service.AuditService;
-import com.eactive.resourcehub.project.dto.ProjectAssignmentRequest;
 import com.eactive.resourcehub.project.entity.AssignmentStatus;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.repository.ProjectAssignmentRepository;
@@ -71,7 +70,7 @@ public class ProjectAssignmentService {
                 .collect(Collectors.toMap(
                         pa -> pa.getUser().getId(),
                         pa -> pa,
-                        (a, b) -> a));  // ORDER BY startDate ASC이므로 첫 번째가 가장 빠름
+                        (a, b) -> a));
     }
 
     /** 대시보드 통계 */
@@ -107,7 +106,7 @@ public class ProjectAssignmentService {
         return assignmentRepository.findOverlapping(userId, start, end, excludeId);
     }
 
-    /** 배정 등록 폼용 활성 직원 목록 */
+    /** 인력표·캘린더 모달용 활성 직원 목록 */
     @Transactional(readOnly = true)
     public List<User> findAssignableUsers() {
         return userRepository.findByStatusWithTeam(UserStatus.ACTIVE).stream()
@@ -116,56 +115,13 @@ public class ProjectAssignmentService {
                 .collect(Collectors.toList());
     }
 
-    // ── 쓰기 (ADMIN 전용) ─────────────────────────────────────────
-
-    @Transactional
-    public ProjectAssignment create(ProjectAssignmentRequest req, Long actorId,
-                                    UserRole actorRole, HttpServletRequest httpReq) {
-        requireAdmin(actorRole);
-        req.validate();
-
-        User target = userRepository.findById(req.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직원입니다."));
-        if (target.getStatus() == UserStatus.DISABLED)
-            throw new IllegalArgumentException("비활성화된 직원에게는 배정을 생성할 수 없습니다.");
-
-        ProjectAssignment pa = ProjectAssignment.create(
-                target, req.getProjectName(), req.getClientName(),
-                req.getRole(), req.getStartDate(), req.getEndDate(),
-                req.getMemo());
-        ProjectAssignment saved = assignmentRepository.save(pa);
-
-        log.info("프로젝트 배정 생성 — id={}, user={}, project={}",
-                saved.getId(), target.getName(), saved.getProjectName());
-        auditService.log(actorId, AuditActionType.ASSIGN_PROJECT,
-                AuditTargetType.PROJECT_ASSIGNMENT, saved.getId(),
-                target.getName() + " → " + saved.getProjectName(), httpReq);
-        return saved;
-    }
-
-    @Transactional
-    public ProjectAssignment update(Long id, ProjectAssignmentRequest req, Long actorId,
-                                    UserRole actorRole, HttpServletRequest httpReq) {
-        requireAdmin(actorRole);
-        req.validate();
-
-        ProjectAssignment pa = findById(id);
-        pa.update(req.getProjectName(), req.getClientName(), req.getRole(),
-                  req.getStartDate(), req.getEndDate(),
-                  req.getStatus(), req.getMemo());
-
-        log.info("프로젝트 배정 수정 — id={}, project={}", id, pa.getProjectName());
-        auditService.log(actorId, AuditActionType.UPDATE_ASSIGNMENT,
-                AuditTargetType.PROJECT_ASSIGNMENT, id,
-                "배정 수정: " + pa.getProjectName(), httpReq);
-        return pa;
-    }
+    // ── 삭제 (ADMIN 전용) ─────────────────────────────────────────
 
     @Transactional
     public void delete(Long id, Long actorId, UserRole actorRole, HttpServletRequest httpReq) {
         requireAdmin(actorRole);
         ProjectAssignment pa = findById(id);
-        String desc = pa.getUser().getName() + " → " + pa.getProjectName();
+        String desc = pa.getUser().getName() + " → " + pa.getProject().getName();
         assignmentRepository.delete(pa);
 
         log.info("프로젝트 배정 삭제 — id={}", id);
@@ -192,7 +148,8 @@ public class ProjectAssignmentService {
             if (!name.toLowerCase().contains(qEmployee.toLowerCase())) return false;
         }
         if (qProject != null && !qProject.isBlank()) {
-            if (!pa.getProjectName().toLowerCase().contains(qProject.toLowerCase())) return false;
+            String projectName = pa.getProject().getName();
+            if (!projectName.toLowerCase().contains(qProject.toLowerCase())) return false;
         }
         if (statusFilter != null && pa.getStatus() != statusFilter) return false;
         return true;

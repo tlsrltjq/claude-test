@@ -165,7 +165,7 @@ public class ProjectService {
                              HttpServletRequest httpReq) {
         requireAdmin(actorRole);
         ProjectAssignment pa = findAssignment(assignmentId);
-        String desc = pa.getUser().getName() + " → " + pa.getProjectName();
+        String desc = pa.getUser().getName() + " → " + pa.getProject().getName();
         assignmentRepository.delete(pa);
 
         log.info("프로젝트 멤버 제거 — assignmentId={}", assignmentId);

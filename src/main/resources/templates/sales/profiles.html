@@ -532,15 +532,15 @@
                                            nxt=${nextAssignments != null ? nextAssignments[row.user.id] : null}">
                             <span th:if="${cur != null}" class="d-flex flex-column gap-1">
                                 <span><span class="badge bg-success" style="font-size:.7rem">투입 중</span></span>
-                                <span class="assign-name" th:text="${cur.projectName}"></span>
-                                <span class="assign-sub" th:text="${cur.clientName}"></span>
+                                <span class="assign-name" th:text="${cur.project.name}"></span>
+                                <span class="assign-sub" th:text="${cur.project.clientName}"></span>
                                 <span th:with="days=${cur.remainingDays()}"
                                       th:class="${days <= 14 ? 'assign-end-urgent' : 'assign-end-normal'}"
                                       th:text="${'~' + #temporals.format(cur.endDate, 'MM/dd') + ' (' + days + '일)'}"></span>
                             </span>
                             <span th:if="${cur == null and nxt != null}" class="d-flex flex-column gap-1">
                                 <span><span class="badge bg-primary" style="font-size:.7rem">투입 예정</span></span>
-                                <span class="assign-name" th:text="${nxt.projectName}"></span>
+                                <span class="assign-name" th:text="${nxt.project.name}"></span>
                                 <span class="assign-sub" th:text="${#temporals.format(nxt.startDate, 'MM/dd') + ' 시작'}"></span>
                             </span>
                             <span th:if="${cur == null and nxt == null}">
