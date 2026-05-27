@@ -24,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -52,6 +53,15 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public List<ProjectAssignment> getMembersForProject(Long projectId) {
         return assignmentRepository.findByProjectId(projectId);
+    }
+
+    /** 프로젝트 멤버 추가 모달용 활성 직원 목록 (ADMIN 제외, 이름순) */
+    @Transactional(readOnly = true)
+    public List<User> findAssignableUsers() {
+        return userRepository.findByStatusWithTeam(UserStatus.ACTIVE).stream()
+                .filter(u -> u.getRole() != UserRole.ADMIN)
+                .sorted(Comparator.comparing(User::getName))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // ── 프로젝트 CRUD (ADMIN 전용) ────────────────────────────────
