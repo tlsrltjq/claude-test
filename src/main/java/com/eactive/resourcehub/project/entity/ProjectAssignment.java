@@ -24,6 +24,10 @@ public class ProjectAssignment extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
     @Column(nullable = false, length = 200)
     private String projectName;
 
