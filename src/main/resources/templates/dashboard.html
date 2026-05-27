@@ -65,6 +65,17 @@
         .mi-green:hover { border-color: #19875430; background: #f0fbf5; }
         .mi-amber  .icon-wrap { background: #fff8e1; color: #d97706; }
         .mi-amber:hover { border-color: #d9770630; background: #fffbf0; }
+        .mi-violet .icon-wrap { background: #ede9fe; color: #7c3aed; }
+        .mi-violet:hover { border-color: #7c3aed30; background: #f5f3ff; }
+
+        /* ── 투입 현황 통계 카드 ── */
+        .deploy-stat { background: #fff; border-radius: 10px; border: 1.5px solid #e9ecef; padding: .7rem .85rem; }
+        .deploy-stat .ds-num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+        .deploy-stat .ds-label { font-size: .72rem; color: #6c757d; margin-top: .15rem; }
+        .ds-blue   .ds-num { color: #2563eb; }
+        .ds-orange .ds-num { color: #d97706; }
+        .ds-green  .ds-num { color: #16a34a; }
+        .ds-gray   .ds-num { color: #6b7280; }
     </style>
 </head>
 <body>
@@ -208,6 +219,35 @@
             <!-- 영업·인력 (SALES, ADMIN) -->
             <div th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}">
                 <div class="menu-section-label"><i class="bi bi-bar-chart-line-fill"></i> 영업·인력</div>
+
+                <!-- 투입 현황 요약 카드 -->
+                <div th:if="${deployStats != null}" class="row g-2 mb-2">
+                    <div class="col-6 col-sm-3">
+                        <div class="deploy-stat ds-blue">
+                            <div class="ds-num" th:text="${deployStats.startingThisMonth}">0</div>
+                            <div class="ds-label"><i class="bi bi-play-fill me-1"></i>이번달 투입 시작</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="deploy-stat ds-orange">
+                            <div class="ds-num" th:text="${deployStats.endingThisMonth}">0</div>
+                            <div class="ds-label"><i class="bi bi-stop-fill me-1"></i>이번달 투입 종료</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="deploy-stat ds-green">
+                            <div class="ds-num" th:text="${deployStats.currentlyDeployed}">0</div>
+                            <div class="ds-label"><i class="bi bi-person-check-fill me-1"></i>현재 투입 중</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="deploy-stat ds-gray">
+                            <div class="ds-num" th:text="${deployStats.notDeployed}">0</div>
+                            <div class="ds-label"><i class="bi bi-person-dash me-1"></i>미투입</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="menu-grid">
                     <a th:href="@{/sales/members}" class="menu-item mi-indigo">
                         <div class="icon-wrap"><i class="bi bi-person-lines-fill"></i></div>
@@ -216,6 +256,10 @@
                     <a th:href="@{/sales/profiles}" class="menu-item mi-indigo">
                         <div class="icon-wrap"><i class="bi bi-table"></i></div>
                         <span class="label">인력 표</span>
+                    </a>
+                    <a th:href="@{/sales/calendar}" class="menu-item mi-violet">
+                        <div class="icon-wrap"><i class="bi bi-calendar-range-fill"></i></div>
+                        <span class="label">투입 캘린더</span>
                     </a>
                     <a th:href="@{/sales/career-calculator}" class="menu-item mi-amber">
                         <div class="icon-wrap"><i class="bi bi-calculator-fill"></i></div>

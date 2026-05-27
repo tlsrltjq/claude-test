@@ -2,6 +2,7 @@ package com.eactive.resourcehub.user.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.employee.service.CareerSaveService;
+import com.eactive.resourcehub.project.service.ProjectAssignmentService;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.service.SettingsService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ public class DashboardController {
 
     private final SettingsService settingsService;
     private final CareerSaveService careerSaveService;
+    private final ProjectAssignmentService projectAssignmentService;
 
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -24,6 +26,8 @@ public class DashboardController {
 
         careerSaveService.findProfile(user.getId())
                 .ifPresent(ep -> model.addAttribute("profile", ep));
+
+        model.addAttribute("deployStats", projectAssignmentService.getDeployStats());
 
         return "dashboard";
     }

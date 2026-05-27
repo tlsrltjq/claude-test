@@ -7,5 +7,6 @@ public enum AuditTargetType {
     USER,
     PERMISSION,
     TEAM,
-    RESUME_TEMPLATE
+    RESUME_TEMPLATE,
+    PROJECT_ASSIGNMENT
 }

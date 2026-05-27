@@ -3,6 +3,7 @@ package com.eactive.resourcehub.security;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.common.security.CustomUserDetailsService;
 import com.eactive.resourcehub.employee.service.CareerSaveService;
+import com.eactive.resourcehub.project.service.ProjectAssignmentService;
 import com.eactive.resourcehub.user.controller.DashboardController;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
@@ -31,6 +32,7 @@ class SecurityAccessTest {
 
     @MockBean SettingsService settingsService;
     @MockBean CareerSaveService careerSaveService;
+    @MockBean ProjectAssignmentService projectAssignmentService;
     @MockBean CustomUserDetailsService customUserDetailsService;
 
     // ── 미인증 접근 ─────────────────────────────────────────────
