@@ -6,11 +6,11 @@
 
 ## 다음 구현 단계 (순서대로)
 
-- [ ] **1단계** — V219: `projects` 테이블 생성 + `Project` 엔티티·Repository·기본 Service
-- [ ] **2단계** — V220·V221: `project_assignments.project_id` 추가 + 기존 데이터 마이그레이션
+- [x] **1단계** — V220: `projects` 테이블 생성 + `Project` 엔티티·Repository
+- [ ] **2단계** — V221·V222: `project_assignments.project_id` 추가 + 기존 데이터 마이그레이션
 - [ ] **3단계** — `ProjectService` 구현 (생성·수정·삭제·인원 일괄 등록·추가·해제)
 - [ ] **4단계** — `ProjectController` 구현 (CRUD API + 상세 페이지)
-- [ ] **5단계** — V222: `project_assignments`에서 비정규화 컬럼 제거 (project_name·client_name·memo)
+- [ ] **5단계** — V223: `project_assignments`에서 비정규화 컬럼 제거 (project_name·client_name·memo)
 - [ ] **6단계** — `CalendarGridBuilder` 재설계 (Project 기반 dayMap)
 - [ ] **7단계** — `sales/project-detail.html` 신규 화면 (투입 직원 테이블·수정 모달)
 - [ ] **8단계** — `sales/calendar.html` 바(bar) 렌더링 적용
