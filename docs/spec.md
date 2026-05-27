@@ -1,7 +1,7 @@
 # 제품 기능 스펙
 
-> 현재 코드(V213 기준) 기반 기능 SSOT. "왜"는 `docs/decisions.md`, "어디"는 `docs/architecture.md`, "화면"은 `docs/frontend.md`.
-> 참고 소스: 각 Controller/Service, `SecurityConfig.java`, Flyway V1~V213
+> 현재 코드(V215 기준) 기반 기능 SSOT. "왜"는 `docs/decisions.md`, "어디"는 `docs/architecture.md`, "화면"은 `docs/frontend.md`.
+> 참고 소스: 각 Controller/Service, `SecurityConfig.java`, Flyway V1~V215
 
 ---
 
@@ -18,11 +18,12 @@
 
 - 경로: `GET/POST /signup`, `GET/POST /signup/verify`, `POST /signup/resend`
 - 흐름: 폼 입력 → 이메일 인증 코드 발송 → 코드 입력 → 계정 ACTIVE
-- 필수 입력: 이름, 생년월일, 연락처, 회사 이메일(prefix), 직급, 비밀번호
+- 필수 입력: 이름, 생년월일, 연락처, 회사 이메일(전체), 주소, 직급, 비밀번호, 개인정보 수집·이용 동의
 - 선택 입력: 팀
 - 비밀번호 정책: 영문·숫자·특수문자 포함, 8자 이상
 - 인증 코드: 10분 TTL, 재발송 가능
-- 이메일: `{prefix}@{company-email-domain}` 형식 강제. 도메인은 `resourcehub.company-email-domain` 환경변수
+- 이메일: 전체 이메일 주소 입력. 사전 등록된 이메일(`allowed_emails` 테이블)에 없으면 가입 차단
+- 개인정보 동의: 필수 동의 없으면 가입 불가
 - 가입 완료 시: ACTIVE 상태 즉시 활성화 + 개인 폴더 자동 생성 + EmployeeProfile 자동 생성
 
 ### 1-2. 로그인
@@ -40,9 +41,10 @@
 
 ### 1-4. 계정 설정
 
-- 경로: `GET /settings`, `POST /settings/profile`, `POST /settings/password`
-- 탭: 기본정보(연락처·생년월일), 비밀번호 변경
+- 경로: `GET /settings`, `POST /settings/info`, `POST /settings/profile`, `POST /settings/password`
+- 탭: 기본정보(`?tab=info` — 이름·주소·팀), 개인정보(`?tab=profile` — 연락처·생년월일), 비밀번호 변경(`?tab=password`)
 - 모든 역할 접근 가능
+- 직급은 관리자만 변경 가능 (ADMIN `/admin/employees/{id}/change-position`)
 
 ---
 
@@ -77,23 +79,14 @@
 ## 3. 공용 폴더
 
 - 경로: `GET /shared/folders/public`
-- `POST /shared/folders/public/documents` (ADMIN만)
-- `POST /shared/folders/public/documents/{documentId}/delete` (ADMIN만)
-- 전 사원 read. ADMIN만 업로드·삭제
+- `POST /shared/folders/public/documents` (전 인증 사용자)
+- `POST /shared/folders/public/documents/{documentId}/delete` (업로더 본인 또는 ADMIN)
+- 전 사원 read + 업로드. 삭제는 업로더 본인 또는 ADMIN
 - V207 시드로 생성된 단일 SHARED_PUBLIC 폴더 사용
 
 ---
 
-## 4. 공유 폴더 (권한 부여)
-
-- 경로: `GET /shared/folders`, `GET /shared/folders/{folderId}/documents`
-- ADMIN이 사원에게 타 사원 개인 폴더 접근 권한 부여 가능
-- 권한 부여/회수: `/admin/users/{userId}/permissions/grant|revoke`
-- 접근 권한자는 해당 폴더를 read-only로 볼 수 있음
-
----
-
-## 5. 문서 접근 (다운로드·미리보기·썸네일)
+## 4. 문서 접근 (다운로드·미리보기·썸네일)
 
 - 경로: `GET /documents/{documentVersionId}/download|preview|thumbnail`
 - `POST /documents/{documentVersionId}/thumbnail/regenerate`
@@ -106,7 +99,7 @@
 
 ---
 
-## 6. 검색
+## 5. 검색
 
 - 경로: `GET /search`
 - 본인 접근 권한 내 모든 문서 대상
@@ -114,14 +107,14 @@
 
 ---
 
-## 7. 내 활동
+## 6. 내 활동
 
 - 경로: `GET /my/activity`
 - 본인의 업로드·다운로드·삭제 감사 로그 조회
 
 ---
 
-## 8. 이력서 템플릿
+## 7. 이력서 템플릿
 
 - 경로: `GET /my/folder/resume-template/download` (사원), `GET /sales/resume-template/download` (영업)
 - 관리자 업로드: `GET/POST /admin/resume-template`
@@ -129,15 +122,15 @@
 
 ---
 
-## 9. 영업 기능 (SALES + ADMIN)
+## 8. 영업 기능 (SALES + ADMIN)
 
-### 9-1. 인력 조회
+### 8-1. 인력 조회
 
 - 경로: `GET /sales/members`, `GET /sales/members/{userId}/documents`
 - `GET /sales/employees/{userId}/documents`
 - 활성 직원 목록 + 직원별 문서 조회
 
-### 9-2. 프로필 (영업 인력표)
+### 8-2. 프로필 (영업 인력표)
 
 - 경로: `GET /sales/profiles`, `GET/POST /sales/profiles/export`
 - `POST /sales/profiles/bundle-download`
@@ -147,7 +140,7 @@
 - 엑셀 내보내기: 체크 선택된 사원 → xlsx
 - 번들 다운로드: 체크 선택된 사원의 이력서·경력 문서 → ZIP
 
-### 9-3. 경력 계산기
+### 8-3. 경력 계산기
 
 - 경로: `GET/POST /sales/career-calculator`, `POST /sales/career-calculator/save`
 - `GET /sales/career-calculator/autofill`
@@ -157,15 +150,15 @@
 
 ---
 
-## 10. 관리자 기능 (ADMIN 전용)
+## 9. 관리자 기능 (ADMIN 전용)
 
-### 10-1. 대시보드
+### 9-1. 대시보드
 
 - 경로: `GET /admin`
 - 통계 3개 (전체 사용자, 전체 팀, 검토 대기)
-- 빠른 메뉴 9개
+- 빠른 메뉴 10개(직원 관리·팀 관리·문서 검토·만료 현황·통계·재직증명서·양식이력서·인력표 팀 설정·파일 GC·가입 허용)
 
-### 10-2. 직원 관리
+### 9-2. 직원 관리
 
 - 경로: `GET /admin/employees`, `GET /admin/employees/{userId}`
 - `POST /admin/employees/{userId}/toggle-status`
@@ -176,43 +169,49 @@
 - 역할 변경: `POST /admin/users/{userId}/role` → 세션 즉시 만료(재로그인 시 새 권한 적용)
 - 권한 부여/회수: `POST /admin/users/{userId}/permissions/grant|revoke`
 
-### 10-3. 팀 관리
+### 9-3. 팀 관리
 
 - 경로: `GET/POST /admin/teams`, `GET/POST /admin/teams/{teamId}/update`
 - `POST /admin/teams/{teamId}/toggle-project`, `POST /admin/teams/{teamId}/delete`
 - `GET /admin/teams/project-settings` (인력표 노출 팀 설정)
 
-### 10-4. 문서 검토
+### 9-4. 문서 검토
 
 - 경로: `GET /admin/documents/review`, `GET /admin/documents/review/{documentVersionId}`
 - `POST /admin/documents/review/{documentVersionId}/approve|reject`
 - 검토 대기(`PENDING_REVIEW`) 문서 목록 → 승인/반려(반려 시 사유 필수)
 
-### 10-5. 만료 현황
+### 9-5. 만료 현황
 
 - 경로: `GET /admin/documents/expiry`
 - 만료된 문서 + 만료 임박 문서 목록
 
-### 10-6. 통계
+### 9-6. 통계
 
 - 경로: `GET /admin/statistics`
-- 다운로드 통계, 상위 문서 10건, 최근 30일 다운로드 이력
+- 다운로드 통계 (전체·오늘·최근 7일·이번 달) + 업로드 통계, 상위 문서 10건, 최근 30일 다운로드 이력, 최근 20건 업로드 이력
 
-### 10-7. 재직증명서
+### 9-7. 재직증명서
 
 - 경로: `GET/POST /admin/certificate`, `POST /admin/certificate/generate`
-- `POST /admin/certificate/create`, `GET /admin/certificate/download/{filename}`
-- Python Flask 컨테이너 호출 → DOCX·PDF 생성
+- `GET /admin/certificate/download/{filename}`
+- Python Flask 컨테이너 호출 → DOCX·PDF 생성. 최신 파일 강조 표시
 
-### 10-8. 파일 GC
+### 9-8. 파일 GC
 
 - 경로: `GET /admin/gc`, `POST /admin/gc/run`
 - 고아 파일(1시간 이상 된 soft-delete 파일) 수동 실행
 - 자동: 매일 02:00 cron (`@Scheduled`)
 
+### 9-9. 가입 허용 이메일 관리
+
+- 경로: `GET /admin/allowed-emails`, `POST /admin/allowed-emails`, `POST /admin/allowed-emails/{id}/delete`
+- 사전 등록된 이메일만 회원가입 허용 (`allowed_emails` 테이블)
+- 이메일 추가·삭제. 등록되지 않은 이메일은 회원가입 폼 제출 시 차단
+
 ---
 
-## 11. 접근 제어 요약
+## 10. 접근 제어 요약
 
 | 경로 패턴 | 허용 역할 |
 |-----------|----------|
@@ -225,7 +224,7 @@
 
 ---
 
-## 12. 보안 정책 (코딩 규칙)
+## 11. 보안 정책 (코딩 규칙)
 
 - JWT 금지 — 세션만 사용
 - Remember-Me 금지
@@ -238,7 +237,7 @@
 
 ---
 
-## 13. 외부 의존 서비스
+## 12. 외부 의존 서비스
 
 | 서비스 | 연결 | 비고 |
 |--------|------|------|

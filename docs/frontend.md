@@ -20,7 +20,7 @@
 
 ### 로그인 (`/login`)
 - 템플릿: `login.html`
-- 입력: 이메일 prefix, 비밀번호, ID 저장(localStorage)
+- 입력: 이메일(전체), 비밀번호, 이메일 기억(localStorage)
 - 오류: `?error` 파라미터 → 오류 메시지 표시
 - 로그아웃 후: `?logout` 파라미터 → 안내 메시지
 - 로그인 성공 → `/dashboard`
@@ -32,9 +32,11 @@
 
 ### 회원가입 (`/signup`, `/signup/verify`)
 - 템플릿: `signup.html`, `signup-verify.html`
-- 1단계: 이름·생년월일·연락처·이메일·직급·팀·비밀번호 입력
+- 1단계: 이름·생년월일·연락처·이메일(전체)·주소·직급·팀·비밀번호·개인정보 동의 입력
+  - 이메일: 전체 주소 입력 (`allowed_emails` 사전 등록된 이메일만 가입 가능)
   - 생년월일: 숫자 8자리 입력 → `.` 자동 삽입(YYYY.MM.DD 표시)
   - 비밀번호 강도 표시 바
+  - 개인정보 동의 모달 — 필수 체크 후 제출 가능
   - 폼 검증 실패 시 비밀번호 포함 모든 필드 값 유지 (sessionStorage 활용)
 - 2단계: 이메일 인증 코드 입력(10분 타이머), 재발송 가능
 
@@ -45,9 +47,11 @@
 
 ### 설정 (`/settings`)
 - 템플릿: `settings.html`
-- 탭: 기본정보 (`?tab=info`, 기본), 비밀번호 변경 (`?tab=password`)
-- 기본정보: 연락처·생년월일 수정
+- 탭: 기본정보 (`?tab=info`, 기본), 개인정보 (`?tab=profile`), 비밀번호 변경 (`?tab=password`)
+- 기본정보: 이름·주소·팀 수정
+- 개인정보: 연락처·생년월일 수정
 - 비밀번호: 현재 비밀번호 확인 후 변경
+- 직급·이메일은 수정 불가 (직급은 관리자만 변경)
 
 ### 검색 (`/search`)
 - 템플릿: `search.html`
@@ -87,18 +91,11 @@
 
 ## 공용 폴더 화면 (전 역할)
 
-### 공유 폴더 목록 (`/shared/folders`)
-- 템플릿: `shared/folders.html`
-- 권한 부여된 개인 폴더 목록 표시
-
-### 개인 폴더 문서 목록 (`/shared/folders/{folderId}/documents`)
-- 템플릿: `shared/folder-documents.html`
-- 권한 부여된 폴더의 APPROVED 문서 목록
-
 ### 공용 폴더 (`/shared/folders/public`)
 - 템플릿: `shared/public-folder.html`
-- 전 사원 read
-- ADMIN: 업로드·삭제 버튼 표시. 그 외: 표시 안 함
+- 전 사원 read + 업로드 가능
+- 삭제: 업로더 본인 또는 ADMIN만 가능
+- 업로드 패널: 모든 인증 사용자에게 표시
 
 ---
 
@@ -137,8 +134,8 @@
 ### 관리자 대시보드 (`/admin`)
 - 템플릿: `admin/dashboard.html`
 - 통계 카드 3개(전체 사용자·팀·검토 대기)
-- 빠른 메뉴 9개(직원 관리·팀 관리·문서 검토·만료 현황·통계·재직증명서·양식이력서·인력표 팀 설정·파일 GC)
-- 상단 네비바(문서검토·만료현황·팀관리·직원목록·재직증명서·통계·내화면·로그아웃)
+- 빠른 메뉴 10개(직원 관리·팀 관리·문서 검토·만료 현황·통계·재직증명서·양식이력서·인력표 팀 설정·파일 GC·가입 허용)
+- 상단 네비바(문서검토·만료현황·팀관리·직원목록·재직증명서·가입 허용·통계·내화면·로그아웃)
 
 ### 직원 목록 (`/admin/employees`)
 - 템플릿: `admin/employees.html`
@@ -184,7 +181,8 @@
 
 ### 통계 (`/admin/statistics`)
 - 템플릿: `admin/statistics.html`
-- 다운로드 통계, 상위 10 문서, 최근 30일 이력
+- 다운로드 통계 (전체·오늘·최근 7일·이번 달) + 업로드 통계 카드
+- 상위 10 문서, 최근 30일 다운로드 이력, 최근 20건 업로드 이력
 
 ### 이력서 템플릿 관리 (`/admin/resume-template`)
 - 템플릿: `admin/resume-template.html`
@@ -193,10 +191,17 @@
 ### 재직증명서 (`/admin/certificate`)
 - 템플릿: `admin/certificate.html`
 - 직원 선택 → DOCX·PDF 생성 → 다운로드
+- 최신 파일은 "최신" 배지 + 파란 배경으로 강조. 파일명 줄바꿈 처리(truncation 없음)
 
 ### 파일 GC (`/admin/gc`)
 - 템플릿: `admin/gc.html`
 - 보존 기간(retentionDays) 표시, 수동 GC 실행 버튼, 결과 메시지
+
+### 가입 허용 이메일 (`/admin/allowed-emails`)
+- 템플릿: `admin/allowed-emails.html`
+- 사전 등록 이메일 목록 표시
+- 이메일 추가(폼) / 삭제(개별) 기능
+- 관리자 네비바 모든 화면에 "가입 허용" 링크 포함
 
 ---
 

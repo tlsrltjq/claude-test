@@ -88,7 +88,7 @@
 | enum 값 | 설명 |
 |---------|------|
 | `PERSONAL` | 개인 폴더. 본인·ADMIN·SALES·권한 부여된 사용자만 접근 |
-| `SHARED_PUBLIC` | 전 사원 공용 폴더. 모든 인증 사용자 read. 업로드/삭제는 ADMIN만 |
+| `SHARED_PUBLIC` | 전 사원 공용 폴더. 모든 인증 사용자 read·업로드. 삭제는 업로더 본인 또는 ADMIN |
 
 ---
 
@@ -115,7 +115,7 @@
 | 용어 | 정의 |
 |------|------|
 | **개인 폴더** | 회원가입 완료 시 자동 생성되는 본인 전용 폴더 |
-| **공용 폴더** | `FolderType.SHARED_PUBLIC`. V207 시드로 생성. 전 사원 read |
+| **공용 폴더** | `FolderType.SHARED_PUBLIC`. V207 시드로 생성. 전 사원 read·업로드. 삭제는 업로더 본인 또는 ADMIN |
 | **번들 다운로드** | 영업이 체크한 여러 사원 프로필 문서를 ZIP으로 묶어 내려받는 기능 |
 | **경력 계산기** | 날짜 구간 입력 → 중복 제거 → 총 경력 계산. 결과를 EmployeeProfile에 저장 |
 | **재직증명서** | Python Flask 컨테이너(port 5001)가 DOCX·PDF 자동 생성 |
@@ -125,5 +125,5 @@
 | **썸네일** | PDF·이미지 문서의 미리보기 이미지. `ThumbnailService` 비동기 생성 |
 | **프리셋** | 영업이 자주 쓰는 프로필 조회 컬럼 조합을 `column_view_preferences`에 저장한 것 |
 | **프로젝트 팀** | `teams.project_team = true`인 팀. 영업 인력표에 표시 여부 관리 |
-| **loginId** | 회사 이메일 앞부분(prefix) — `@{company-email-domain}` 제외 |
+| **loginId** | 전체 회사 이메일 주소 — 로그인 아이디로 사용 |
 | **SSOT** | Single Source of Truth — 단일 출처 |

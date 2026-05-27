@@ -1,6 +1,6 @@
 # 데이터 모델
 
-> Flyway V1~V213 기준. 엔티티·테이블·관계·주요 제약조건.
+> Flyway V1~V215 기준. 엔티티·테이블·관계·주요 제약조건.
 > 참고 소스: `src/main/resources/db/migration/V*.sql`, `src/main/java/**/entity/*.java`
 
 ---
@@ -23,6 +23,7 @@ resume_templates (독립)
 password_reset_tokens ──> users
 email_verification_tokens ──> users (확인 필요: 별도 테이블)
 column_view_preferences ──> users
+allowed_emails (독립 — 회원가입 사전 허용 이메일 목록)
 ```
 
 ---
@@ -49,10 +50,11 @@ column_view_preferences ──> users
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | BIGSERIAL | PK | |
-| login_id | VARCHAR(100) | NOT NULL, UNIQUE | 이메일 prefix |
+| login_id | VARCHAR(100) | NOT NULL, UNIQUE | 전체 이메일 주소 (로그인 아이디로 사용) |
 | password | VARCHAR(255) | NOT NULL | BCrypt 해시 |
 | name | VARCHAR(100) | NOT NULL | |
-| email | VARCHAR(255) | NOT NULL, UNIQUE | 회사 이메일 full |
+| email | VARCHAR(255) | NOT NULL, UNIQUE | 회사 이메일 full (login_id와 동일) |
+| address | VARCHAR(255) | | 주소 (V214 추가) |
 | team_id | BIGINT | FK → teams.id | NULL 허용 |
 | position | VARCHAR(50) | NOT NULL DEFAULT 'STAFF' | Position enum (V102에서 정규화) |
 | birth_date | DATE | NOT NULL DEFAULT '1970-01-01' | (V102 추가) |
@@ -264,6 +266,19 @@ UNIQUE: `(user_id, name)`
 
 ---
 
+### allowed_emails
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | BIGSERIAL PK | |
+| email | VARCHAR(255) NOT NULL UNIQUE | 가입 허용 이메일 주소 |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+> V215 신설. 이 목록에 등록된 이메일만 회원가입 가능. 관리자가 `/admin/allowed-emails`에서 추가·삭제.
+
+---
+
 ## Flyway 마이그레이션 이력 요약
 
 | 버전 | 주요 내용 |
@@ -293,5 +308,7 @@ UNIQUE: `(user_id, name)`
 | V211 | partial unique index (folder_id, document_type, title) WHERE status <> 'DELETED' |
 | V212 | teams.project_team 컬럼. 영업본부·경영본부 = FALSE |
 | V213 | 기존 HEALTH_INSURANCE_PROOF 문서 일괄 soft-delete |
+| V214 | users.address 컬럼 추가 |
+| V215 | allowed_emails 테이블 신설 (이메일 사전등록 방식) |
 
-> 다음 마이그레이션은 **V214**부터.
+> 다음 마이그레이션은 **V216**부터.

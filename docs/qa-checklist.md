@@ -16,7 +16,9 @@ bash scripts/security-lint.sh   # 0 FAIL
 
 ## 1. 인증·계정
 
-- [ ] 회원가입 → 이메일 인증 코드 수신 → 코드 입력 → ACTIVE 전환
+- [ ] 허용 목록에 없는 이메일로 회원가입 → 오류 메시지
+- [ ] 허용 목록에 있는 이메일로 회원가입 → 이메일 인증 코드 수신 → 코드 입력 → ACTIVE 전환
+- [ ] 개인정보 동의 미체크 상태로 가입 제출 → 차단 (폼 유효성 오류)
 - [ ] 회원가입 폼 검증 실패 시 비밀번호 포함 모든 필드 값 유지
 - [ ] 생년월일 8자리 입력 → `.` 자동 삽입 확인
 - [ ] 비밀번호 강도 표시 바 동작 확인
@@ -61,8 +63,8 @@ bash scripts/security-lint.sh   # 0 FAIL
 
 - [ ] 다운로드 URL 직접 입력으로 다른 사용자 파일 접근 불가
 - [ ] 미리보기 URL 직접 입력으로 권한 없는 파일 접근 불가
-- [ ] 공용 폴더: 전 사원 다운로드 가능
-- [ ] 공용 폴더 업로드 버튼: ADMIN만 표시
+- [ ] 공용 폴더: 전 사원 다운로드 및 업로드 가능
+- [ ] 공용 폴더 삭제 버튼: 업로더 본인 또는 ADMIN만 표시
 
 ---
 
@@ -85,9 +87,11 @@ bash scripts/security-lint.sh   # 0 FAIL
 - [ ] 팀 생성·수정·삭제 동작
 - [ ] 인력표 팀 설정 토글 → `/sales/profiles` 반영 확인
 - [ ] 만료 현황 화면: 만료·임박 문서 표시
-- [ ] 통계 화면: 다운로드 통계 표시
+- [ ] 통계 화면: 다운로드 통계 + 업로드 통계 표시
 - [ ] 이력서 템플릿 업로드 → 사원 다운로드 확인
 - [ ] 파일 GC 수동 실행 → 결과 메시지 확인
+- [ ] 가입 허용 이메일 추가 → 해당 이메일로 회원가입 성공 확인
+- [ ] 가입 허용 이메일 삭제 → 해당 이메일로 회원가입 차단 확인
 
 ---
 
@@ -114,7 +118,6 @@ bash scripts/security-lint.sh   # 0 FAIL
 
 - [ ] `.env` 파일 모든 필수 환경변수 설정 확인
   - `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
-  - `RESOURCEHUB_COMPANY_EMAIL_DOMAIN`
   - `SPRING_MAIL_*` (SMTP 설정)
   - `CADDY_DOMAIN`
   - `RESOURCEHUB_UPLOAD_BASE_DIR` (또는 S3 설정)

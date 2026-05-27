@@ -42,7 +42,7 @@
 ## ADR-007: 스키마 변경은 Flyway 만, `ddl-auto: validate`
 - 결정: JPA 엔티티 변경 시 무조건 Flyway 마이그레이션 추가. `ddl-auto` 는 항상 `validate` (운영도 동일).
 - 이유: Hibernate auto-DDL 의 실수로 인한 운영 데이터 손실 방지. 마이그레이션은 코드 리뷰 대상.
-- 번호 규칙: V1–V6=MVP1, V100~=MVP2, V200~=MVP3·post-MVP3. 새 변경은 V214 이후.
+- 번호 규칙: V1–V6=MVP1, V100~=MVP2, V200~=MVP3·post-MVP3. 새 변경은 V216 이후.
 - 정적 검사: `scripts/security-lint.sh [12]`.
 
 ## ADR-008: 감사 로그는 REQUIRES_NEW
@@ -118,10 +118,10 @@
 - 결정: 모든 커밋 전 `bash scripts/security-lint.sh` 통과. 15개 항목 0 FAIL.
 - 이유: CI 미구축 단계에서도 최소한의 안전망.
 
-## ADR-024: 회원가입은 이메일 인증 후 즉시 활성화 (관리자 승인 제거)
-- 결정: MVP1 의 "관리자 승인 후 활성화" 단계를 폐기. 이메일 인증만 통과하면 `UserStatus.ACTIVE`. (commit `98c4bfc`)
-- 이유: 사내 도메인(`eactive.co.kr`) 기반이라 회사 메일 인증이 곧 신원 확인. 승인 대기열이 운영 부담만 증가.
-- 트레이드오프: 외부 협력사·계약직 유입 시 별도 화이트리스트 정책 필요.
+## ADR-024: 회원가입은 이메일 허용 목록 확인 + 이메일 인증 후 즉시 활성화 (관리자 승인 제거)
+- 결정: MVP1 의 "관리자 승인 후 활성화" 단계를 폐기. 대신 `allowed_emails` 테이블에 사전 등록된 이메일만 가입 허용. 이메일 인증 통과 시 `UserStatus.ACTIVE` 즉시 전환. (commit `98c4bfc`, 기능 개편)
+- 이유: 이메일 인증만으로는 임의 주소 가입 차단 불가. 허용 목록을 관리자가 관리함으로써 신원 확인 책임을 명확히 함. 승인 대기열 운영 부담 제거.
+- 트레이드오프: 관리자가 이메일을 사전 등록해야 하는 절차 추가.
 - 재검토 조건: 사외 사용자 가입을 받게 될 때.
 
 ## ADR-025: 비밀번호 복잡도 정책
@@ -148,9 +148,9 @@
 - 이유: 권한 강등 후에도 기존 세션이 살아있으면 다음 요청까지 옛 권한 유지 — 보안 사고.
 - 구현: `SecurityConfig.maximumSessions(-1).sessionRegistry(sessionRegistry())` + `EmployeeManagementService.toggleStatus()` 가 SessionRegistry 에서 expireNow 호출.
 
-## ADR-030: 공용 폴더(/shared/folders/public) 권한 — 전 사원 read, ADMIN write/delete
-- 결정: `FolderType.SHARED_PUBLIC` (V203) 의 공용 폴더는 EMPLOYEE 포함 모든 인증 사용자가 read. 업로드·삭제는 ADMIN. (commit `26e6295` 의 EMPLOYEE 403 fix 와 일치)
-- 이유: 사내 공통 양식·안내문을 한 곳에서 배포하기 위함.
+## ADR-030: 공용 폴더(/shared/folders/public) 권한 — 전 사원 read·업로드, 본인·ADMIN 삭제
+- 결정: `FolderType.SHARED_PUBLIC` (V203) 의 공용 폴더는 EMPLOYEE 포함 모든 인증 사용자가 read 및 업로드 가능. 삭제는 업로더 본인 또는 ADMIN만 가능. (기능 개편)
+- 이유: 사내 공통 양식·안내문 배포뿐 아니라 직원 간 자료 공유 용도로도 활용하기 위함. ADMIN 전용 업로드는 불필요한 제약.
 
 ## ADR-031: 자격증 종류는 "정보처리기사" 단일 고정
 - 결정: `LICENSE` 문서 타입의 `certTypeMeta` 는 `ENGINEER` 한 값만 사용. 산업기사(`INDUSTRIAL_ENGINEER`)는 폐기. (commit `d7afe13`)
@@ -170,6 +170,12 @@
 - 결정: 문서 만료일은 `documents.expires_at` (V5) 한 컬럼. 만료 알림은 `/admin/documents/expiry` 대시보드에서만 표시(이메일 알림 X).
 - 이유: 비건강보험·자격증 갱신 추적 용도 — 이메일 푸시까지는 운영 비용 대비 이득 없음.
 - 재검토 조건: 대상 사용자 수가 100명을 넘고 만료 임박 알림이 운영 이슈가 될 때.
+
+## ADR-036: 가입 허용 이메일 사전등록 방식 도입
+- 결정: `allowed_emails` 테이블(V215)을 신설하고, 회원가입 시 입력된 이메일이 목록에 없으면 가입 차단. 관리자가 `/admin/allowed-emails`에서 허용 이메일 추가·삭제.
+- 이유: 도메인 고정 방식(`RESOURCEHUB_COMPANY_EMAIL_DOMAIN`) 은 같은 도메인을 쓰는 계약직·외부 인원 제어가 불가. 허용 목록 방식은 개인 단위로 정밀 제어 가능.
+- 트레이드오프: 직원 추가 시 이메일 사전등록 절차 추가. 기존 환경변수(`RESOURCEHUB_COMPANY_EMAIL_DOMAIN`) 제거.
+- 정적 검사: 없음 (DB 레벨 제어).
 
 ## ADR-035: 옛 stage별 verify.sh 하네스 폐기 → 범용 양식
 - 결정: MVP1~MVP3·post-MVP3·19~21 단계별 `harness/*/verify.sh` + `progress.json` 방식을 폐기. 대신 `CLAUDE.md` + `HARNESS.md` + `tasks/current.md` + `docs/architecture.md` + `docs/decisions.md` + `CHANGELOG.md` 범용 양식 사용. 옛 자산은 `harness/archive/legacy/` 보존.
