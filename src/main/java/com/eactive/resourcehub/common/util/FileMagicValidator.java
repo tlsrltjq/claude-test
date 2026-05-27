@@ -46,7 +46,7 @@ public final class FileMagicValidator {
         int maxSigLen = 0;
         for (byte[] sig : candidates) maxSigLen = Math.max(maxSigLen, sig.length);
 
-        byte[] header = new byte[maxSigLen];
+        byte[] header = new byte[Math.max(maxSigLen, 4)]; // 최소 4바이트 읽어야 read < 4 조건이 소형 파일만 차단
         try (InputStream is = file.getInputStream()) {
             int read = is.read(header);
             if (read < 4) return false;

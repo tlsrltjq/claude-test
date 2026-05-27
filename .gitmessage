@@ -1,0 +1,33 @@
+# COMMIT FORMAT (AI agent must follow exactly)
+# ─────────────────────────────────────────────
+# <type>: <summary in 50 chars or less>
+#
+# [optional body — 72-char wrap, explain WHY not WHAT]
+#
+# Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+# ─────────────────────────────────────────────
+
+# TYPE SELECTION RULES (pick the FIRST that matches):
+#
+#  feat     → production code adds a user-visible capability
+#  fix      → production code corrects a defect or unintended behavior
+#  refactor → production code changed with no behavior difference
+#  test     → test files added/modified (no production code change)
+#  docs     → doc/comment files only (no code change)
+#  chore    → build, config, harness, migration meta (no prod code change)
+#
+# When multiple types apply, use the highest-impact one.
+# Mixed changes (prod code + tests): use feat/fix/refactor, not test.
+# Mixed changes (code + docs only): use feat/fix/refactor, not docs.
+
+# SUBJECT LINE RULES:
+#  - Korean or English, imperative mood: "추가" not "추가했다", "add" not "added"
+#  - No trailing period
+#  - 50 chars max (count in characters, not bytes)
+
+# BODY RULES (include when the WHY is non-obvious):
+#  - Blank line between subject and body
+#  - Explain context, motivation, trade-offs — not what the diff shows
+#  - 72-char line wrap
+
+# Co-Authored-By line: ALWAYS include when Claude writes the commit.

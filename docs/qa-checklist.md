@@ -1,0 +1,137 @@
+# 릴리스 QA 체크리스트
+
+> 배포 전 수동 검증 항목. 자동 테스트로 커버되지 않는 영역 위주.
+> 참고 소스: `docs/archive/OPERATION_SECURITY_CHECKLIST.md`, `docs/archive/deployment-checklist.md`, `docs/scenarios.md`
+
+---
+
+## 배포 전 자동 검증 (필수)
+
+```bash
+bash scripts/security-lint.sh   # 0 FAIL
+./gradlew build                 # BUILD SUCCESSFUL
+```
+
+---
+
+## 1. 인증·계정
+
+- [ ] 회원가입 → 이메일 인증 코드 수신 → 코드 입력 → ACTIVE 전환
+- [ ] 회원가입 폼 검증 실패 시 비밀번호 포함 모든 필드 값 유지
+- [ ] 생년월일 8자리 입력 → `.` 자동 삽입 확인
+- [ ] 비밀번호 강도 표시 바 동작 확인
+- [ ] 이미 가입된 이메일로 회원가입 → 오류 메시지
+- [ ] 인증 코드 만료(10분) 후 입력 → 오류 메시지
+- [ ] 로그인 성공 → `/dashboard` 리다이렉트
+- [ ] 로그인 실패 → `?error` 오류 메시지
+- [ ] DISABLED 계정 로그인 → 로그인 불가
+- [ ] 비밀번호 찾기: 코드 발송 → 5분 내 입력 → 새 비밀번호 설정 → 로그인 성공
+- [ ] 비밀번호 찾기: 코드 만료 후 입력 → 오류 메시지
+- [ ] 로그아웃 → 세션 삭제 → 로그인 페이지 리다이렉트
+
+---
+
+## 2. 권한 접근 제어
+
+- [ ] 미인증 상태로 `/my/folder` 접근 → `/login` 리다이렉트
+- [ ] EMPLOYEE로 `/admin` 접근 → 403
+- [ ] SALES로 `/admin` 접근 → 403
+- [ ] 로그인 없이 `/admin` 접근 → `/login` 리다이렉트
+- [ ] EMPLOYEE가 타인 폴더 문서 다운로드 URL 직접 접근 → 403
+- [ ] 권한 부여 후 타인 폴더 접근 → 정상 열람
+
+---
+
+## 3. 문서 업로드·검토
+
+- [ ] 허용 확장자(pdf, jpg, jpeg, png, docx, hwp, hwpx, ppt, pptx) 업로드 성공
+- [ ] 미허용 확장자 업로드 → 오류 메시지
+- [ ] 확장자는 맞지만 magic bytes 불일치 파일 업로드 → 오류 메시지
+- [ ] 같은 폴더에 동일 타입·제목 문서 재업로드 → 오류 메시지 (unique constraint)
+- [ ] 업로드 후 `PENDING_REVIEW` 상태 확인
+- [ ] PENDING_REVIEW 문서: 본인은 접근 가능, 권한자(EMPLOYEE)는 403
+- [ ] 관리자 승인 → `APPROVED` 전환 → 권한자 접근 가능
+- [ ] 관리자 반려 → `REJECTED` 전환 (사유 저장 확인)
+- [ ] PDF 문서 썸네일 생성 확인 (비동기, 잠시 후 새로고침)
+- [ ] 문서 삭제 → soft-delete, 목록에서 사라짐
+
+---
+
+## 4. 파일 접근 보안
+
+- [ ] 다운로드 URL 직접 입력으로 다른 사용자 파일 접근 불가
+- [ ] 미리보기 URL 직접 입력으로 권한 없는 파일 접근 불가
+- [ ] 공용 폴더: 전 사원 다운로드 가능
+- [ ] 공용 폴더 업로드 버튼: ADMIN만 표시
+
+---
+
+## 5. 영업 기능
+
+- [ ] `/sales/profiles` 필터 동작 확인 (팀·직급·가용상태·기술등급)
+- [ ] 컬럼 선택·정렬 변경 후 프리셋 저장 → 재접속 시 복원
+- [ ] 사원 선택 → 엑셀 내보내기 → 파일 다운로드, 내용 확인
+- [ ] 사원 선택 → 번들 다운로드 → ZIP 파일, 내부 구조 확인
+- [ ] 경력 계산기: 구간 입력 → 계산 → 중복 제거 옵션 동작
+- [ ] 경력 저장 → EmployeeProfile 업데이트 확인
+
+---
+
+## 6. 관리자 기능
+
+- [ ] 직원 목록 검색·필터·페이지네이션 동작
+- [ ] 직원 계정 비활성화 → 기존 로그인 세션 즉시 만료 확인
+- [ ] 역할 변경 → 해당 사용자 재로그인 시 새 권한 적용 확인
+- [ ] 팀 생성·수정·삭제 동작
+- [ ] 인력표 팀 설정 토글 → `/sales/profiles` 반영 확인
+- [ ] 만료 현황 화면: 만료·임박 문서 표시
+- [ ] 통계 화면: 다운로드 통계 표시
+- [ ] 이력서 템플릿 업로드 → 사원 다운로드 확인
+- [ ] 파일 GC 수동 실행 → 결과 메시지 확인
+
+---
+
+## 7. 재직증명서
+
+- [ ] 직원 선택 → 생성 버튼 → DOCX·PDF 파일 생성 확인
+- [ ] 생성된 파일 다운로드 → 내용(이름·직급·날짜) 확인
+- [ ] Python Flask 컨테이너 미기동 시 → 오류 메시지 표시 (500 아닌 친절한 오류)
+
+---
+
+## 8. 보안·인프라
+
+- [ ] HTTPS 적용 확인 (운영 Caddy)
+- [ ] CSRF 토큰 없는 POST 요청 → 403
+- [ ] XSS: 이름·제목 등 입력 필드에 `<script>alert(1)</script>` 입력 → 이스케이프 처리
+- [ ] 직접 파일 경로(storage/) URL 접근 → 404 (정적 노출 금지)
+- [ ] 세션 쿠키 `HttpOnly` 속성 확인 (브라우저 DevTools)
+- [ ] `X-Frame-Options`, `X-Content-Type-Options` 응답 헤더 확인
+
+---
+
+## 9. 운영 환경 배포 체크리스트
+
+- [ ] `.env` 파일 모든 필수 환경변수 설정 확인
+  - `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
+  - `RESOURCEHUB_COMPANY_EMAIL_DOMAIN`
+  - `SPRING_MAIL_*` (SMTP 설정)
+  - `CADDY_DOMAIN`
+  - `RESOURCEHUB_UPLOAD_BASE_DIR` (또는 S3 설정)
+- [ ] `docker-compose.prod.yml`로 컨테이너 기동
+- [ ] `bash scripts/deploy.sh` 실행 → 헬스체크 통과 확인 (`GET /health`)
+- [ ] Flyway 마이그레이션 정상 완료 로그 확인
+- [ ] 백업 cron 설정 확인 (`bash scripts/setup-cron.sh`)
+- [ ] 로그 파일 생성 확인 (`/data/logs/resourcehub.log`)
+
+---
+
+## 참고: 테스트 자동화로 커버 불가한 이유
+
+| 항목 | 이유 |
+|------|------|
+| 이메일 실제 수신 확인 | 운영 SMTP 의존 |
+| 재직증명서 내용 확인 | LibreOffice 런타임·PDF 렌더링 |
+| 썸네일 비동기 생성 | 타이밍 의존, 외부 LibreOffice 도구 |
+| 브라우저 JS 동작 | 자동 하이픈·점 삽입, 비밀번호 복원 |
+| 세션 만료 실시간 확인 | 멀티 탭·세션 레지스트리 실시간 동작 |
