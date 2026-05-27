@@ -120,24 +120,11 @@
                     <span class="info-val" th:text="${user.email}">user@eactive.co.kr</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">아이디</span>
-                    <span class="info-val" th:text="${user.loginId}">hong</span>
-                </div>
-                <div class="info-row">
                     <span class="info-label">권한</span>
                     <span class="info-val">
                         <span class="badge rounded-pill"
                               th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-warning text-dark' : 'bg-secondary')"
                               th:text="${user.role.displayName}">직원</span>
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">상태</span>
-                    <span class="info-val">
-                        <span th:switch="${user.status.name()}">
-                            <span th:case="'ACTIVE'" class="badge bg-success rounded-pill">활성</span>
-                            <span th:case="*" class="badge bg-secondary rounded-pill" th:text="${user.status}"></span>
-                        </span>
                     </span>
                 </div>
 
@@ -151,7 +138,7 @@
                     <span class="info-val" th:text="${user.position != null ? user.position.displayName : '-'}">대리</span>
                 </div>
 
-                <div class="info-section-label mt-4"><i class="bi bi-contact"></i> 개인 정보</div>
+                <div class="info-section-label mt-4"><i class="bi bi-person-lines-fill"></i> 개인 정보</div>
                 <div class="info-row">
                     <span class="info-label">연락처</span>
                     <span class="info-val" th:text="${user.phone != null and !#strings.isEmpty(user.phone) ? user.phone : '-'}">010-0000-0000</span>
@@ -159,6 +146,10 @@
                 <div class="info-row">
                     <span class="info-label">생년월일</span>
                     <span class="info-val" th:text="${user.birthDate != null ? #temporals.format(user.birthDate, 'yyyy년 MM월 dd일') : '-'}">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">주소</span>
+                    <span class="info-val" th:text="${user.address != null and !#strings.isEmpty(user.address) ? user.address : '-'}">-</span>
                 </div>
 
                 <div class="mt-4 d-flex gap-2">
@@ -173,11 +164,17 @@
 
             <!-- ── Tab 2: 개인정보 수정 ── -->
             <div th:if="${tab == 'profile'}">
-                <p class="text-muted small mb-4">연락처, 생년월일을 수정할 수 있습니다. 이름·이메일·팀·직급은 관리자에게 문의하세요.</p>
+                <p class="text-muted small mb-4">이름, 연락처, 생년월일, 주소, 소속 팀을 수정할 수 있습니다.</p>
 
                 <form th:action="@{/settings/profile}" method="post">
                     <input type="hidden" name="_csrf" th:value="${_csrf.token}">
 
+                    <div class="mb-3">
+                        <label class="form-label">이름 <span class="req">*</span></label>
+                        <input type="text" name="name" class="form-control"
+                               placeholder="홍길동" required
+                               th:value="${user.name}">
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">연락처</label>
                         <input type="tel" name="phone" class="form-control"
@@ -188,6 +185,12 @@
                         <label class="form-label">생년월일</label>
                         <input type="date" name="birthDate" class="form-control"
                                th:value="${user.birthDate != null ? #temporals.format(user.birthDate, 'yyyy-MM-dd') : ''}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">주소</label>
+                        <input type="text" name="address" class="form-control"
+                               placeholder="서울시 강남구 ..."
+                               th:value="${user.address}">
                     </div>
                     <div class="mb-4">
                         <label class="form-label">직급</label>
@@ -203,6 +206,25 @@
                         </button>
                         <a th:href="@{/settings(tab='info')}" class="btn btn-outline-secondary">취소</a>
                     </div>
+                </form>
+
+                <hr class="my-4">
+                <p class="text-muted small mb-3">소속 팀을 변경합니다.</p>
+                <form th:action="@{/settings/team}" method="post" class="d-flex gap-2 align-items-end">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <div class="flex-grow-1">
+                        <label class="form-label">소속 팀</label>
+                        <select name="teamId" class="form-select">
+                            <option value="">팀 없음</option>
+                            <option th:each="t : ${teams}"
+                                    th:value="${t.id}"
+                                    th:text="${t.name}"
+                                    th:selected="${user.team != null and user.team.id == t.id}"></option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-repeat me-1"></i>팀 변경
+                    </button>
                 </form>
             </div>
 

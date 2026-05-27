@@ -101,19 +101,27 @@
 
                 <!-- 이메일 -->
                 <div class="mt-3">
-                    <label for="emailPrefix" class="form-label">회사 이메일 <span class="req">*</span></label>
-                    <div class="input-group has-validation">
-                        <div class="input-icon" style="flex:1">
-                            <i class="bi bi-envelope-fill"></i>
-                            <input type="text" id="emailPrefix" th:field="*{emailPrefix}"
-                                   class="form-control"
-                                   style="border-radius:.375rem 0 0 .375rem"
-                                   th:classappend="${#fields.hasErrors('emailPrefix')} ? ' is-invalid'"
-                                   placeholder="이름" required autocomplete="username">
-                            <div class="invalid-feedback" th:if="${#fields.hasErrors('emailPrefix')}" th:errors="*{emailPrefix}"></div>
-                            <div class="invalid-feedback" th:unless="${#fields.hasErrors('emailPrefix')}">이메일 앞부분을 입력해주세요.</div>
-                        </div>
-                        <span class="input-group-text text-muted" th:text="'@' + ${emailDomain}">@eactive.co.kr</span>
+                    <label for="email" class="form-label">이메일 <span class="req">*</span></label>
+                    <div class="input-icon">
+                        <i class="bi bi-envelope-fill"></i>
+                        <input type="email" id="email" th:field="*{email}"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'"
+                               placeholder="example@company.com" required autocomplete="email">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                        <div class="invalid-feedback" th:unless="${#fields.hasErrors('email')}">이메일을 입력해주세요.</div>
+                    </div>
+                    <div class="pw-hint">관리자가 사전 등록한 이메일만 가입 가능합니다.</div>
+                </div>
+
+                <!-- 주소 -->
+                <div class="mt-3">
+                    <label for="address" class="form-label">주소 <span class="opt">(선택)</span></label>
+                    <div class="input-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <input type="text" id="address" th:field="*{address}"
+                               class="form-control"
+                               placeholder="서울시 강남구 ...">
                     </div>
                 </div>
 
@@ -182,10 +190,58 @@
                     </div>
                 </div>
 
+                <!-- ── 개인정보 동의 ── -->
+                <div class="section-label"><i class="bi bi-shield-check"></i> 개인정보 동의</div>
+
+                <div class="mb-4 p-3 bg-light rounded">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="checkbox" id="privacyConsent" th:field="*{privacyConsent}"
+                               class="form-check-input flex-shrink-0" style="width:1.1em;height:1.1em" required>
+                        <label for="privacyConsent" class="form-check-label small mb-0">
+                            <a href="#" class="text-primary fw-semibold text-decoration-none"
+                               data-bs-toggle="modal" data-bs-target="#privacyModal">
+                                개인정보 수집·이용 동의서
+                            </a>를 읽었으며 동의합니다. <span class="text-danger">*</span>
+                        </label>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-primary w-100 btn-signup">
                     <i class="bi bi-person-check-fill me-1"></i> 가입 신청
                 </button>
             </form>
+
+            <!-- 개인정보 동의 모달 -->
+            <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="privacyModalLabel">
+                                <i class="bi bi-shield-check me-2 text-primary"></i>개인정보 수집·이용 동의서
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body small text-secondary" style="line-height:1.8">
+                            <p class="fw-semibold text-dark">수집하는 개인정보 항목</p>
+                            <p>이름, 이메일, 생년월일, 연락처, 주소, 소속 팀, 직급</p>
+                            <p class="fw-semibold text-dark">수집 및 이용 목적</p>
+                            <p>사내 인력 관리, 문서 업로드 및 열람, 재직증명서 발급, 서비스 내 알림 발송</p>
+                            <p class="fw-semibold text-dark">보유 및 이용 기간</p>
+                            <p>재직 기간 동안 보유하며, 퇴직 후 관련 법령에서 정한 기간까지 보관합니다.</p>
+                            <p class="fw-semibold text-dark">동의 거부 권리 및 불이익</p>
+                            <p>개인정보 수집·이용에 동의하지 않을 권리가 있으나, 동의하지 않을 경우 서비스 이용이 제한됩니다.</p>
+                            <hr>
+                            <p class="text-muted" style="font-size:.8rem;">※ 본 동의서는 임시 내용입니다. 최종 내용은 회사 정책에 따라 업데이트될 예정입니다.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="agreeAndClose" data-bs-dismiss="modal">
+                                동의하고 닫기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="login-link">이미 계정이 있으신가요? <a th:href="@{/login}">로그인</a></div>
         </div>
@@ -193,6 +249,12 @@
 </div>
 
 <script>
+/* ── 개인정보 동의 모달 — 동의하고 닫기 ── */
+document.getElementById('agreeAndClose').addEventListener('click', function () {
+    var cb = document.getElementById('privacyConsent');
+    if (cb) cb.checked = true;
+});
+
 /* ── 비밀번호 필드 복원 (서버 검증 실패 시) ── */
 (function () {
     var pw = sessionStorage.getItem('_sup_pw');
