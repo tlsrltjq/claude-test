@@ -1,8 +1,30 @@
 # 현재 작업 컨텍스트
 
-## 지금 단계: 기능 개편 완료
+## 지금 단계: 투입 캘린더 개편 (미구현)
 
-## 완료된 항목
+> 상세 기획: `docs/CALENDAR_REDESIGN.md`
+
+## 다음 구현 단계 (순서대로)
+
+- [ ] **1단계** — V219: `projects` 테이블 생성 + `Project` 엔티티·Repository·기본 Service
+- [ ] **2단계** — V220·V221: `project_assignments.project_id` 추가 + 기존 데이터 마이그레이션
+- [ ] **3단계** — `ProjectService` 구현 (생성·수정·삭제·인원 일괄 등록·추가·해제)
+- [ ] **4단계** — `ProjectController` 구현 (CRUD API + 상세 페이지)
+- [ ] **5단계** — V222: `project_assignments`에서 비정규화 컬럼 제거 (project_name·client_name·memo)
+- [ ] **6단계** — `CalendarGridBuilder` 재설계 (Project 기반 dayMap)
+- [ ] **7단계** — `sales/project-detail.html` 신규 화면 (투입 직원 테이블·수정 모달)
+- [ ] **8단계** — `sales/calendar.html` 바(bar) 렌더링 적용
+- [ ] **9단계** — 기존 `/sales/assignments/**` 핸들러 정리
+- [ ] **10단계** — 테스트 작성 (Project 엔티티·서비스·컨트롤러)
+
+## 완료 기준
+- `./gradlew build` BUILD SUCCESSFUL
+- `bash scripts/security-lint.sh` 15/15 PASS
+- 프로젝트 등록 → 캘린더 바 표시 → 상세 페이지 진입 흐름 정상 동작
+
+---
+
+## 완료된 항목 (이전 단계)
 - [x] V214 SQL (users.address)
 - [x] V215 SQL (allowed_emails)
 - [x] AllowedEmail 엔티티·리포지토리·EmailAllowlistService
@@ -23,8 +45,7 @@
 - [x] HARNESS.md·CHANGELOG.md·tasks/current.md 문서 최신화
 
 ## 다음 진행 항목
-- 운영 도메인 배포 (`scripts/deploy.sh`)
-- 또는 추가 기능 요구사항 수집
+→ 위 "다음 구현 단계" 참조 (투입 캘린더 개편)
 
 ## 건드리면 안 되는 파일
 - `src/main/resources/db/migration/V1~V216.sql` — 기존 마이그레이션 절대 수정 금지

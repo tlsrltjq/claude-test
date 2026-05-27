@@ -22,20 +22,6 @@ class ProjectAssignmentRequestTest {
     }
 
     @Test
-    void allocationRate_경계값_0_허용() {
-        ProjectAssignmentRequest req = valid();
-        req.setAllocationRate(0);
-        assertDoesNotThrow(req::validate);
-    }
-
-    @Test
-    void allocationRate_경계값_100_허용() {
-        ProjectAssignmentRequest req = valid();
-        req.setAllocationRate(100);
-        assertDoesNotThrow(req::validate);
-    }
-
-    @Test
     void startDate와_endDate가_같은날이면_허용() {
         ProjectAssignmentRequest req = valid();
         req.setStartDate(TODAY);
@@ -94,22 +80,6 @@ class ProjectAssignmentRequestTest {
         assertThrows(IllegalArgumentException.class, req::validate);
     }
 
-    // ── allocationRate 범위 오류 ────────────────────────────────────
-
-    @Test
-    void allocationRate_음수이면_예외() {
-        ProjectAssignmentRequest req = valid();
-        req.setAllocationRate(-1);
-        assertThrows(IllegalArgumentException.class, req::validate);
-    }
-
-    @Test
-    void allocationRate_101이면_예외() {
-        ProjectAssignmentRequest req = valid();
-        req.setAllocationRate(101);
-        assertThrows(IllegalArgumentException.class, req::validate);
-    }
-
     // ── 헬퍼 ────────────────────────────────────────────────────────
 
     private ProjectAssignmentRequest valid() {
@@ -118,7 +88,6 @@ class ProjectAssignmentRequestTest {
         req.setProjectName("테스트 프로젝트");
         req.setStartDate(TODAY);
         req.setEndDate(TODAY.plusDays(30));
-        req.setAllocationRate(100);
         return req;
     }
 }

@@ -182,8 +182,7 @@ class ProjectAssignmentControllerTest {
                         .param("userId",         String.valueOf(empUser.getId()))
                         .param("projectName",    "테스트 프로젝트")
                         .param("startDate",      TODAY.toString())
-                        .param("endDate",        TODAY.plusDays(30).toString())
-                        .param("allocationRate", "100"))
+                        .param("endDate",        TODAY.plusDays(30).toString()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/sales/calendar"));
     }
@@ -202,8 +201,7 @@ class ProjectAssignmentControllerTest {
                         .param("userId",         String.valueOf(empUser.getId()))
                         .param("projectName",    "테스트 프로젝트")
                         .param("startDate",      TODAY.toString())
-                        .param("endDate",        TODAY.plusDays(30).toString())
-                        .param("allocationRate", "100"))
+                        .param("endDate",        TODAY.plusDays(30).toString()))
                 .andExpect(status().isForbidden());
     }
 
@@ -221,8 +219,7 @@ class ProjectAssignmentControllerTest {
                         .param("userId",         String.valueOf(empUser.getId()))
                         .param("projectName",    "테스트 프로젝트")
                         .param("startDate",      TODAY.toString())
-                        .param("endDate",        TODAY.plusDays(30).toString())
-                        .param("allocationRate", "100"))
+                        .param("endDate",        TODAY.plusDays(30).toString()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(flash().attributeExists("overlapWarning"));
     }
@@ -258,7 +255,6 @@ class ProjectAssignmentControllerTest {
                         .param("projectName",    "수정 프로젝트")
                         .param("startDate",      TODAY.toString())
                         .param("endDate",        TODAY.plusDays(60).toString())
-                        .param("allocationRate", "80")
                         .param("status",         AssignmentStatus.ACTIVE.name()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/sales/calendar"));
@@ -289,7 +285,7 @@ class ProjectAssignmentControllerTest {
     private ProjectAssignment makeAssignment(User user) {
         ProjectAssignment pa = ProjectAssignment.create(
                 user, "테스트 프로젝트", "테스트 고객사", "개발자",
-                TODAY, TODAY.plusDays(30), 100, null);
+                TODAY, TODAY.plusDays(30), null);
         ReflectionTestUtils.setField(pa, "id", 10L);
         return pa;
     }

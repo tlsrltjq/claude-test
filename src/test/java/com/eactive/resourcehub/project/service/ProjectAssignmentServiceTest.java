@@ -361,7 +361,7 @@ class ProjectAssignmentServiceTest {
 
     private ProjectAssignment makeAssignment(long id, User user, LocalDate start, LocalDate end) {
         ProjectAssignment pa = ProjectAssignment.create(
-                user, "테스트 프로젝트", "테스트 고객사", "개발자", start, end, 100, null);
+                user, "테스트 프로젝트", "테스트 고객사", "개발자", start, end, null);
         ReflectionTestUtils.setField(pa, "id", id);
         return pa;
     }
@@ -373,7 +373,6 @@ class ProjectAssignmentServiceTest {
         req.setClientName("테스트 고객사");
         req.setStartDate(TODAY);
         req.setEndDate(TODAY.plusDays(30));
-        req.setAllocationRate(100);
         return req;
     }
 }

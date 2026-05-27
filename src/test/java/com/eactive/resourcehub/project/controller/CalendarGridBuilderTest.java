@@ -166,7 +166,7 @@ class CalendarGridBuilderTest {
                 LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 15));
         // ENDED는 그리드에 표시 (CANCELLED만 제외)
         pa.update(pa.getProjectName(), pa.getClientName(), pa.getRole(),
-                pa.getStartDate(), pa.getEndDate(), pa.getAllocationRate(),
+                pa.getStartDate(), pa.getEndDate(),
                 AssignmentStatus.ENDED, null);
 
         Map<LocalDate, List<ProjectAssignment>> dayMap =
@@ -180,6 +180,6 @@ class CalendarGridBuilderTest {
 
     private ProjectAssignment make(LocalDate start, LocalDate end) {
         return ProjectAssignment.create(user, "테스트 프로젝트", "테스트 고객사",
-                "개발자", start, end, 100, null);
+                "개발자", start, end, null);
     }
 }

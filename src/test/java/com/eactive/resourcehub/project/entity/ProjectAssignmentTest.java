@@ -64,7 +64,7 @@ class ProjectAssignmentTest {
         ProjectAssignment pa = make(TODAY, TODAY.plusDays(30));
         pa.update("신프로젝트", "신고객사", "신역할",
                 TODAY.plusDays(5), TODAY.plusDays(60),
-                80, AssignmentStatus.ENDED, "신메모");
+                AssignmentStatus.ENDED, "신메모");
 
         assertAll(
                 () -> assertEquals("신프로젝트",           pa.getProjectName()),
@@ -72,7 +72,6 @@ class ProjectAssignmentTest {
                 () -> assertEquals("신역할",               pa.getRole()),
                 () -> assertEquals(TODAY.plusDays(5),     pa.getStartDate()),
                 () -> assertEquals(TODAY.plusDays(60),    pa.getEndDate()),
-                () -> assertEquals(80,                    pa.getAllocationRate()),
                 () -> assertEquals(AssignmentStatus.ENDED, pa.getStatus()),
                 () -> assertEquals("신메모",               pa.getMemo())
         );
@@ -148,6 +147,6 @@ class ProjectAssignmentTest {
 
     private ProjectAssignment make(LocalDate start, LocalDate end) {
         return ProjectAssignment.create(user, "테스트 프로젝트", "테스트 고객사",
-                "개발자", start, end, 100, null);
+                "개발자", start, end, null);
     }
 }

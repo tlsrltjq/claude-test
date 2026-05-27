@@ -132,7 +132,7 @@ public class ProjectAssignmentService {
         ProjectAssignment pa = ProjectAssignment.create(
                 target, req.getProjectName(), req.getClientName(),
                 req.getRole(), req.getStartDate(), req.getEndDate(),
-                req.getAllocationRate(), req.getMemo());
+                req.getMemo());
         ProjectAssignment saved = assignmentRepository.save(pa);
 
         log.info("프로젝트 배정 생성 — id={}, user={}, project={}",
@@ -152,7 +152,7 @@ public class ProjectAssignmentService {
         ProjectAssignment pa = findById(id);
         pa.update(req.getProjectName(), req.getClientName(), req.getRole(),
                   req.getStartDate(), req.getEndDate(),
-                  req.getAllocationRate(), req.getStatus(), req.getMemo());
+                  req.getStatus(), req.getMemo());
 
         log.info("프로젝트 배정 수정 — id={}, project={}", id, pa.getProjectName());
         auditService.log(actorId, AuditActionType.UPDATE_ASSIGNMENT,

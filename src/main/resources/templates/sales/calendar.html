@@ -286,7 +286,6 @@
                         <th>투입 시작</th>
                         <th>종료일</th>
                         <th>잔여일</th>
-                        <th>투입률</th>
                         <th>상태</th>
                         <th th:if="${currentUser.role.name() == 'ADMIN'}">관리</th>
                     </tr>
@@ -309,7 +308,6 @@
                             <span th:unless="${pa.status.name() == 'ENDED' or pa.status.name() == 'CANCELLED'}"
                                   th:text="${pa.remainingDays() + '일'}">N일</span>
                         </td>
-                        <td th:text="${pa.allocationRate + '%'}">100%</td>
                         <td>
                             <span class="badge rounded-pill px-2 py-1"
                                   th:classappend="${'badge-' + #strings.toLowerCase(pa.status.name())}"
@@ -326,7 +324,6 @@
                                         th:data-role="${pa.role != null ? pa.role : ''}"
                                         th:data-start-date="${pa.startDate}"
                                         th:data-end-date="${pa.endDate}"
-                                        th:data-allocation-rate="${pa.allocationRate}"
                                         th:data-status="${pa.status.name()}"
                                         th:data-memo="${pa.memo != null ? pa.memo : ''}"
                                         data-bs-toggle="modal" data-bs-target="#editModal">
@@ -400,11 +397,6 @@
                             <label class="form-label fw-600 small">종료일 <span class="text-danger">*</span></label>
                             <input type="date" name="endDate" class="form-control form-control-sm" required>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-600 small">투입률 (%)</label>
-                            <input type="number" name="allocationRate" class="form-control form-control-sm"
-                                   value="100" min="0" max="100">
-                        </div>
                         <div class="col-12">
                             <label class="form-label fw-600 small">메모</label>
                             <textarea name="memo" class="form-control form-control-sm" rows="2"
@@ -473,11 +465,6 @@
                             <input id="editEndDate" type="date" name="endDate"
                                    class="form-control form-control-sm" required>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-600 small">투입률 (%)</label>
-                            <input id="editAllocationRate" type="number" name="allocationRate"
-                                   class="form-control form-control-sm" min="0" max="100">
-                        </div>
                         <div class="col-md-6">
                             <label class="form-label fw-600 small">상태</label>
                             <select id="editStatus" name="status" class="form-select form-select-sm">
@@ -516,7 +503,6 @@
             document.getElementById('editRole').value          = this.dataset.role;
             document.getElementById('editStartDate').value     = this.dataset.startDate;
             document.getElementById('editEndDate').value       = this.dataset.endDate;
-            document.getElementById('editAllocationRate').value= this.dataset.allocationRate;
             document.getElementById('editStatus').value        = this.dataset.status;
             document.getElementById('editMemo').value          = this.dataset.memo;
         });

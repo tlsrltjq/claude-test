@@ -16,7 +16,6 @@ public class ProjectAssignmentRequest {
     private String role;
     private LocalDate startDate;
     private LocalDate endDate;
-    private int allocationRate = 100;
     private AssignmentStatus status;
     private String memo;
 
@@ -29,7 +28,5 @@ public class ProjectAssignmentRequest {
             throw new IllegalArgumentException("투입 기간을 입력해야 합니다.");
         if (endDate.isBefore(startDate))
             throw new IllegalArgumentException("종료일은 시작일 이후여야 합니다.");
-        if (allocationRate < 0 || allocationRate > 100)
-            throw new IllegalArgumentException("투입률은 0~100 사이여야 합니다.");
     }
 }

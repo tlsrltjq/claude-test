@@ -39,9 +39,6 @@ public class ProjectAssignment extends BaseEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @Column(nullable = false)
-    private int allocationRate;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private AssignmentStatus status;
@@ -51,7 +48,7 @@ public class ProjectAssignment extends BaseEntity {
 
     public static ProjectAssignment create(User user, String projectName, String clientName,
                                            String role, LocalDate startDate, LocalDate endDate,
-                                           int allocationRate, String memo) {
+                                           String memo) {
         ProjectAssignment pa = new ProjectAssignment();
         pa.user           = user;
         pa.projectName    = projectName;
@@ -59,7 +56,6 @@ public class ProjectAssignment extends BaseEntity {
         pa.role           = role;
         pa.startDate      = startDate;
         pa.endDate        = endDate;
-        pa.allocationRate = allocationRate;
         pa.memo           = memo;
         pa.status         = LocalDate.now().isBefore(startDate)
                             ? AssignmentStatus.PLANNED : AssignmentStatus.ACTIVE;
@@ -68,15 +64,14 @@ public class ProjectAssignment extends BaseEntity {
 
     public void update(String projectName, String clientName, String role,
                        LocalDate startDate, LocalDate endDate,
-                       int allocationRate, AssignmentStatus status, String memo) {
-        this.projectName    = projectName;
-        this.clientName     = clientName;
-        this.role           = role;
-        this.startDate      = startDate;
-        this.endDate        = endDate;
-        this.allocationRate = allocationRate;
-        this.status         = status;
-        this.memo           = memo;
+                       AssignmentStatus status, String memo) {
+        this.projectName = projectName;
+        this.clientName  = clientName;
+        this.role        = role;
+        this.startDate   = startDate;
+        this.endDate     = endDate;
+        this.status      = status;
+        this.memo        = memo;
     }
 
     public void cancel() {
