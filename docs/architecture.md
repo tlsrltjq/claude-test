@@ -17,7 +17,7 @@
           ▼
   ┌────────────────┐      ┌────────────────────────┐
   │  Spring Boot   │◀────▶│  PostgreSQL 18         │
-  │  (Java 21)     │      │  + Flyway V1~V213      │
+  │  (Java 21)     │      │  + Flyway V1~V215      │
   └───┬────────┬───┘      └────────────────────────┘
       │        │
       │        └───────▶  Local FS (storage/) or S3/R2 (S3FileStorage)
@@ -47,10 +47,11 @@ com.eactive.resourcehub
 │  │                                 # SettingsService, SalesProfileQueryService, SalesProfileExporter,
 │  │                                 # BundleDownloadService, CareerCalculator, ColumnViewPreferenceService,
 │  │                                 # AdminInitializer, UserRoleService
+│  ├─ service/                       # ...(생략)..., EmailAllowlistService
 │  ├─ entity/                        # User, UserRole(ADMIN/SALES/EMPLOYEE/@Deprecated TEAM_LEADER),
 │  │                                 # UserStatus, Position(9개 직급 — 사원~상무), PasswordResetToken,
-│  │                                 # EmailVerificationToken, ColumnViewPreference
-│  ├─ repository/                    # *Repository
+│  │                                 # EmailVerificationToken, ColumnViewPreference, AllowedEmail
+│  ├─ repository/                    # *Repository, AllowedEmailRepository
 │  └─ dto/                           # SignupRequest, VerifyCodeRequest, SalesProfileQuery
 │
 ├─ document/                         # 문서·폴더·검토·GC·검색·공용폴더
@@ -132,7 +133,7 @@ com.eactive.resourcehub
 | 공용 폴더 | GET/POST | `/shared/folders/public`, `/shared/folders/public/documents/**` | 전 사원 read, ADMIN write/delete |
 | 검색 | GET | `/search` | 본인 권한 모든 문서 + 필터 |
 | 영업 | GET/POST | `/sales/members`, `/sales/profiles`, `/sales/profiles/export`, `/sales/profiles/bundle-download`, `/sales/profiles/preset`, `/sales/career-calculator`, `/sales/career-calculator/save`, `/sales/career-calculator/autofill` | SALES + ADMIN |
-| 관리자 | GET/POST | `/admin/employees`, `/admin/employees/{id}/toggle-status|change-team|change-position`, `/admin/teams`, `/admin/project-settings`, `/admin/user-role`, `/admin/user-permissions`, `/admin/documents/review/**`, `/admin/documents/expiry`, `/admin/statistics`, `/admin/resume-template`, `/admin/gc`, `/admin/gc/run`, `/admin/certificate` | ADMIN |
+| 관리자 | GET/POST | `/admin/employees`, `/admin/employees/{id}/toggle-status\|change-team\|change-position`, `/admin/teams`, `/admin/teams/project-settings`, `/admin/user-role`, `/admin/user-permissions`, `/admin/documents/review/**`, `/admin/documents/expiry`, `/admin/statistics`, `/admin/resume-template`, `/admin/gc`, `/admin/gc/run`, `/admin/certificate`, `/admin/allowed-emails`, `/admin/allowed-emails/{id}/delete` | ADMIN |
 | 문서 | GET/POST | `/documents/upload`, `/documents/{id}`, `/documents/{id}/delete`, `/documents/{v}/download`, `/documents/{v}/preview`, `/documents/{v}/thumbnail`, `/documents/{v}/thumbnail/regenerate` | 컨트롤러 경유 다운로드만 허용 |
 
 ---
@@ -166,8 +167,10 @@ com.eactive.resourcehub
 | V211 | 19-upload | partial unique index (folder_id, document_type, title) |
 | V212 | post-21 | teams.project_team |
 | V213 | post-21 | 의료보험증명 문서 일괄 삭제 |
+| V214 | 기능 개편 | users.address 컬럼 추가 |
+| V215 | 기능 개편 | allowed_emails 테이블 신설 (이메일 사전등록 방식) |
 
-> 새 마이그레이션은 V214부터.
+> 새 마이그레이션은 V216부터.
 
 ---
 
