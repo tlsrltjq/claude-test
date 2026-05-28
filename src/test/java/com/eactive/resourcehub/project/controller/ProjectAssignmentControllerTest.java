@@ -221,6 +221,7 @@ class ProjectAssignmentControllerTest {
     private ProjectAssignment makeAssignment(User user) {
         Project project = Project.create("테스트 프로젝트", "테스트 고객사",
                 TODAY, TODAY.plusDays(30), null);
+        ReflectionTestUtils.setField(project, "id", 1L);
         ProjectAssignment pa = ProjectAssignment.createForProject(
                 project, user, "개발자", TODAY, TODAY.plusDays(30));
         ReflectionTestUtils.setField(pa, "id", 10L);

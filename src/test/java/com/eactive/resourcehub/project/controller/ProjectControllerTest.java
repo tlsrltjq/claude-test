@@ -88,11 +88,11 @@ class ProjectControllerTest {
                         org.hamcrest.Matchers.containsString("테스트 프로젝트")));
     }
 
-    // ── POST /admin/projects — CSRF 검증 ─────────────────────────────
+    // ── POST /sales/projects — CSRF 검증 ─────────────────────────────
 
     @Test
     void CSRF_없이_프로젝트_등록_요청_거부() throws Exception {
-        mockMvc.perform(post("/admin/projects")
+        mockMvc.perform(post("/sales/projects")
                         .with(user(new CustomUserDetails(adminUser)))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isForbidden());
@@ -100,7 +100,7 @@ class ProjectControllerTest {
 
     @Test
     void CSRF_없이_프로젝트_수정_요청_거부() throws Exception {
-        mockMvc.perform(post("/admin/projects/10/update")
+        mockMvc.perform(post("/sales/projects/10/update")
                         .with(user(new CustomUserDetails(adminUser)))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isForbidden());
@@ -108,7 +108,7 @@ class ProjectControllerTest {
 
     @Test
     void CSRF_없이_프로젝트_삭제_요청_거부() throws Exception {
-        mockMvc.perform(post("/admin/projects/10/delete")
+        mockMvc.perform(post("/sales/projects/10/delete")
                         .with(user(new CustomUserDetails(adminUser)))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isForbidden());
@@ -116,7 +116,7 @@ class ProjectControllerTest {
 
     @Test
     void CSRF_없이_멤버_추가_요청_거부() throws Exception {
-        mockMvc.perform(post("/admin/projects/10/members")
+        mockMvc.perform(post("/sales/projects/10/members")
                         .with(user(new CustomUserDetails(adminUser)))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isForbidden());
@@ -124,7 +124,7 @@ class ProjectControllerTest {
 
     @Test
     void CSRF_없이_멤버_수정_요청_거부() throws Exception {
-        mockMvc.perform(post("/admin/projects/10/members/20/update")
+        mockMvc.perform(post("/sales/projects/10/members/20/update")
                         .with(user(new CustomUserDetails(adminUser)))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isForbidden());
@@ -132,20 +132,20 @@ class ProjectControllerTest {
 
     @Test
     void CSRF_없이_멤버_삭제_요청_거부() throws Exception {
-        mockMvc.perform(post("/admin/projects/10/members/20/delete")
+        mockMvc.perform(post("/sales/projects/10/members/20/delete")
                         .with(user(new CustomUserDetails(adminUser)))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isForbidden());
     }
 
-    // ── POST /admin/projects — 성공 흐름 ─────────────────────────────
+    // ── POST /sales/projects — 성공 흐름 ─────────────────────────────
 
     @Test
     void ADMIN_CSRF_포함_프로젝트_등록_성공_후_상세_페이지_리다이렉트() throws Exception {
         Project saved = makeProject(10L);
         when(projectService.create(any(), any(), any(), any())).thenReturn(saved);
 
-        mockMvc.perform(post("/admin/projects")
+        mockMvc.perform(post("/sales/projects")
                         .with(user(new CustomUserDetails(adminUser)))
                         .with(csrf())
                         .param("name",      "신규 프로젝트")
@@ -157,7 +157,7 @@ class ProjectControllerTest {
 
     @Test
     void ADMIN_CSRF_포함_프로젝트_삭제_성공_후_캘린더_리다이렉트() throws Exception {
-        mockMvc.perform(post("/admin/projects/10/delete")
+        mockMvc.perform(post("/sales/projects/10/delete")
                         .with(user(new CustomUserDetails(adminUser)))
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
@@ -166,7 +166,7 @@ class ProjectControllerTest {
 
     @Test
     void ADMIN_CSRF_포함_멤버_삭제_성공_후_상세_페이지_리다이렉트() throws Exception {
-        mockMvc.perform(post("/admin/projects/10/members/20/delete")
+        mockMvc.perform(post("/sales/projects/10/members/20/delete")
                         .with(user(new CustomUserDetails(adminUser)))
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())

@@ -44,6 +44,7 @@ public class ProjectAssignmentService {
         List<ProjectAssignment> all =
                 assignmentRepository.findForMonth(ym.atDay(1), ym.atEndOfMonth());
         return all.stream()
+                .filter(pa -> pa.getUser().getTeam() != null && pa.getUser().getTeam().isProjectTeam())
                 .filter(pa -> matchesFilter(pa, qEmployee, qProject, statusFilter))
                 .collect(Collectors.toList());
     }
@@ -106,11 +107,12 @@ public class ProjectAssignmentService {
         return assignmentRepository.findOverlapping(userId, start, end, excludeId);
     }
 
-    /** 인력표·캘린더 모달용 활성 직원 목록 */
+    /** 인력표·캘린더 모달용 활성 직원 목록 (인력표 노출 팀만) */
     @Transactional(readOnly = true)
     public List<User> findAssignableUsers() {
         return userRepository.findByStatusWithTeam(UserStatus.ACTIVE).stream()
                 .filter(u -> u.getRole() != UserRole.ADMIN)
+                .filter(u -> u.getTeam() != null && u.getTeam().isProjectTeam())
                 .sorted(Comparator.comparing(User::getName))
                 .collect(Collectors.toList());
     }
@@ -137,8 +139,8 @@ public class ProjectAssignmentService {
     }
 
     private void requireAdmin(UserRole role) {
-        if (role != UserRole.ADMIN)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "관리자만 배정을 관리할 수 있습니다.");
+        if (role != UserRole.ADMIN && role != UserRole.SALES)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "관리자 또는 영업 담당자만 배정을 관리할 수 있습니다.");
     }
 
     private boolean matchesFilter(ProjectAssignment pa, String qEmployee,

@@ -5,6 +5,18 @@
 
 ---
 
+## UI 디자인 개선 — 통합 디자인 시스템 도입
+
+2026-05-28 | UI | feat: static/css/app.css 신규 생성 — 단일 디자인 시스템 (nav #1c2538·accent #2563eb·flat card)
+2026-05-28 | UI | refactor: 전체 41개 템플릿 인라인 <style> 블록 제거 → app.css 단일 외부 CSS로 통합
+2026-05-28 | UI | feat: 주소검색 Daum/Kakao Postcode API 위젯 추가 (signup.html·settings.html)
+
+## 캘린더 개편 — 권한 확장·팀 필터·프로젝트 리스트·LazyInit 수정
+
+2026-05-28 | 캘린더 | fix: ProjectAssignmentRepository — findActiveOn/findEndingSoon/findPlannedFrom/findActiveByUserId/findOverlapping에 JOIN FETCH pa.project 추가 (LazyInitializationException 방지)
+2026-05-28 | 캘린더 | feat: 프로젝트 CRUD·멤버 관리 엔드포인트 /admin/projects/** → /sales/projects/** 이동, ADMIN·SALES 동일 권한 부여
+2026-05-28 | 캘린더 | feat: 캘린더 하단 프로젝트 리스트 추가 (기간·최고직급 대표자·인원수), projectTeam=true 팀만 노출
+
 ## 전체 정리 — 미사용 코드 제거·문서 재편·Docker 버그 수정·테스트 보강
 
 2026-05-27 | 정리 | chore: 전체 정리 커밋 — AuditLogService·Tag 제거, V217·V218, LazyInit 수정, docs/SECURITY_AND_PERMISSION.md, 테스트 212케이스 (48575e5)

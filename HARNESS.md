@@ -6,7 +6,7 @@
 
 ---
 
-## 현재 구현 범위 (V218 기준)
+## 현재 구현 범위 (V223 기준)
 
 | 도메인 | 주요 기능 |
 |--------|----------|
@@ -16,10 +16,10 @@
 | 공용 폴더 | SHARED_PUBLIC — 전 사원 업로드, 업로더·ADMIN만 삭제 |
 | 문서 검토 | PENDING_REVIEW → APPROVED/REJECTED, 파일 GC(cron 02:00) |
 | 영업 | 인력표(필터·컬럼·프리셋·투입정보), 경력 계산기, 엑셀/번들 다운로드 |
-| 투입 관리 | 캘린더(`/sales/calendar`), 배정 CRUD, 대시보드 통계 |
+| 투입 관리 | 캘린더(`/sales/calendar`), 프로젝트 CRUD·멤버 관리, 배정 삭제, 대시보드 통계, 프로젝트 바(bar) 렌더링, 하단 프로젝트 리스트 |
 | 관리자 | 직원·팀·문서 검토·통계·재직증명서·파일 GC·이메일 허용 목록 |
 
-기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V218 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
+기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V223 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
@@ -71,7 +71,7 @@
 - 실제 구현된 코드와 일치해야 함
 - 미구현 기능은 "향후 계획"으로 분리
 - API 경로·DTO 필드명·화면 경로는 소스 기준
-- Flyway 버전: 현재 V218. 다음은 **V219**부터
+- Flyway 버전: 현재 V223. 다음은 **V224**부터
 - ADR 번호: 현재 ADR-038까지. 다음은 ADR-039부터
 
 ---

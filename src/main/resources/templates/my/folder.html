@@ -6,45 +6,7 @@
     <title>내 폴더 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        body { background: #f0f2f5; }
-        .topnav { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: .6rem 0; }
-        .topnav .brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
-        .btn-nav { border-color: rgba(255,255,255,.5); color: #fff; font-size: .8rem; padding: .3rem .75rem; border-radius: 6px; }
-        .btn-nav:hover { background: rgba(255,255,255,.15); color: #fff; }
-
-        .folder-header { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border-radius: 14px; padding: 1.4rem 1.75rem; color: #fff; margin-bottom: 1.25rem; }
-        .folder-header h2 { font-size: 1.2rem; font-weight: 700; margin: 0 0 .2rem; }
-        .folder-header .sub { font-size: .85rem; opacity: .8; }
-
-        .filter-bar { background: #fff; border-radius: 12px; padding: .75rem 1rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-
-        /* ── 문서 카드 ── */
-        .doc-card { border: 1.5px solid #e9ecef; border-radius: 12px; overflow: hidden; background: #fff; transition: box-shadow .18s, transform .18s; }
-        .doc-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.12); transform: translateY(-2px); }
-        .doc-thumb { width: 100%; height: 148px; object-fit: cover; display: block; }
-        .doc-icon-area { width: 100%; height: 148px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; }
-        .doc-ext { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; letter-spacing: .04em; }
-        .ext-pdf  { background: #ffe4e4; color: #c92a2a; }
-        .ext-img  { background: #e7f0ff; color: #1c7ed6; }
-        .ext-word { background: #e8f0fa; color: #2b579a; }
-        .ext-hwp  { background: #e4f7eb; color: #1e7e34; }
-        .ext-etc  { background: #f0f2f5; color: #6c757d; }
-        .doc-body { padding: .75rem; }
-        .doc-type-badge { font-size: .7rem; padding: .15rem .45rem; border-radius: 4px; }
-        .doc-title { font-size: .88rem; font-weight: 600; color: #212529; margin: .3rem 0 .2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .doc-meta { font-size: .75rem; color: #adb5bd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .doc-footer { padding: .5rem .75rem; border-top: 1px solid #f0f2f5; display: flex; gap: .4rem; }
-        .doc-footer .btn { font-size: .78rem; border-radius: 6px; padding: .3rem .6rem; }
-
-        .empty-state { text-align: center; padding: 4rem 2rem; color: #adb5bd; }
-        .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
-        .empty-state p { font-size: .95rem; margin-bottom: 1.25rem; }
-
-        .resume-banner { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: .7rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: .75rem; }
-        .resume-banner i { color: #3b82f6; font-size: 1.2rem; flex-shrink: 0; }
-        .resume-banner .text { font-size: .85rem; color: #1e40af; flex: 1; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
 

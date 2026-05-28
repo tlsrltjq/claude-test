@@ -58,11 +58,14 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: 투입 캘린더 개편 전 단계(1~10) 완료.
-- V223 적용 — project_assignments에서 project_name·client_name·memo 컬럼 DROP
-- ProjectAssignment 엔티티: Project FK 기반으로 재편, create/update 팩토리 삭제
-- ProjectAssignmentService/Controller: create·update 메서드 삭제, delete만 유지
-- calendar.html: "투입 등록" → "프로젝트 등록" 모달 (POST /admin/projects)
-- 테스트: ProjectAssignmentRequest 관련 테스트 전량 삭제, makeAssignment() 헬퍼 업데이트
-- Flyway 현재 V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. Docker v223 적용 확인.
-- 다음: 6단계(CalendarGridBuilder 재설계) 또는 8단계(bar 렌더링)
+2026-05-28: 캘린더 개편 전 단계(1~10) 완료 후 추가 버그 수정 및 기능 개선.
+
+- fix: findActiveOn/findEndingSoon/findPlannedFrom/findActiveByUserId/findOverlapping에 JOIN FETCH pa.project 추가 → 대시보드 LazyInitializationException 해소
+- feat: 프로젝트 CRUD 엔드포인트 /admin/projects/** → /sales/projects/** 이동 (SecurityConfig 무수정)
+- feat: ProjectService·ProjectAssignmentService requireAdmin() → ADMIN or SALES 허용
+- feat: calendar.html·project-detail.html ADMIN 전용 UI → ADMIN/SALES 공통 노출
+- feat: getMonthlyAssignments·findAssignableUsers에 projectTeam=true 팀 필터 추가
+- feat: 캘린더 하단 이번달 프로젝트 리스트 카드 추가 (ProjectListItem 레코드, 대표자·외N명)
+- test: ProjectAssignmentServiceTest에 projectTeam 팀 주입, makeAssignment project ID 세팅
+- Flyway 현재 V223. BUILD SUCCESSFUL (239 tests). Docker 재배포 완료.
+- 다음: 요구사항 추가 발생 시 이어서 진행

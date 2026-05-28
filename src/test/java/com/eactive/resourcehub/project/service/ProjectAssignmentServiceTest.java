@@ -6,6 +6,7 @@ import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.repository.ProjectAssignmentRepository;
+import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
@@ -59,10 +60,16 @@ class ProjectAssignmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        adminUser   = makeUser(1L, UserRole.ADMIN,    UserStatus.ACTIVE);
-        salesUser   = makeUser(2L, UserRole.SALES,    UserStatus.ACTIVE);
-        empUser     = makeUser(3L, UserRole.EMPLOYEE, UserStatus.ACTIVE);
+        Team projectTeam = Team.create("개발팀", null);
+        ReflectionTestUtils.setField(projectTeam, "id", 10L);
+
+        adminUser    = makeUser(1L, UserRole.ADMIN,    UserStatus.ACTIVE);
+        salesUser    = makeUser(2L, UserRole.SALES,    UserStatus.ACTIVE);
+        empUser      = makeUser(3L, UserRole.EMPLOYEE, UserStatus.ACTIVE);
         disabledUser = makeUser(4L, UserRole.EMPLOYEE, UserStatus.DISABLED);
+
+        ReflectionTestUtils.setField(empUser,   "team", projectTeam);
+        ReflectionTestUtils.setField(salesUser, "team", projectTeam);
     }
 
     // ── 투입 조회 ────────────────────────────────────────────────────
@@ -129,9 +136,9 @@ class ProjectAssignmentServiceTest {
     }
 
     @Test
-    void ADMIN이_아니면_배정_삭제_시_403() {
+    void 일반직원이_배정_삭제_시_403() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.delete(10L, salesUser.getId(), UserRole.SALES, httpReq));
+                () -> service.delete(10L, empUser.getId(), UserRole.EMPLOYEE, httpReq));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         verify(assignmentRepository, never()).delete(any());
     }

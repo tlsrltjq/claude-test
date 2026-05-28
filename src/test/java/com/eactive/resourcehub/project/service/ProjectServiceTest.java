@@ -100,9 +100,9 @@ class ProjectServiceTest {
     }
 
     @Test
-    void ADMIN이_아니면_프로젝트_생성_시_403() {
+    void 일반직원이_프로젝트_생성_시_403() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.create(validCreateReq(null), salesUser.getId(), UserRole.SALES, httpReq));
+                () -> service.create(validCreateReq(null), empUser.getId(), UserRole.EMPLOYEE, httpReq));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         verify(projectRepository, never()).save(any());
     }
@@ -134,9 +134,9 @@ class ProjectServiceTest {
     }
 
     @Test
-    void ADMIN이_아니면_프로젝트_수정_시_403() {
+    void 일반직원이_프로젝트_수정_시_403() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.update(10L, validUpdateReq(), salesUser.getId(), UserRole.SALES, httpReq));
+                () -> service.update(10L, validUpdateReq(), empUser.getId(), UserRole.EMPLOYEE, httpReq));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
@@ -168,9 +168,9 @@ class ProjectServiceTest {
     }
 
     @Test
-    void ADMIN이_아니면_프로젝트_삭제_시_403() {
+    void 일반직원이_프로젝트_삭제_시_403() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.delete(10L, salesUser.getId(), UserRole.SALES, httpReq));
+                () -> service.delete(10L, empUser.getId(), UserRole.EMPLOYEE, httpReq));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         verify(projectRepository, never()).delete(any());
     }
@@ -202,10 +202,10 @@ class ProjectServiceTest {
     }
 
     @Test
-    void ADMIN이_아니면_멤버_추가_시_403() {
+    void 일반직원이_멤버_추가_시_403() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.addMember(10L, validMemberReq(empUser.getId()),
-                        salesUser.getId(), UserRole.SALES, httpReq));
+                        empUser.getId(), UserRole.EMPLOYEE, httpReq));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         verify(assignmentRepository, never()).save(any());
     }
@@ -241,10 +241,10 @@ class ProjectServiceTest {
     }
 
     @Test
-    void ADMIN이_아니면_멤버_수정_시_403() {
+    void 일반직원이_멤버_수정_시_403() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.updateMember(10L, 20L, validMemberReq(null),
-                        salesUser.getId(), UserRole.SALES, httpReq));
+                        empUser.getId(), UserRole.EMPLOYEE, httpReq));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
@@ -267,9 +267,9 @@ class ProjectServiceTest {
     }
 
     @Test
-    void ADMIN이_아니면_멤버_제거_시_403() {
+    void 일반직원이_멤버_제거_시_403() {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> service.removeMember(10L, 20L, salesUser.getId(), UserRole.SALES, httpReq));
+                () -> service.removeMember(10L, 20L, empUser.getId(), UserRole.EMPLOYEE, httpReq));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         verify(assignmentRepository, never()).delete(any());
     }

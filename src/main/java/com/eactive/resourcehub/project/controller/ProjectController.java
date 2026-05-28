@@ -40,9 +40,9 @@ public class ProjectController {
         return "sales/project-detail";
     }
 
-    // ── 프로젝트 CRUD (ADMIN 전용 — 서비스에서 역할 검증) ───────────
+    // ── 프로젝트 CRUD (ADMIN·SALES — 서비스에서 역할 검증) ──────────
 
-    @PostMapping("/admin/projects")
+    @PostMapping("/sales/projects")
     public String create(
             @ModelAttribute ProjectCreateRequest req,
             @AuthenticationPrincipal CustomUserDetails details,
@@ -59,7 +59,7 @@ public class ProjectController {
         }
     }
 
-    @PostMapping("/admin/projects/{id}/update")
+    @PostMapping("/sales/projects/{id}/update")
     public String update(
             @PathVariable Long id,
             @ModelAttribute ProjectUpdateRequest req,
@@ -76,7 +76,7 @@ public class ProjectController {
         return "redirect:/sales/projects/" + id;
     }
 
-    @PostMapping("/admin/projects/{id}/delete")
+    @PostMapping("/sales/projects/{id}/delete")
     public String delete(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails details,
@@ -92,9 +92,9 @@ public class ProjectController {
         return "redirect:/sales/calendar";
     }
 
-    // ── 멤버 관리 (ADMIN 전용) ───────────────────────────────────────
+    // ── 멤버 관리 (ADMIN·SALES) ─────────────────────────────────────
 
-    @PostMapping("/admin/projects/{id}/members")
+    @PostMapping("/sales/projects/{id}/members")
     public String addMember(
             @PathVariable Long id,
             @ModelAttribute ProjectMemberRequest req,
@@ -111,7 +111,7 @@ public class ProjectController {
         return "redirect:/sales/projects/" + id;
     }
 
-    @PostMapping("/admin/projects/{id}/members/{aId}/update")
+    @PostMapping("/sales/projects/{id}/members/{aId}/update")
     public String updateMember(
             @PathVariable Long id,
             @PathVariable Long aId,
@@ -129,7 +129,7 @@ public class ProjectController {
         return "redirect:/sales/projects/" + id;
     }
 
-    @PostMapping("/admin/projects/{id}/members/{aId}/delete")
+    @PostMapping("/sales/projects/{id}/members/{aId}/delete")
     public String removeMember(
             @PathVariable Long id,
             @PathVariable Long aId,

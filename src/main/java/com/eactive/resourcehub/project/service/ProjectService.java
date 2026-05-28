@@ -55,11 +55,12 @@ public class ProjectService {
         return assignmentRepository.findByProjectId(projectId);
     }
 
-    /** 프로젝트 멤버 추가 모달용 활성 직원 목록 (ADMIN 제외, 이름순) */
+    /** 프로젝트 멤버 추가 모달용 활성 직원 목록 (ADMIN 제외, 인력표 노출 팀만, 이름순) */
     @Transactional(readOnly = true)
     public List<User> findAssignableUsers() {
         return userRepository.findByStatusWithTeam(UserStatus.ACTIVE).stream()
                 .filter(u -> u.getRole() != UserRole.ADMIN)
+                .filter(u -> u.getTeam() != null && u.getTeam().isProjectTeam())
                 .sorted(Comparator.comparing(User::getName))
                 .collect(java.util.stream.Collectors.toList());
     }
@@ -194,7 +195,7 @@ public class ProjectService {
     }
 
     private void requireAdmin(UserRole role) {
-        if (role != UserRole.ADMIN)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "관리자만 프로젝트를 관리할 수 있습니다.");
+        if (role != UserRole.ADMIN && role != UserRole.SALES)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "관리자 또는 영업 담당자만 프로젝트를 관리할 수 있습니다.");
     }
 }
