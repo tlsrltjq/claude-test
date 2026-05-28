@@ -47,9 +47,9 @@
 → 전면 UI 리디자인 P0부터 순서대로 진행
 
 ### 리디자인 단계 계획
-- [ ] **P0** — `app.css` 전면 재작성 + `fragments/sidebar.html` + `fragments/topbar.html` 신규 생성
-- [ ] **P1** — 인증 화면: `login.html`, `signup.html`, `login-forgot*.html`, `signup-verify.html`
-- [ ] **P2** — 대시보드: `dashboard.html`, `admin/dashboard.html`
+- [x] **P0** — `app.css` 전면 재작성 + `fragments/sidebar.html` 신규 + `admin/dashboard.html` 쉘 구조 적용
+- [x] **P1** — 인증 화면: `login.html`, `signup.html` 2-column 리디자인 (forgot/verify 페이지는 기존 centered card 유지)
+- [x] **P2** — 대시보드: `dashboard.html` app-shell + sidebar fragment 적용 (`admin/dashboard.html`은 P0에서 완료)
 - [ ] **P3** — 어드민 직원: `admin/employees.html`, `admin/employee-detail.html`, `admin/employee-documents.html`, `admin/employee-document-detail.html`
 - [ ] **P4** — 어드민 나머지: `admin/teams.html`, `admin/team-edit.html`, `admin/documents-*.html`, `admin/statistics.html` 외 6개
 - [ ] **P5** — 영업: `sales/calendar.html`, `sales/members.html`, `sales/profiles.html`, `sales/career-calculator.html` 외 3개
@@ -68,11 +68,18 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: 버그 수정 + 색상 변경 완료. 전면 UI 리디자인 계획 수립 후 미착수.
+2026-05-28: P0·P1 완료. 다음은 P2(사용자 대시보드 dashboard.html)부터 진행.
 
-- fix: SecurityConfig CSP — `*.daumcdn.net`, `*.kakao.com` 추가 (script-src·frame-src·connect-src·img-src)
-- fix: signup.html Bootstrap JS 누락 추가 → 개인정보 동의 모달 작동
-- fix: 주소검색 script URL `//` → `https://` 명시 (HTTP 환경에서 Kakao 서버 거부 방지)
-- chore: app.css 전체 색상 `#0d6efd` (Bootstrap 기본 파란색)으로 통일 (`#1c2538`, `#2563eb` 제거)
-- plan: 전면 UI 리디자인 계획 수립 (P0~P7, 사이드바 쉘 구조 + 새 디자인 토큰)
-- 다음: P0부터 순서대로 리디자인 진행 (각 단계별 확인 후 다음 단계)
+**P0 완료:**
+- feat: app.css Design System v2 전면 재작성 (CSS 변수, 쉘 레이아웃, 사이드바, KPI 카드, 메뉴 리스트 등)
+- feat: `fragments/sidebar.html` 신규 (내 화면·영업·관리자 nav, 역할별 sec:authorize, 모바일 토글)
+- feat: `admin/dashboard.html` 새 쉘 구조(app-shell) + sidebar fragment 적용
+- test: E2E 어드민 대시보드 셀렉터 업데이트 (.app-sidebar, .kpi-card, .menu-list-item)
+
+**P1 완료:**
+- feat: `login.html` 2-column 레이아웃 (auth-2col: 왼쪽 다크 브랜딩 + 오른쪽 폼, 모든 JS 유지)
+- feat: `signup.html` 2-column 레이아웃 (auth-form-box--wide, auth-right--top, 모든 th:field·JS 유지)
+- test: E2E login 페이지 셀렉터 `.login-header` → `.auth-left` 업데이트
+- 빌드: BUILD SUCCESSFUL, security-lint 15/15 PASS
+
+**다음: P3 — 어드민 직원 페이지 (`admin/employees.html`, `admin/employee-detail.html` 등) 쉘 구조 적용**

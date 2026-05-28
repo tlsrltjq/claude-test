@@ -25,8 +25,8 @@ test.describe('공개 페이지', () => {
     await expect(page.locator('input[name="username"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
-    // .login-header 렌더링
-    await expect(page.locator('.login-header')).toBeVisible();
+    // 좌측 브랜딩 패널 렌더링
+    await expect(page.locator('.auth-left')).toBeVisible();
   });
 
   test('비밀번호 찾기 페이지 렌더링', async ({ page }) => {
@@ -134,7 +134,7 @@ test.describe('내 화면(My) 흐름', () => {
   test('대시보드 — welcome-banner 렌더링', async ({ page }) => {
     await login(page, ADMIN_EMAIL, ADMIN_PW);
     await page.goto('/dashboard');
-    await expect(page.locator('.topnav').first()).toBeVisible();
+    await expect(page.locator('.app-sidebar')).toBeVisible();
     await expect(page.locator('.welcome-banner')).toBeVisible();
     await expect(page.locator('style')).toHaveCount(0);
   });

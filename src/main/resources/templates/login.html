@@ -9,81 +9,91 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<div class="login-wrap">
-    <div class="login-card card">
+<div class="auth-2col">
 
-        <div class="login-header">
-            <i class="bi bi-grid-3x3-gap-fill logo-icon"></i>
-            <div class="brand">eActive Resource Hub</div>
-            <h1>로그인</h1>
-        </div>
-
-        <div class="login-body">
-            <div th:if="${param.signup}" class="alert alert-success d-flex align-items-center gap-2 mb-3">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>회원가입이 완료되었습니다. 로그인해 주세요.</span>
-            </div>
-            <div th:if="${param.error}" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span>이메일 또는 비밀번호가 올바르지 않습니다.</span>
-            </div>
-            <div th:if="${param.logout}" class="alert alert-secondary d-flex align-items-center gap-2 mb-3">
-                <i class="bi bi-box-arrow-left"></i>
-                <span>로그아웃되었습니다.</span>
-            </div>
-            <div th:if="${param.reset}" class="alert alert-success d-flex align-items-center gap-2 mb-3">
-                <i class="bi bi-shield-check-fill"></i>
-                <span>비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해 주세요.</span>
-            </div>
-            <div th:if="${param.expired}" class="alert alert-warning d-flex align-items-center gap-2 mb-3">
-                <i class="bi bi-person-x-fill"></i>
-                <span>관리자에 의해 계정이 비활성화되어 세션이 종료되었습니다.</span>
-            </div>
-
-            <form th:action="@{/login}" method="post" id="loginForm">
-                <div class="mb-3">
-                    <label for="username" class="form-label">이메일</label>
-                    <div class="input-icon">
-                        <i class="bi bi-envelope-fill"></i>
-                        <input type="email" id="username" name="username"
-                               class="form-control" placeholder="이름@eactive.co.kr"
-                               required autocomplete="username">
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">비밀번호</label>
-                    <div class="input-icon">
-                        <i class="bi bi-lock-fill"></i>
-                        <input type="password" id="password" name="password"
-                               class="form-control has-toggle"
-                               required autocomplete="current-password">
-                        <button type="button" class="pw-toggle" id="pwToggle" tabindex="-1">
-                            <i class="bi bi-eye" id="pwToggleIcon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="form-check mb-0">
-                        <input type="checkbox" class="form-check-input" id="rememberEmail" name="rememberEmail" value="on">
-                        <label class="form-check-label small text-muted" for="rememberEmail">이메일 기억하기</label>
-                    </div>
-                </div>
-
-                <button type="submit" id="loginBtn" class="btn btn-primary w-100 btn-login">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> 로그인
-                </button>
-            </form>
-
-            <div class="divider">또는</div>
-
-            <div class="bottom-links">
-                <a th:href="@{/login/forgot}"><i class="bi bi-key me-1"></i>비밀번호 찾기</a>
-                <a th:href="@{/signup}" class="signup-link"><i class="bi bi-person-plus me-1"></i>회원가입</a>
-            </div>
-        </div>
+  <!-- Left branding panel -->
+  <div class="auth-left login-header">
+    <div class="auth-left-inner">
+      <i class="bi bi-grid-3x3-gap-fill auth-left-icon"></i>
+      <div class="auth-left-brand">eActive Resource Hub</div>
+      <div class="auth-left-title">인력·문서<br>관리 포털</div>
+      <div class="auth-left-sub">사내 자원을 한 곳에서<br>체계적으로 관리하세요.</div>
     </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <div class="auth-form-title">로그인</div>
+      <div class="auth-form-sub">계정 이메일과 비밀번호를 입력하세요.</div>
+
+      <div th:if="${param.signup}" class="alert alert-success d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>회원가입이 완료되었습니다. 로그인해 주세요.</span>
+      </div>
+      <div th:if="${param.error}" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>이메일 또는 비밀번호가 올바르지 않습니다.</span>
+      </div>
+      <div th:if="${param.logout}" class="alert alert-secondary d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-box-arrow-left"></i>
+          <span>로그아웃되었습니다.</span>
+      </div>
+      <div th:if="${param.reset}" class="alert alert-success d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-shield-check-fill"></i>
+          <span>비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해 주세요.</span>
+      </div>
+      <div th:if="${param.expired}" class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-person-x-fill"></i>
+          <span>관리자에 의해 계정이 비활성화되어 세션이 종료되었습니다.</span>
+      </div>
+
+      <form th:action="@{/login}" method="post" id="loginForm">
+          <div class="mb-3">
+              <label for="username" class="form-label">이메일</label>
+              <div class="input-icon">
+                  <i class="bi bi-envelope-fill"></i>
+                  <input type="email" id="username" name="username"
+                         class="form-control" placeholder="이름@eactive.co.kr"
+                         required autocomplete="username">
+              </div>
+          </div>
+
+          <div class="mb-3">
+              <label for="password" class="form-label">비밀번호</label>
+              <div class="input-icon">
+                  <i class="bi bi-lock-fill"></i>
+                  <input type="password" id="password" name="password"
+                         class="form-control has-toggle"
+                         required autocomplete="current-password">
+                  <button type="button" class="pw-toggle" id="pwToggle" tabindex="-1">
+                      <i class="bi bi-eye" id="pwToggleIcon"></i>
+                  </button>
+              </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+              <div class="form-check mb-0">
+                  <input type="checkbox" class="form-check-input" id="rememberEmail" name="rememberEmail" value="on">
+                  <label class="form-check-label small text-muted" for="rememberEmail">이메일 기억하기</label>
+              </div>
+              <a th:href="@{/login/forgot}" class="small text-muted text-decoration-none">비밀번호 찾기</a>
+          </div>
+
+          <button type="submit" id="loginBtn" class="btn btn-primary w-100 btn-login">
+              <i class="bi bi-box-arrow-in-right me-1"></i> 로그인
+          </button>
+      </form>
+
+      <div class="divider">또는</div>
+
+      <div class="bottom-links">
+          <span class="text-muted small">계정이 없으신가요?</span>
+          <a th:href="@{/signup}" class="signup-link"><i class="bi bi-person-plus me-1"></i>회원가입</a>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>

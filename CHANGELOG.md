@@ -8,6 +8,9 @@
 ## UI 디자인 개선 — 색상 통일·버그 수정·리디자인 계획
 
 2026-05-28 | UI | plan: 전면 UI 리디자인 계획 수립 — 사이드바 쉘 구조·새 디자인 토큰·P0~P7 단계 정의 (미착수)
+2026-05-28 | P0 | feat: app.css Design System v2 전면 재작성 + fragments/sidebar.html 신규 + admin/dashboard.html 쉘 구조 적용
+2026-05-28 | P1 | feat: login.html·signup.html 2-column 레이아웃 리디자인 (auth-2col·auth-left·auth-right·auth-form-box)
+2026-05-28 | P2 | feat: dashboard.html app-shell + sidebar fragment 적용 — topnav·container 제거, 쉘 구조 통일
 2026-05-28 | UI | chore: app.css 전체 색상 #0d6efd으로 통일 (Bootstrap 기본 파란색, 기존 #1c2538·#2563eb 제거)
 2026-05-28 | UI | fix: SecurityConfig CSP 확장 — *.daumcdn.net·*.kakao.com (script-src·frame-src·connect-src·img-src)
 2026-05-28 | UI | fix: signup.html Bootstrap JS 추가 + 주소검색 script https:// 명시 (개인정보 모달·주소검색 팝업 수정)

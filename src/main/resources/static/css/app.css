@@ -1027,6 +1027,78 @@ nav.topnav { background: var(--accent); }
 .timer-badge { display: inline-flex; align-items: center; gap: .4rem; background: #f0f2f5; border-radius: 50px; padding: .35rem .9rem; font-size: 1.1rem; font-weight: 700; margin-bottom: 1.1rem; }
 .code-input { font-size: 1.5rem; text-align: center; letter-spacing: .5em; font-weight: 700; }
 
+/* ── Auth 2-column layout (login + signup) ──────────────────── */
+.auth-2col { display: flex; min-height: 100vh; }
+.auth-left {
+  width: 42%;
+  background: var(--sb-bg);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2.5rem;
+  color: #fff;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.auth-left::before {
+  content: '';
+  position: absolute;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: rgba(13,110,253,.14);
+  top: -90px; right: -110px;
+  pointer-events: none;
+}
+.auth-left::after {
+  content: '';
+  position: absolute;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+  bottom: 40px; left: -70px;
+  pointer-events: none;
+}
+.auth-left-inner { position: relative; z-index: 1; text-align: center; max-width: 280px; }
+.auth-left-icon { font-size: 3rem; color: var(--accent); display: block; margin-bottom: 1.1rem; }
+.auth-left-brand { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; opacity: .45; margin-bottom: .5rem; }
+.auth-left-title { font-size: 1.7rem; font-weight: 800; line-height: 1.35; margin-bottom: .75rem; }
+.auth-left-sub { font-size: .85rem; line-height: 1.8; opacity: .6; }
+.auth-right {
+  flex: 1;
+  background: var(--page-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+  min-height: 100vh;
+}
+.auth-form-box {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 16px rgba(0,0,0,.08);
+  padding: 2.25rem 2rem;
+}
+.auth-form-box--wide { max-width: 520px; }
+.auth-right--top { align-items: flex-start; }
+.auth-form-title { font-size: 1.3rem; font-weight: 700; color: var(--tx1); margin-bottom: .25rem; }
+.auth-form-sub { font-size: .84rem; color: var(--tx2); margin-bottom: 1.5rem; }
+@media (max-width: 767px) {
+  .auth-2col { flex-direction: column; }
+  .auth-left { position: relative; width: 100%; height: auto; padding: 2rem 1.5rem; }
+  .auth-left::before, .auth-left::after { display: none; }
+  .auth-left-title { font-size: 1.25rem; }
+  .auth-left-sub { display: none; }
+  .auth-right { padding: 1.5rem 1rem; min-height: auto; align-items: flex-start; }
+  .auth-form-box { padding: 1.5rem 1.25rem; }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    ERROR PAGES
    ═══════════════════════════════════════════════════════════════ */
