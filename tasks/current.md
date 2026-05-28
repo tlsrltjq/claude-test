@@ -68,7 +68,7 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: Design System v3 모던 플랫 재개선 완료.
+2026-05-28: Design System v3 모던 플랫 재개선 완료. .page-wrap max-width 제거(전체 화면 너비 활용).
 - app.css: accent #2563eb, sidebar #1e293b/240px, 테이블 헤더 전부 라이트(#f1f5f9+대문자), 카드 shadow-sm, 메뉴아이템 스프링 cubic-bezier 애니메이션
 - dashboard.html: welcome-hero 그라디언트 + 아바타 + 전체너비 메뉴그리드(설명 텍스트 포함, 5개 메뉴)
 - sales/project-detail.html: horizontal 정보카드 + assign-table + 아바타 멤버 테이블

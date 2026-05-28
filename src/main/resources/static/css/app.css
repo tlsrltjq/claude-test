@@ -217,8 +217,7 @@ body {
 }
 .page-wrap {
   flex: 1;
-  padding: 1.5rem;
-  max-width: 1200px;
+  padding: 1.5rem 2rem;
   width: 100%;
 }
 
