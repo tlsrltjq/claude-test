@@ -11,10 +11,10 @@
 - [x] **3단계** — `ProjectService` 구현 (생성·수정·삭제·인원 일괄 등록·추가·해제)
 - [x] **4단계** — `ProjectController` 구현 (CRUD API + 상세 페이지)
 - [x] **5+9단계** — V223: 비정규화 컬럼 제거 + 구 배정 CRUD 엔드포인트 삭제
-- [ ] **6단계** — `CalendarGridBuilder` 재설계 (Project 기반 dayMap)
+- [x] **6단계** — `CalendarGridBuilder` 재설계 (Project 기반 weekBars)
 - [x] **7단계** — `sales/project-detail.html` 신규 화면 (투입 직원 테이블·수정 모달)
-- [ ] **8단계** — `sales/calendar.html` 바(bar) 렌더링 적용
-- [ ] **10단계** — 테스트 작성 (Project 엔티티·서비스·컨트롤러)
+- [x] **8단계** — `sales/calendar.html` 바(bar) 렌더링 적용
+- [x] **10단계** — 테스트 작성 (Project 엔티티·서비스·컨트롤러)
 
 ## 완료 기준
 - `./gradlew build` BUILD SUCCESSFUL
@@ -58,7 +58,7 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: 5+9단계 커밋(3aea5c0) 완료.
+2026-05-28: 투입 캘린더 개편 전 단계(1~10) 완료.
 - V223 적용 — project_assignments에서 project_name·client_name·memo 컬럼 DROP
 - ProjectAssignment 엔티티: Project FK 기반으로 재편, create/update 팩토리 삭제
 - ProjectAssignmentService/Controller: create·update 메서드 삭제, delete만 유지
