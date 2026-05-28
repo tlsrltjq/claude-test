@@ -7,7 +7,11 @@
 
 ## UI 디자인 개선 — 색상 통일·버그 수정·리디자인 계획
 
-2026-05-28 | refactor | refactor: 리팩토링 1단계 완료 — PasswordValidator 공통 유틸 추출(SignupService·PasswordResetService 중복 제거), DocumentPreviewResolver @Component 추출(MyFolderController·AdminController·DocumentController 중복 제거), DocumentUploadService private helper 분리
+2026-05-28 | refactor | refactor: 리팩토링 1단계 — PasswordValidator 공통 유틸, DocumentPreviewResolver @Component, DocumentUploadService private helper 분리
+2026-05-28 | refactor | refactor: 리팩토링 2단계 — ResourceNotFoundException 도입, GlobalExceptionHandler 개선 (IllegalStateException→500 버그 수정)
+2026-05-28 | refactor | perf: 리팩토링 3단계 — MyFolderService N+1 제거 (findLatestVersionsByDocumentIds 배치 쿼리, findByFolderIdAndStatusWithVersion 사용)
+2026-05-28 | refactor | refactor: 리팩토링 4단계 — DTO 검증 애너테이션 추가 (DocumentUploadRequest, Project 관련 DTO), MethodArgumentNotValidException 핸들러
+2026-05-28 | test | test: 리팩토링 5단계 — PasswordValidatorTest(7케이스), DocumentPreviewResolverTest(10케이스) 추가
 2026-05-28 | UI | plan: 전면 UI 리디자인 계획 수립 — 사이드바 쉘 구조·새 디자인 토큰·P0~P7 단계 정의 (미착수)
 2026-05-28 | UI | feat: 전면 UI 리디자인 P3~P7 완료 — admin 17개·sales 7개·my/search/settings/shared 8개·error 3개 전체 app-shell+sidebar 마이그레이션 (topnav 제거, page-hd 패턴, 로딩 오버레이 통일)
 2026-05-28 | UI | feat: Design System v3 — 모던 플랫 재개선 (테이블 헤더 라이트, 카드 shadow, 메뉴 스프링 애니메이션, dashboard welcome-hero, project-detail 멤버 아바타 테이블)

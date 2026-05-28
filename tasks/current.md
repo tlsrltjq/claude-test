@@ -68,9 +68,15 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: 리팩토링 1단계 완료. BUILD SUCCESSFUL. security-lint 15/15 PASS.
-- PasswordValidator (common/util) 추출 — SignupService·PasswordResetService 중복 제거
-- DocumentPreviewResolver (@Component) 추출 — MyFolderController·AdminController·DocumentController 중복 제거
-- DocumentUploadService private helper 분리 (upload/uploadToFolder → createDocument·applyDocumentMeta·buildAndSaveVersion·handleApproval·recordAudit·generateThumbnailSilently)
+2026-05-28: 리팩토링 전체 완료 (1~5단계). BUILD SUCCESSFUL. security-lint 15/15 PASS.
+- 1단계: PasswordValidator, DocumentPreviewResolver, DocumentUploadService helper 분리
+- 2단계: ResourceNotFoundException, GlobalExceptionHandler 개선 (IllegalStateException→500 버그 수정)
+- 3단계: MyFolderService N+1 제거 (findLatestVersionsByDocumentIds 배치 쿼리)
+- 4단계: DTO 검증 애너테이션 (@NotBlank/@NotNull), MethodArgumentNotValidException 핸들러
+- 5단계: PasswordValidatorTest(7), DocumentPreviewResolverTest(10) 단위 테스트
 
-**다음 작업: 2단계(예외 계층 정리)·3단계(N+1 최적화)·4단계(DTO 검증)·5단계(테스트 보강) 중 사용자 지시 시 진행**
+**다음 작업 없음 — 리팩토링 전 단계 완료**
+
+**[메모] Phase 4 미완료 사항**: MVC PRG 패턴 컨트롤러에 @Valid 미추가.
+현재 DTO에 @NotBlank/@NotNull 애너테이션만 있고 컨트롤러에 @Valid가 없어 Bean Validation이 트리거되지 않음.
+서비스 레이어의 validate() 메서드로 검증 중. 향후 REST API 엔드포인트 추가 시 @Valid + BindingResult 패턴 적용 권장.
