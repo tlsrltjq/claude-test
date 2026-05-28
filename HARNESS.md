@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V223 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-28):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. 전면 UI 리디자인 P0~P7 전체 완료. P0: app.css Design System v2 + fragments/sidebar.html. P1: login/signup 2-column. P2: dashboard.html. P3: admin 직원 4개. P4: admin 나머지 13개. P5: sales 7개. P6: my/search/settings/shared 8개. P7: error 3개. 로그인·회원가입 등 인증 화면은 사이드바 없는 독립 레이아웃 유지.
+**현재 상태 (2026-05-28):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. 모던 플랫 UI 재개선 완료 — app.css Design System v3(accent #2563eb, 테이블 헤더 라이트, 카드 shadow, 메뉴 스프링 애니메이션), dashboard.html 전면 재설계(welcome-hero 그라디언트 + 전체 너비 메뉴 그리드), sales/project-detail.html 재설계(horizontal 정보 카드 + 아바타 멤버 테이블).
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
