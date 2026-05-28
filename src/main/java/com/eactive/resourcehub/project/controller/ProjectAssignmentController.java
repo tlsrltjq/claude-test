@@ -2,8 +2,10 @@ package com.eactive.resourcehub.project.controller;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.project.entity.AssignmentStatus;
+import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.service.ProjectAssignmentService;
+import com.eactive.resourcehub.project.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +23,7 @@ import java.util.List;
 public class ProjectAssignmentController {
 
     private final ProjectAssignmentService assignmentService;
+    private final ProjectService projectService;
 
     // ── 캘린더 페이지 ─────────────────────────────────────────────
 
@@ -39,14 +42,17 @@ public class ProjectAssignmentController {
 
         List<ProjectAssignment> assignments =
                 assignmentService.getMonthlyAssignments(ym, q, project, status);
+        List<Project> monthlyProjects = projectService.getMonthlyProjects(ym);
 
         model.addAttribute("ym",             ym);
         model.addAttribute("prev",           ym.minusMonths(1));
         model.addAttribute("next",           ym.plusMonths(1));
         model.addAttribute("today",          LocalDate.now());
         model.addAttribute("weeks",          CalendarGridBuilder.buildWeeks(ym));
+        model.addAttribute("weekBars",       CalendarGridBuilder.buildProjectWeekBars(monthlyProjects, ym));
         model.addAttribute("dayMap",         CalendarGridBuilder.buildDayMap(assignments, ym));
         model.addAttribute("allAssignments", assignments);
+        model.addAttribute("monthlyProjects", monthlyProjects);
         model.addAttribute("allStatuses",    AssignmentStatus.values());
         model.addAttribute("assignableUsers", assignmentService.findAssignableUsers());
         model.addAttribute("currentUser",    details.getUser());

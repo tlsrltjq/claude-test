@@ -5,6 +5,7 @@ import com.eactive.resourcehub.common.security.CustomUserDetailsService;
 import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.service.ProjectAssignmentService;
+import com.eactive.resourcehub.project.service.ProjectService;
 import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
@@ -40,6 +41,7 @@ class ProjectAssignmentControllerTest {
     @Autowired MockMvc mockMvc;
 
     @MockitoBean ProjectAssignmentService  assignmentService;
+    @MockitoBean ProjectService            projectService;
     @MockitoBean CustomUserDetailsService  customUserDetailsService;
 
     private static final LocalDate TODAY = LocalDate.now();
@@ -58,6 +60,7 @@ class ProjectAssignmentControllerTest {
         when(assignmentService.getMonthlyAssignments(any(), any(), any(), any()))
                 .thenReturn(List.of());
         when(assignmentService.findAssignableUsers()).thenReturn(List.of());
+        when(projectService.getMonthlyProjects(any())).thenReturn(List.of());
     }
 
     // ── GET /sales/calendar — 접근 제어 ────────────────────────────
