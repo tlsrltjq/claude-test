@@ -35,16 +35,16 @@ public class MyFolderService {
 
     @Transactional(readOnly = true)
     public List<Document> findActiveDocuments(Long folderId) {
-        return documentRepository.findByFolderIdAndStatus(folderId, DocumentStatus.ACTIVE);
+        return documentRepository.findByFolderIdAndStatusWithVersion(folderId, DocumentStatus.ACTIVE);
     }
 
     @Transactional(readOnly = true)
     public Map<Long, DocumentVersion> findLatestVersionMap(List<Document> documents) {
+        if (documents.isEmpty()) return Map.of();
+        List<Long> ids = documents.stream().map(Document::getId).toList();
         Map<Long, DocumentVersion> map = new HashMap<>();
-        for (Document doc : documents) {
-            documentVersionRepository.findFirstByDocumentIdOrderByVersionNoDesc(doc.getId())
-                    .ifPresent(v -> map.put(doc.getId(), v));
-        }
+        documentVersionRepository.findLatestVersionsByDocumentIds(ids)
+                .forEach(v -> map.put(v.getDocument().getId(), v));
         return map;
     }
 
