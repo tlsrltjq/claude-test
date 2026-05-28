@@ -72,11 +72,17 @@ body {
 .sb-brand {
   display: flex;
   align-items: center;
-  gap: .55rem;
-  padding: 1.1rem 1rem .9rem;
-  text-decoration: none;
+  padding: .6rem 1rem .6rem;
   border-bottom: 1px solid rgba(255,255,255,.07);
   flex-shrink: 0;
+}
+.sb-brand-link {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
 }
 .sb-brand-icon {
   width: 30px; height: 30px;
