@@ -4,6 +4,7 @@ import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.common.security.CustomUserDetailsService;
 import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
+import com.eactive.resourcehub.project.entity.ProjectStatus;
 import com.eactive.resourcehub.project.service.ProjectAssignmentService;
 import com.eactive.resourcehub.project.service.ProjectService;
 import com.eactive.resourcehub.team.entity.Team;
@@ -140,6 +141,33 @@ class ProjectAssignmentControllerTest {
                         .with(user(new CustomUserDetails(adminUser))))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("사용자5")));
+    }
+
+    // ── GET /sales/calendar — 프로젝트 바 렌더링 ─────────────────────
+
+    @Test
+    void 프로젝트가_있으면_바_색상_클래스가_캘린더에_렌더링됨() throws Exception {
+        Project project = Project.create("테스트 프로젝트", "테스트 고객사",
+                TODAY, TODAY.plusDays(14), null);
+        ReflectionTestUtils.setField(project, "id", 3L);
+
+        when(projectService.getMonthlyProjects(any())).thenReturn(List.of(project));
+
+        mockMvc.perform(get("/sales/calendar")
+                        .with(user(new CustomUserDetails(adminUser))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("bar-color-3")));
+    }
+
+    @Test
+    void 프로젝트가_없으면_바_행이_렌더링되지_않음() throws Exception {
+        mockMvc.perform(get("/sales/calendar")
+                        .with(user(new CustomUserDetails(adminUser))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString("cal-bar-row"))));
     }
 
     // ── POST /sales/assignments — CSRF 검증 ─────────────────────────
