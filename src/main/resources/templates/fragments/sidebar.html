@@ -116,25 +116,13 @@
   });
   overlay.addEventListener('click', mobileClose);
 
-  /* ── Desktop collapse ── */
+  /* ── Desktop collapse (icon-only mini mode) ── */
   var isMobile = function () { return window.innerWidth < 768; };
-
-  var openBtn = document.createElement('button');
-  openBtn.className = 'sb-open-btn';
-  openBtn.setAttribute('aria-label', '사이드바 열기');
-  openBtn.title = '사이드바 열기';
-  openBtn.innerHTML = '<i class="bi bi-layout-sidebar"></i>';
-  document.body.appendChild(openBtn);
-
   var collapseBtn = document.getElementById('sbCollapseBtn');
 
-  function desktopCollapse() {
-    document.body.classList.add('sidebar-collapsed');
-    localStorage.setItem('sidebarCollapsed', '1');
-  }
-  function desktopExpand() {
-    document.body.classList.remove('sidebar-collapsed');
-    localStorage.setItem('sidebarCollapsed', '0');
+  function desktopToggle() {
+    var collapsed = document.body.classList.toggle('sidebar-collapsed');
+    localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
   }
 
   /* Restore saved state on page load */
@@ -143,9 +131,8 @@
   }
 
   if (collapseBtn) {
-    collapseBtn.addEventListener('click', desktopCollapse);
+    collapseBtn.addEventListener('click', desktopToggle);
   }
-  openBtn.addEventListener('click', desktopExpand);
 })();
 </script>
 
