@@ -9,379 +9,357 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<nav class="topnav navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/admin}">
-            <i class="bi bi-shield-fill me-1"></i>eActive Hub
-            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
-        </a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/employees}" class="btn btn-nav btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>직원 목록
-            </a>
-            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
-                <i class="bi bi-speedometer2 me-1"></i>대시보드
-            </a>
-            <a th:href="@{/admin/certificate}" class="btn btn-nav btn-sm">
-                <i class="bi bi-file-earmark-text me-1"></i>재직증명서
-            </a>
-        </div>
-    </div>
-</nav>
 
-<div class="container mt-4">
+<div class="app-shell">
 
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
         <i class="bi bi-check-circle me-1"></i><span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
+      </div>
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
         <i class="bi bi-exclamation-triangle me-1"></i><span th:text="${errorMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+      </div>
 
-    <!-- 직원 헤더 -->
-    <div class="emp-header d-flex align-items-center gap-3 flex-wrap">
+      <!-- 직원 헤더 -->
+      <div class="emp-header d-flex align-items-center gap-3 flex-wrap">
         <div class="emp-avatar" th:text="${#strings.substring(user.name, 0, 1)}">홍</div>
         <div class="flex-grow-1 min-w-0">
-            <div class="emp-name" th:text="${user.name}"></div>
-            <div class="emp-email" th:text="${user.email}"></div>
+          <div class="emp-name" th:text="${user.name}"></div>
+          <div class="emp-email" th:text="${user.email}"></div>
         </div>
         <div class="d-flex gap-2 align-items-center flex-wrap">
-            <span class="badge rounded-pill px-2 py-1"
-                  th:classappend="${user.role.name() == 'ADMIN'} ? 'badge-role-admin' : (${user.role.name() == 'SALES'} ? 'badge-role-sales' : 'badge-role-emp')"
-                  th:text="${user.role.displayName}" style="font-size:.78rem;"></span>
-            <span class="badge rounded-pill px-2 py-1"
-                  th:classappend="${user.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
-                  th:text="${user.status.name() == 'ACTIVE'} ? '활성' : '비활성'" style="font-size:.78rem;"></span>
+          <span class="badge rounded-pill px-2 py-1"
+                th:classappend="${user.role.name() == 'ADMIN'} ? 'badge-role-admin' : (${user.role.name() == 'SALES'} ? 'badge-role-sales' : 'badge-role-emp')"
+                th:text="${user.role.displayName}" style="font-size:.78rem;"></span>
+          <span class="badge rounded-pill px-2 py-1"
+                th:classappend="${user.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                th:text="${user.status.name() == 'ACTIVE'} ? '활성' : '비활성'" style="font-size:.78rem;"></span>
         </div>
-    </div>
+      </div>
 
-    <!-- 탭 -->
-    <ul class="nav nav-tabs-custom">
+      <!-- 탭 -->
+      <ul class="nav nav-tabs-custom">
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${activeTab == 'info'} ? 'active'"
-               th:href="@{/admin/employees/{id}(id=${user.id},tab='info')}">
-                <i class="bi bi-person-circle me-1"></i>기본 정보
-            </a>
+          <a class="nav-link" th:classappend="${activeTab == 'info'} ? 'active'"
+             th:href="@{/admin/employees/{id}(id=${user.id},tab='info')}">
+            <i class="bi bi-person-circle me-1"></i>기본 정보
+          </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${activeTab == 'documents'} ? 'active'"
-               th:href="@{/admin/employees/{id}(id=${user.id},tab='documents')}">
-                <i class="bi bi-folder me-1"></i>문서
-                <span th:if="${documents != null and !#lists.isEmpty(documents)}"
-                      class="badge bg-secondary rounded-pill ms-1" th:text="${#lists.size(documents)}"></span>
-            </a>
+          <a class="nav-link" th:classappend="${activeTab == 'documents'} ? 'active'"
+             th:href="@{/admin/employees/{id}(id=${user.id},tab='documents')}">
+            <i class="bi bi-folder me-1"></i>문서
+            <span th:if="${documents != null and !#lists.isEmpty(documents)}"
+                  class="badge bg-secondary rounded-pill ms-1" th:text="${#lists.size(documents)}"></span>
+          </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${activeTab == 'role'} ? 'active'"
-               th:href="@{/admin/employees/{id}(id=${user.id},tab='role')}">
-                <i class="bi bi-person-gear me-1"></i>역할 변경
-            </a>
+          <a class="nav-link" th:classappend="${activeTab == 'role'} ? 'active'"
+             th:href="@{/admin/employees/{id}(id=${user.id},tab='role')}">
+            <i class="bi bi-person-gear me-1"></i>역할 변경
+          </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${activeTab == 'permissions'} ? 'active'"
-               th:href="@{/admin/employees/{id}(id=${user.id},tab='permissions')}">
-                <i class="bi bi-key me-1"></i>권한 관리
-                <span th:if="${permissions != null and !#lists.isEmpty(permissions)}"
-                      class="badge bg-info text-dark rounded-pill ms-1" th:text="${#lists.size(permissions)}"></span>
-            </a>
+          <a class="nav-link" th:classappend="${activeTab == 'permissions'} ? 'active'"
+             th:href="@{/admin/employees/{id}(id=${user.id},tab='permissions')}">
+            <i class="bi bi-key me-1"></i>권한 관리
+            <span th:if="${permissions != null and !#lists.isEmpty(permissions)}"
+                  class="badge bg-info text-dark rounded-pill ms-1" th:text="${#lists.size(permissions)}"></span>
+          </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${activeTab == 'position'} ? 'active'"
-               th:href="@{/admin/employees/{id}(id=${user.id},tab='position')}">
-                <i class="bi bi-person-badge me-1"></i>직급 변경
-            </a>
+          <a class="nav-link" th:classappend="${activeTab == 'position'} ? 'active'"
+             th:href="@{/admin/employees/{id}(id=${user.id},tab='position')}">
+            <i class="bi bi-person-badge me-1"></i>직급 변경
+          </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" th:classappend="${activeTab == 'team'} ? 'active'"
-               th:href="@{/admin/employees/{id}(id=${user.id},tab='team')}">
-                <i class="bi bi-people me-1"></i>팀 변경
-            </a>
+          <a class="nav-link" th:classappend="${activeTab == 'team'} ? 'active'"
+             th:href="@{/admin/employees/{id}(id=${user.id},tab='team')}">
+            <i class="bi bi-people me-1"></i>팀 변경
+          </a>
         </li>
-    </ul>
+      </ul>
 
-    <!-- ══ 탭: 기본 정보 ══ -->
-    <div th:if="${activeTab == 'info'}">
+      <!-- ══ 탭: 기본 정보 ══ -->
+      <div th:if="${activeTab == 'info'}">
         <div class="tab-card">
-            <div class="card-header-custom"><i class="bi bi-person-circle me-2"></i>기본 정보</div>
-            <div class="card-body">
-                <div class="info-row"><span class="info-label">이름</span><span class="info-val" th:text="${user.name}"></span></div>
-                <div class="info-row"><span class="info-label">이메일</span><span class="info-val text-muted" th:text="${user.email}"></span></div>
-                <div class="info-row"><span class="info-label">팀</span><span class="info-val" th:text="${user.team != null ? user.team.name : '-'}"></span></div>
-                <div class="info-row"><span class="info-label">직급</span><span class="info-val" th:text="${user.position != null ? user.position.displayName : '-'}"></span></div>
-                <div class="info-row"><span class="info-label">생년월일</span><span class="info-val" th:text="${user.birthDate != null ? #temporals.format(user.birthDate,'yyyy-MM-dd') : '-'}"></span></div>
-                <div class="info-row"><span class="info-label">연락처</span><span class="info-val" th:text="${user.phone != null and !user.phone.isEmpty() ? user.phone : '-'}"></span></div>
-                <div class="info-row">
-                    <span class="info-label">역할</span>
-                    <span class="info-val">
-                        <span th:text="${user.role.displayName}"
-                              th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-primary' : 'bg-secondary')"
-                              class="badge rounded-pill"></span>
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">계정 상태</span>
-                    <span class="info-val d-flex align-items-center gap-2">
-                        <span th:text="${user.status.name() == 'ACTIVE'} ? '활성' : '비활성'"
-                              th:classappend="${user.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
-                              class="badge rounded-pill"></span>
-                        <form th:if="${user.role.name() != 'ADMIN'}" method="post"
-                              th:action="@{/admin/employees/{id}/toggle-status(id=${user.id})}"
-                              class="d-inline">
-                            <button type="submit" class="btn btn-sm py-0 px-2"
-                                    th:classappend="${user.status.name() == 'ACTIVE'} ? 'btn-outline-danger' : 'btn-outline-success'"
-                                    th:text="${user.status.name() == 'ACTIVE'} ? '비활성화' : '활성화'"
-                                    th:attr="data-active=${user.status.name() == 'ACTIVE'}"
-                                    onclick="if(this.dataset.active==='true' && !confirm('이 계정을 비활성화하시겠습니까?')) return false;"></button>
-                        </form>
-                    </span>
-                </div>
-                <div class="info-row"><span class="info-label">이메일 인증</span><span class="info-val" th:text="${user.emailVerified ? '완료' : '미완료'}"></span></div>
-                <div class="info-row"><span class="info-label">개인 폴더</span><span class="info-val" th:text="${hasFolder ? '생성됨' : '없음'}"></span></div>
-                <div class="info-row"><span class="info-label">가입일</span><span class="info-val text-muted" th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+          <div class="card-header-custom"><i class="bi bi-person-circle me-2"></i>기본 정보</div>
+          <div class="card-body">
+            <div class="info-row"><span class="info-label">이름</span><span class="info-val" th:text="${user.name}"></span></div>
+            <div class="info-row"><span class="info-label">이메일</span><span class="info-val text-muted" th:text="${user.email}"></span></div>
+            <div class="info-row"><span class="info-label">팀</span><span class="info-val" th:text="${user.team != null ? user.team.name : '-'}"></span></div>
+            <div class="info-row"><span class="info-label">직급</span><span class="info-val" th:text="${user.position != null ? user.position.displayName : '-'}"></span></div>
+            <div class="info-row"><span class="info-label">생년월일</span><span class="info-val" th:text="${user.birthDate != null ? #temporals.format(user.birthDate,'yyyy-MM-dd') : '-'}"></span></div>
+            <div class="info-row"><span class="info-label">연락처</span><span class="info-val" th:text="${user.phone != null and !user.phone.isEmpty() ? user.phone : '-'}"></span></div>
+            <div class="info-row">
+              <span class="info-label">역할</span>
+              <span class="info-val">
+                <span th:text="${user.role.displayName}"
+                      th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-primary' : 'bg-secondary')"
+                      class="badge rounded-pill"></span>
+              </span>
             </div>
+            <div class="info-row">
+              <span class="info-label">계정 상태</span>
+              <span class="info-val d-flex align-items-center gap-2">
+                <span th:text="${user.status.name() == 'ACTIVE'} ? '활성' : '비활성'"
+                      th:classappend="${user.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                      class="badge rounded-pill"></span>
+                <form th:if="${user.role.name() != 'ADMIN'}" method="post"
+                      th:action="@{/admin/employees/{id}/toggle-status(id=${user.id})}"
+                      class="d-inline">
+                  <button type="submit" class="btn btn-sm py-0 px-2"
+                          th:classappend="${user.status.name() == 'ACTIVE'} ? 'btn-outline-danger' : 'btn-outline-success'"
+                          th:text="${user.status.name() == 'ACTIVE'} ? '비활성화' : '활성화'"
+                          th:attr="data-active=${user.status.name() == 'ACTIVE'}"
+                          onclick="if(this.dataset.active==='true' && !confirm('이 계정을 비활성화하시겠습니까?')) return false;"></button>
+                </form>
+              </span>
+            </div>
+            <div class="info-row"><span class="info-label">이메일 인증</span><span class="info-val" th:text="${user.emailVerified ? '완료' : '미완료'}"></span></div>
+            <div class="info-row"><span class="info-label">개인 폴더</span><span class="info-val" th:text="${hasFolder ? '생성됨' : '없음'}"></span></div>
+            <div class="info-row"><span class="info-label">가입일</span><span class="info-val text-muted" th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- ══ 탭: 문서 목록 ══ -->
-    <div th:if="${activeTab == 'documents'}">
+      <!-- ══ 탭: 문서 목록 ══ -->
+      <div th:if="${activeTab == 'documents'}">
         <div th:if="${documents == null or #lists.isEmpty(documents)}" class="tab-card">
-            <div class="empty-state"><i class="bi bi-file-earmark-x"></i><p>업로드된 문서가 없습니다.</p></div>
+          <div class="empty-state"><i class="bi bi-file-earmark-x"></i><p>업로드된 문서가 없습니다.</p></div>
         </div>
         <div th:if="${documents != null and !#lists.isEmpty(documents)}" class="tab-card">
-            <div class="card-header-custom d-flex align-items-center justify-content-between">
-                <span><i class="bi bi-folder-fill me-2"></i>문서 목록</span>
-                <span class="badge bg-light text-secondary border" th:text="${#lists.size(documents)} + '건'"></span>
+          <div class="card-header-custom d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-folder-fill me-2"></i>문서 목록</span>
+            <span class="badge bg-light text-secondary border" th:text="${#lists.size(documents)} + '건'"></span>
+          </div>
+          <div class="p-3">
+            <div class="input-group input-group-sm mb-3" style="max-width:300px;">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" id="docSearch" class="form-control border-start-0"
+                     placeholder="제목 또는 파일명 검색" oninput="filterDocs(this.value)">
             </div>
-            <div class="p-3">
-                <div class="input-group input-group-sm mb-3" style="max-width:300px;">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="docSearch" class="form-control border-start-0"
-                           placeholder="제목 또는 파일명 검색" oninput="filterDocs(this.value)">
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover mb-0" id="docTable">
-                    <thead>
-                    <tr>
-                        <th style="width:52px;"></th>
-                        <th>제목</th>
-                        <th>종류</th>
-                        <th>파일명</th>
-                        <th>버전</th>
-                        <th>상태</th>
-                        <th>업로드일</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="doc : ${documents}"
-                        th:with="cv=${doc.currentVersion}"
-                        th:data-title="${doc.title.toLowerCase()}"
-                        th:data-file="${cv != null ? cv.originalFileName.toLowerCase() : ''}">
-                        <td>
-                            <a th:if="${cv != null}" th:href="@{/documents/{id}/preview(id=${cv.id})}" target="_blank">
-                                <img th:if="${cv.thumbnailStoragePath != null}"
-                                     th:src="@{/documents/{id}/thumbnail(id=${cv.id})}"
-                                     class="doc-thumb" alt=""
-                                     onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
-                                <span th:with="ext=${cv.thumbnailStoragePath != null ? '' : (cv.originalFileName.substring(cv.originalFileName.lastIndexOf('.')+1)).toLowerCase()}"
-                                      th:if="${cv.thumbnailStoragePath == null}"
-                                      th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
-                                      th:text="${ext.toUpperCase()}"></span>
-                            </a>
-                        </td>
-                        <td class="fw-semibold" th:text="${doc.title}"></td>
-                        <td><span class="badge bg-secondary rounded-pill" th:text="${doc.documentType.displayName}"></span></td>
-                        <td class="text-muted small" th:text="${cv != null ? cv.originalFileName : '-'}"></td>
-                        <td class="text-muted small" th:text="${cv != null ? 'v' + cv.versionNo : '-'}"></td>
-                        <td>
-                            <span th:if="${cv != null and cv.reviewStatus.name() == 'PENDING_REVIEW'}" class="badge rounded-pill" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.7rem;">검토 대기</span>
-                            <span th:if="${cv != null and cv.reviewStatus.name() == 'APPROVED'}" class="badge bg-success rounded-pill" style="font-size:.7rem;">승인됨</span>
-                            <span th:if="${cv != null and cv.reviewStatus.name() == 'REJECTED'}" class="badge bg-danger rounded-pill" style="font-size:.7rem;">반려됨</span>
-                            <span th:if="${cv == null}" class="text-muted small">-</span>
-                        </td>
-                        <td class="text-muted small" th:text="${cv != null ? #temporals.format(cv.createdAt, 'yyyy-MM-dd') : '-'}"></td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <a th:if="${cv != null}" th:href="@{/documents/{id}/preview(id=${cv.id})}"
-                                   target="_blank" class="btn btn-outline-secondary btn-sm py-0 px-2">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a th:if="${cv != null}" th:href="@{/documents/{id}/download(id=${cv.id})}"
-                                   class="btn btn-outline-primary btn-sm py-0 px-2">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                                <a th:href="@{/admin/employees/{uid}/documents/{did}(uid=${user.id},did=${doc.id})}"
-                                   class="btn btn-outline-secondary btn-sm py-0 px-2">
-                                    <i class="bi bi-info-circle"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover mb-0" id="docTable">
+              <thead>
+              <tr>
+                <th style="width:52px;"></th>
+                <th>제목</th>
+                <th>종류</th>
+                <th>파일명</th>
+                <th>버전</th>
+                <th>상태</th>
+                <th>업로드일</th>
+                <th></th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="doc : ${documents}"
+                  th:with="cv=${doc.currentVersion}"
+                  th:data-title="${doc.title.toLowerCase()}"
+                  th:data-file="${cv != null ? cv.originalFileName.toLowerCase() : ''}">
+                <td>
+                  <a th:if="${cv != null}" th:href="@{/documents/{id}/preview(id=${cv.id})}" target="_blank">
+                    <img th:if="${cv.thumbnailStoragePath != null}"
+                         th:src="@{/documents/{id}/thumbnail(id=${cv.id})}"
+                         class="doc-thumb" alt=""
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+                    <span th:with="ext=${cv.thumbnailStoragePath != null ? '' : (cv.originalFileName.substring(cv.originalFileName.lastIndexOf('.')+1)).toLowerCase()}"
+                          th:if="${cv.thumbnailStoragePath == null}"
+                          th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                          th:text="${ext.toUpperCase()}"></span>
+                  </a>
+                </td>
+                <td class="fw-semibold" th:text="${doc.title}"></td>
+                <td><span class="badge bg-secondary rounded-pill" th:text="${doc.documentType.displayName}"></span></td>
+                <td class="text-muted small" th:text="${cv != null ? cv.originalFileName : '-'}"></td>
+                <td class="text-muted small" th:text="${cv != null ? 'v' + cv.versionNo : '-'}"></td>
+                <td>
+                  <span th:if="${cv != null and cv.reviewStatus.name() == 'PENDING_REVIEW'}" class="badge rounded-pill" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.7rem;">검토 대기</span>
+                  <span th:if="${cv != null and cv.reviewStatus.name() == 'APPROVED'}" class="badge bg-success rounded-pill" style="font-size:.7rem;">승인됨</span>
+                  <span th:if="${cv != null and cv.reviewStatus.name() == 'REJECTED'}" class="badge bg-danger rounded-pill" style="font-size:.7rem;">반려됨</span>
+                  <span th:if="${cv == null}" class="text-muted small">-</span>
+                </td>
+                <td class="text-muted small" th:text="${cv != null ? #temporals.format(cv.createdAt, 'yyyy-MM-dd') : '-'}"></td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <a th:if="${cv != null}" th:href="@{/documents/{id}/preview(id=${cv.id})}"
+                       target="_blank" class="btn btn-outline-secondary btn-sm py-0 px-2">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a th:if="${cv != null}" th:href="@{/documents/{id}/download(id=${cv.id})}"
+                       class="btn btn-outline-primary btn-sm py-0 px-2">
+                      <i class="bi bi-download"></i>
+                    </a>
+                    <a th:href="@{/admin/employees/{uid}/documents/{did}(uid=${user.id},did=${doc.id})}"
+                       class="btn btn-outline-secondary btn-sm py-0 px-2">
+                      <i class="bi bi-info-circle"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- ══ 탭: 역할 변경 ══ -->
-    <div th:if="${activeTab == 'role'}" style="max-width:500px;">
+      <!-- ══ 탭: 역할 변경 ══ -->
+      <div th:if="${activeTab == 'role'}" style="max-width:500px;">
         <div class="tab-card">
-            <div class="card-header-custom"><i class="bi bi-person-gear me-2"></i>역할 변경</div>
-            <div class="card-body">
-                <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" style="font-size:.84rem;">
-                    <i class="bi bi-exclamation-triangle-fill"></i>역할 변경은 즉시 반영됩니다. ADMIN 권한은 신중하게 부여하세요.
-                </div>
-                <div class="mb-3">
-                    <div class="info-row"><span class="info-label">현재 역할</span>
-                        <span th:text="${user.role.displayName}"
-                              th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-primary' : 'bg-secondary')"
-                              class="badge rounded-pill"></span>
-                    </div>
-                </div>
-                <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post">
-                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                    <div th:each="r : ${roles}" class="role-option" th:classappend="${user.role == r} ? 'selected'">
-                        <input class="form-check-input m-0" type="radio" name="role"
-                               th:id="'role_' + ${r.name()}"
-                               th:value="${r.name()}"
-                               th:checked="${user.role == r}">
-                        <label th:for="'role_' + ${r.name()}" th:text="${r.displayName}" class="mb-0 fw-semibold" style="cursor:pointer; flex:1;"></label>
-                    </div>
-                    <button type="submit" class="btn btn-warning fw-semibold mt-3">
-                        <i class="bi bi-check-lg me-1"></i>역할 변경
-                    </button>
-                </form>
+          <div class="card-header-custom"><i class="bi bi-person-gear me-2"></i>역할 변경</div>
+          <div class="card-body">
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" style="font-size:.84rem;">
+              <i class="bi bi-exclamation-triangle-fill"></i>역할 변경은 즉시 반영됩니다. ADMIN 권한은 신중하게 부여하세요.
             </div>
+            <div class="mb-3">
+              <div class="info-row"><span class="info-label">현재 역할</span>
+                <span th:text="${user.role.displayName}"
+                      th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-danger' : (${user.role.name() == 'SALES'} ? 'bg-primary' : 'bg-secondary')"
+                      class="badge rounded-pill"></span>
+              </div>
+            </div>
+            <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post">
+              <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+              <div th:each="r : ${roles}" class="role-option" th:classappend="${user.role == r} ? 'selected'">
+                <input class="form-check-input m-0" type="radio" name="role"
+                       th:id="'role_' + ${r.name()}"
+                       th:value="${r.name()}"
+                       th:checked="${user.role == r}">
+                <label th:for="'role_' + ${r.name()}" th:text="${r.displayName}" class="mb-0 fw-semibold" style="cursor:pointer; flex:1;"></label>
+              </div>
+              <button type="submit" class="btn btn-warning fw-semibold mt-3">
+                <i class="bi bi-check-lg me-1"></i>역할 변경
+              </button>
+            </form>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- ══ 탭: 권한 관리 ══ -->
-    <div th:if="${activeTab == 'permissions'}">
+      <!-- ══ 탭: 권한 관리 ══ -->
+      <div th:if="${activeTab == 'permissions'}">
         <div class="row g-3">
-            <div class="col-md-6">
-                <div class="tab-card h-100">
-                    <div class="card-header-custom"><i class="bi bi-list-check me-2"></i>현재 폴더 접근 권한</div>
-                    <div class="card-body">
-                        <div th:if="${#lists.isEmpty(permissions)}" class="text-center text-muted py-3" style="font-size:.85rem;">부여된 권한이 없습니다.</div>
-                        <div th:if="${!#lists.isEmpty(permissions)}">
-                            <div th:each="perm : ${permissions}" class="perm-row">
-                                <span>
-                                    <span class="text-muted small">폴더 ID: </span>
-                                    <span class="badge bg-secondary rounded-pill" th:text="${perm.targetId}"></span>
-                                </span>
-                                <form th:action="@{/admin/users/{id}/permissions/revoke(id=${user.id})}"
-                                      method="post" class="d-inline">
-                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                                    <input type="hidden" name="folderId" th:value="${perm.targetId}">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2"
-                                            onclick="return confirm('권한을 회수하시겠습니까?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+          <div class="col-md-6">
+            <div class="tab-card h-100">
+              <div class="card-header-custom"><i class="bi bi-list-check me-2"></i>현재 폴더 접근 권한</div>
+              <div class="card-body">
+                <div th:if="${#lists.isEmpty(permissions)}" class="text-center text-muted py-3" style="font-size:.85rem;">부여된 권한이 없습니다.</div>
+                <div th:if="${!#lists.isEmpty(permissions)}">
+                  <div th:each="perm : ${permissions}" class="perm-row">
+                    <span>
+                      <span class="text-muted small">폴더 ID: </span>
+                      <span class="badge bg-secondary rounded-pill" th:text="${perm.targetId}"></span>
+                    </span>
+                    <form th:action="@{/admin/users/{id}/permissions/revoke(id=${user.id})}"
+                          method="post" class="d-inline">
+                      <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                      <input type="hidden" name="folderId" th:value="${perm.targetId}">
+                      <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2"
+                              onclick="return confirm('권한을 회수하시겠습니까?')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
                 </div>
+              </div>
             </div>
-            <div class="col-md-6">
-                <div class="tab-card h-100">
-                    <div class="card-header-custom"><i class="bi bi-plus-circle me-2"></i>폴더 접근 권한 부여</div>
-                    <div class="card-body">
-                        <div th:if="${#lists.isEmpty(grantableFolders)}" class="text-center text-muted py-3" style="font-size:.85rem;">부여할 수 있는 폴더가 없습니다.</div>
-                        <form th:if="${!#lists.isEmpty(grantableFolders)}"
-                              th:action="@{/admin/users/{id}/permissions/grant(id=${user.id})}"
-                              method="post" class="d-flex gap-2">
-                            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                            <select name="folderId" class="form-select form-select-sm">
-                                <option th:each="f : ${grantableFolders}"
-                                        th:value="${f.id}"
-                                        th:text="${f.folderName + ' (' + f.owner.name + ')'}"></option>
-                            </select>
-                            <button type="submit" class="btn btn-primary btn-sm text-nowrap">
-                                <i class="bi bi-plus-lg"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══ 탭: 직급 변경 ══ -->
-    <div th:if="${activeTab == 'position'}" style="max-width:480px;">
-        <div class="tab-card">
-            <div class="card-header-custom"><i class="bi bi-person-badge me-2"></i>직급 변경</div>
-            <div class="card-body">
-                <div class="info-row mb-3">
-                    <span class="info-label">현재 직급</span>
-                    <strong th:text="${user.position != null ? user.position.displayName : '미설정'}"></strong>
-                </div>
-                <form th:action="@{/admin/employees/{id}/change-position(id=${user.id})}" method="post"
-                      class="d-flex gap-2">
-                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                    <select name="position" class="form-select">
-                        <option th:each="pos : ${positions}"
-                                th:value="${pos.name()}"
-                                th:text="${pos.displayName}"
-                                th:selected="${user.position != null and user.position.name() == pos.name()}"></option>
-                    </select>
-                    <button type="submit" class="btn btn-primary text-nowrap">
-                        <i class="bi bi-check-lg me-1"></i>변경
-                    </button>
+          </div>
+          <div class="col-md-6">
+            <div class="tab-card h-100">
+              <div class="card-header-custom"><i class="bi bi-plus-circle me-2"></i>폴더 접근 권한 부여</div>
+              <div class="card-body">
+                <div th:if="${#lists.isEmpty(grantableFolders)}" class="text-center text-muted py-3" style="font-size:.85rem;">부여할 수 있는 폴더가 없습니다.</div>
+                <form th:if="${!#lists.isEmpty(grantableFolders)}"
+                      th:action="@{/admin/users/{id}/permissions/grant(id=${user.id})}"
+                      method="post" class="d-flex gap-2">
+                  <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                  <select name="folderId" class="form-select form-select-sm">
+                    <option th:each="f : ${grantableFolders}"
+                            th:value="${f.id}"
+                            th:text="${f.folderName + ' (' + f.owner.name + ')'}"></option>
+                  </select>
+                  <button type="submit" class="btn btn-primary btn-sm text-nowrap">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
                 </form>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- ══ 탭: 팀 변경 ══ -->
-    <div th:if="${activeTab == 'team'}" style="max-width:480px;">
+      <!-- ══ 탭: 직급 변경 ══ -->
+      <div th:if="${activeTab == 'position'}" style="max-width:480px;">
         <div class="tab-card">
-            <div class="card-header-custom"><i class="bi bi-people me-2"></i>팀 변경</div>
-            <div class="card-body">
-                <div class="info-row mb-3">
-                    <span class="info-label">현재 팀</span>
-                    <strong th:text="${user.team != null ? user.team.name : '미배정'}"></strong>
-                </div>
-                <form th:action="@{/admin/employees/{id}/change-team(id=${user.id})}" method="post"
-                      class="d-flex gap-2">
-                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                    <select name="teamId" class="form-select">
-                        <option th:each="t : ${teams}"
-                                th:value="${t.id}"
-                                th:text="${t.name}"
-                                th:selected="${user.team != null and user.team.id == t.id}"></option>
-                    </select>
-                    <button type="submit" class="btn btn-primary text-nowrap">
-                        <i class="bi bi-check-lg me-1"></i>변경
-                    </button>
-                </form>
+          <div class="card-header-custom"><i class="bi bi-person-badge me-2"></i>직급 변경</div>
+          <div class="card-body">
+            <div class="info-row mb-3">
+              <span class="info-label">현재 직급</span>
+              <strong th:text="${user.position != null ? user.position.displayName : '미설정'}"></strong>
             </div>
+            <form th:action="@{/admin/employees/{id}/change-position(id=${user.id})}" method="post"
+                  class="d-flex gap-2">
+              <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+              <select name="position" class="form-select">
+                <option th:each="pos : ${positions}"
+                        th:value="${pos.name()}"
+                        th:text="${pos.displayName}"
+                        th:selected="${user.position != null and user.position.name() == pos.name()}"></option>
+              </select>
+              <button type="submit" class="btn btn-primary text-nowrap">
+                <i class="bi bi-check-lg me-1"></i>변경
+              </button>
+            </form>
+          </div>
         </div>
-    </div>
+      </div>
 
-</div>
+      <!-- ══ 탭: 팀 변경 ══ -->
+      <div th:if="${activeTab == 'team'}" style="max-width:480px;">
+        <div class="tab-card">
+          <div class="card-header-custom"><i class="bi bi-people me-2"></i>팀 변경</div>
+          <div class="card-body">
+            <div class="info-row mb-3">
+              <span class="info-label">현재 팀</span>
+              <strong th:text="${user.team != null ? user.team.name : '미배정'}"></strong>
+            </div>
+            <form th:action="@{/admin/employees/{id}/change-team(id=${user.id})}" method="post"
+                  class="d-flex gap-2">
+              <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+              <select name="teamId" class="form-select">
+                <option th:each="t : ${teams}"
+                        th:value="${t.id}"
+                        th:text="${t.name}"
+                        th:selected="${user.team != null and user.team.id == t.id}"></option>
+              </select>
+              <button type="submit" class="btn btn-primary text-nowrap">
+                <i class="bi bi-check-lg me-1"></i>변경
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
 
-<!-- 로딩 스피너 오버레이 -->
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
-    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
-        <span class="visually-hidden">처리 중...</span>
-    </div>
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
 <script>
 (function(){
-    var p = window.location.pathname;
-    // 네비바 active 상태
-    document.querySelectorAll('a.btn-nav').forEach(function(el){
-        var h = el.getAttribute('href');
-        if(!h) return;
-        var isRoot = (h==='/admin'||h==='/admin/');
-        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
-        if(active) el.classList.add('active');
-    });
-    // POST 폼 제출 시 스피너 표시
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

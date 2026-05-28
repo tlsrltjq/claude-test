@@ -50,11 +50,11 @@
 - [x] **P0** — `app.css` 전면 재작성 + `fragments/sidebar.html` 신규 + `admin/dashboard.html` 쉘 구조 적용
 - [x] **P1** — 인증 화면: `login.html`, `signup.html` 2-column 리디자인 (forgot/verify 페이지는 기존 centered card 유지)
 - [x] **P2** — 대시보드: `dashboard.html` app-shell + sidebar fragment 적용 (`admin/dashboard.html`은 P0에서 완료)
-- [ ] **P3** — 어드민 직원: `admin/employees.html`, `admin/employee-detail.html`, `admin/employee-documents.html`, `admin/employee-document-detail.html`
-- [ ] **P4** — 어드민 나머지: `admin/teams.html`, `admin/team-edit.html`, `admin/documents-*.html`, `admin/statistics.html` 외 6개
-- [ ] **P5** — 영업: `sales/calendar.html`, `sales/members.html`, `sales/profiles.html`, `sales/career-calculator.html` 외 3개
-- [ ] **P6** — 내 화면: `my/folder.html`, `my/upload.html`, `my/activity.html`, `search.html`, `settings.html` 외 2개
-- [ ] **P7** — 에러 페이지: `error/403.html`, `error/404.html`, `error/500.html`
+- [x] **P3** — 어드민 직원: `admin/employees.html`, `admin/employee-detail.html`, `admin/employee-documents.html`, `admin/employee-document-detail.html`
+- [x] **P4** — 어드민 나머지: `admin/teams.html`, `admin/team-edit.html`, `admin/documents-*.html`, `admin/statistics.html` 외 6개
+- [x] **P5** — 영업: `sales/calendar.html`, `sales/members.html`, `sales/profiles.html`, `sales/career-calculator.html` 외 3개
+- [x] **P6** — 내 화면: `my/folder.html`, `my/upload.html`, `my/activity.html`, `search.html`, `settings.html` 외 2개
+- [x] **P7** — 에러 페이지: `error/403.html`, `error/404.html`, `error/500.html`
 
 ## 건드리면 안 되는 파일
 - `src/main/resources/db/migration/V1~V216.sql` — 기존 마이그레이션 절대 수정 금지
@@ -68,18 +68,14 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: P0·P1 완료. 다음은 P2(사용자 대시보드 dashboard.html)부터 진행.
+2026-05-28: P0~P7 전체 완료. 전면 UI 리디자인 완료.
 
-**P0 완료:**
-- feat: app.css Design System v2 전면 재작성 (CSS 변수, 쉘 레이아웃, 사이드바, KPI 카드, 메뉴 리스트 등)
-- feat: `fragments/sidebar.html` 신규 (내 화면·영업·관리자 nav, 역할별 sec:authorize, 모바일 토글)
-- feat: `admin/dashboard.html` 새 쉘 구조(app-shell) + sidebar fragment 적용
-- test: E2E 어드민 대시보드 셀렉터 업데이트 (.app-sidebar, .kpi-card, .menu-list-item)
-
-**P1 완료:**
-- feat: `login.html` 2-column 레이아웃 (auth-2col: 왼쪽 다크 브랜딩 + 오른쪽 폼, 모든 JS 유지)
-- feat: `signup.html` 2-column 레이아웃 (auth-form-box--wide, auth-right--top, 모든 th:field·JS 유지)
-- test: E2E login 페이지 셀렉터 `.login-header` → `.auth-left` 업데이트
+**P3~P7 완료 (이번 세션):**
+- P3: admin 직원 4개 (employees, employee-detail, employee-documents, employee-document-detail)
+- P4: admin 나머지 13개 (teams, team-edit, statistics, documents-review, document-review-detail, documents-expiry, allowed-emails, certificate, gc, project-settings, user-permissions, user-role, resume-template)
+- P5: sales 7개 (members, member-documents, employee-documents, calendar, project-detail, profiles, career-calculator)
+- P6: my 4개 (folder, upload, activity, document-detail) + search, settings, shared/public-folder, dashboard(기완료)
+- P7: error 3개 (403, 404, 500) — 독립 레이아웃 유지, Bootstrap JS 추가
 - 빌드: BUILD SUCCESSFUL, security-lint 15/15 PASS
 
-**다음: P3 — 어드민 직원 페이지 (`admin/employees.html`, `admin/employee-detail.html` 등) 쉘 구조 적용**
+**다음 작업 없음 — UI 리디자인 완전 완료**

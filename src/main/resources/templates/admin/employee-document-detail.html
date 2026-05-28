@@ -9,122 +9,111 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<nav class="topnav navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/admin}">
-            <i class="bi bi-shield-fill me-1"></i>eActive Hub
-            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
-        </a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/employees/{id}/documents(id=${user.id})}" class="btn btn-nav btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>문서 목록
-            </a>
-            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
-                <i class="bi bi-speedometer2 me-1"></i>대시보드
-            </a>
-            <a th:href="@{/admin/certificate}" class="btn btn-nav btn-sm">
-                <i class="bi bi-file-earmark-text me-1"></i>재직증명서
-            </a>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
+        <div>
+          <h1 class="page-hd-title" th:text="${document.title}">문서 제목</h1>
+          <p class="page-hd-sub" th:text="${user.name} + ' (' + (${user.team != null ? user.team.name : '-'}) + ')'"></p>
         </div>
-    </div>
-</nav>
+        <div class="page-hd-actions">
+          <a th:href="@{/admin/employees/{id}/documents(id=${user.id})}"
+             class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>문서 목록
+          </a>
+        </div>
+      </div>
 
-<div class="container mt-4">
-    <div class="page-header">
-        <h4><i class="bi bi-file-earmark-text me-2"></i><span th:text="${document.title}">문서 제목</span></h4>
-        <p th:text="${user.name} + ' (' + (${user.team != null ? user.team.name : '-'}) + ')'"></p>
-    </div>
-
-    <div class="row g-3">
+      <div class="row g-3">
         <div class="col-lg-4">
-            <!-- 문서 정보 -->
-            <div class="side-card">
-                <div class="card-header-custom"><i class="bi bi-info-circle me-2"></i>문서 정보</div>
-                <div class="card-body">
-                    <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${document.documentType.displayName}"></span></span></div>
-                    <div class="info-row" th:if="${currentVersion != null}">
-                        <span class="info-label">현재 버전</span>
-                        <span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${currentVersion.versionNo}"></span></span>
-                    </div>
-                    <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">파일명</span><span class="info-val text-muted small" th:text="${currentVersion.originalFileName}"></span></div>
-                    <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">크기</span><span class="info-val text-muted" th:text="${#numbers.formatDecimal(currentVersion.fileSize / 1024.0, 1, 1) + ' KB'}"></span></div>
-                    <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">업로드일</span><span class="info-val text-muted" th:text="${#temporals.format(currentVersion.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
-                </div>
-                <div class="p-3 border-top d-flex flex-column gap-2" th:if="${currentVersion != null}">
-                    <a th:href="@{/documents/{id}/download(id=${currentVersion.id})}"
-                       class="btn btn-primary btn-sm w-100">
-                        <i class="bi bi-download me-1"></i>다운로드
-                    </a>
-                    <form th:action="@{/admin/documents/{id}/delete(id=${document.id})}"
-                          method="post" onsubmit="return confirm('문서를 영구 삭제하시겠습니까? 디스크 파일과 모든 버전이 삭제됩니다.')">
-                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                            <i class="bi bi-trash me-1"></i>문서 삭제
-                        </button>
-                    </form>
-                </div>
+          <!-- 문서 정보 -->
+          <div class="side-card">
+            <div class="card-header-custom"><i class="bi bi-info-circle me-2"></i>문서 정보</div>
+            <div class="card-body">
+              <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${document.documentType.displayName}"></span></span></div>
+              <div class="info-row" th:if="${currentVersion != null}">
+                <span class="info-label">현재 버전</span>
+                <span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${currentVersion.versionNo}"></span></span>
+              </div>
+              <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">파일명</span><span class="info-val text-muted small" th:text="${currentVersion.originalFileName}"></span></div>
+              <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">크기</span><span class="info-val text-muted" th:text="${#numbers.formatDecimal(currentVersion.fileSize / 1024.0, 1, 1) + ' KB'}"></span></div>
+              <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">업로드일</span><span class="info-val text-muted" th:text="${#temporals.format(currentVersion.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
             </div>
+            <div class="p-3 border-top d-flex flex-column gap-2" th:if="${currentVersion != null}">
+              <a th:href="@{/documents/{id}/download(id=${currentVersion.id})}"
+                 class="btn btn-primary btn-sm w-100">
+                <i class="bi bi-download me-1"></i>다운로드
+              </a>
+              <form th:action="@{/admin/documents/{id}/delete(id=${document.id})}"
+                    method="post" onsubmit="return confirm('문서를 영구 삭제하시겠습니까? 디스크 파일과 모든 버전이 삭제됩니다.')">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                  <i class="bi bi-trash me-1"></i>문서 삭제
+                </button>
+              </form>
+            </div>
+          </div>
 
-            <!-- 버전 목록 -->
-            <div class="side-card" th:if="${not #lists.isEmpty(versions)}">
-                <div class="card-header-custom"><i class="bi bi-layers me-2"></i>버전 목록</div>
-                <div class="card-body">
-                    <div th:each="v : ${versions}" class="version-item">
-                        <span>
-                            <span class="badge bg-secondary rounded-pill me-1" th:text="'v' + ${v.versionNo}"></span>
-                            <span class="text-muted text-truncate d-inline-block" style="max-width:120px; vertical-align:middle; font-size:.78rem;"
-                                  th:text="${v.originalFileName}"></span>
-                        </span>
-                        <span class="text-muted" style="font-size:.75rem;" th:text="${#temporals.format(v.createdAt, 'MM-dd HH:mm')}"></span>
-                    </div>
-                </div>
+          <!-- 버전 목록 -->
+          <div class="side-card mt-3" th:if="${not #lists.isEmpty(versions)}">
+            <div class="card-header-custom"><i class="bi bi-layers me-2"></i>버전 목록</div>
+            <div class="card-body">
+              <div th:each="v : ${versions}" class="version-item">
+                <span>
+                  <span class="badge bg-secondary rounded-pill me-1" th:text="'v' + ${v.versionNo}"></span>
+                  <span class="text-muted text-truncate d-inline-block" style="max-width:120px; vertical-align:middle; font-size:.78rem;"
+                        th:text="${v.originalFileName}"></span>
+                </span>
+                <span class="text-muted" style="font-size:.75rem;" th:text="${#temporals.format(v.createdAt, 'MM-dd HH:mm')}"></span>
+              </div>
             </div>
+          </div>
         </div>
 
         <!-- 미리보기 -->
         <div class="col-lg-8">
-            <div class="preview-card">
-                <div class="card-header-custom"><i class="bi bi-eye me-2"></i>미리보기</div>
-                <div class="card-body p-2" style="min-height:550px;">
-                    <iframe th:if="${previewType == 'pdf'}"
-                            th:src="@{/documents/{id}/preview(id=${currentVersion.id})}"
-                            width="100%" height="600" style="border:none; border-radius:6px;"></iframe>
-                    <img th:if="${previewType == 'image'}"
-                         th:src="@{/documents/{id}/preview(id=${currentVersion.id})}"
-                         class="img-fluid rounded" alt="미리보기">
-                    <div th:if="${previewType == 'none' or currentVersion == null}"
-                         class="d-flex align-items-center justify-content-center text-muted"
-                         style="min-height:300px;">
-                        <div class="text-center">
-                            <i class="bi bi-file-earmark-x" style="font-size:3rem; opacity:.3; display:block; margin-bottom:.75rem;"></i>
-                            <p class="mb-1">미리보기를 지원하지 않는 파일 형식입니다.</p>
-                            <p class="small text-muted">DOCX·HWP·HWPX는 미리보기 PDF를 업로드하면 표시됩니다.</p>
-                        </div>
-                    </div>
+          <div class="preview-card">
+            <div class="card-header-custom"><i class="bi bi-eye me-2"></i>미리보기</div>
+            <div class="card-body p-2" style="min-height:550px;">
+              <iframe th:if="${previewType == 'pdf'}"
+                      th:src="@{/documents/{id}/preview(id=${currentVersion.id})}"
+                      width="100%" height="600" style="border:none; border-radius:6px;"></iframe>
+              <img th:if="${previewType == 'image'}"
+                   th:src="@{/documents/{id}/preview(id=${currentVersion.id})}"
+                   class="img-fluid rounded" alt="미리보기">
+              <div th:if="${previewType == 'none' or currentVersion == null}"
+                   class="d-flex align-items-center justify-content-center text-muted"
+                   style="min-height:300px;">
+                <div class="text-center">
+                  <i class="bi bi-file-earmark-x" style="font-size:3rem; opacity:.3; display:block; margin-bottom:.75rem;"></i>
+                  <p class="mb-1">미리보기를 지원하지 않는 파일 형식입니다.</p>
+                  <p class="small text-muted">DOCX·HWP·HWPX는 미리보기 PDF를 업로드하면 표시됩니다.</p>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-</div>
+      </div>
 
-<!-- 로딩 스피너 오버레이 -->
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
-    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
-        <span class="visually-hidden">처리 중...</span>
-    </div>
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
 <script>
 (function(){
-    var p = window.location.pathname;
-    // 네비바 active 상태
-    document.querySelectorAll('a.btn-nav').forEach(function(el){
-        var h = el.getAttribute('href');
-        if(!h) return;
-        var isRoot = (h==='/admin'||h==='/admin/');
-        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
-        if(active) el.classList.add('active');
-    });
-    // POST 폼 제출 시 스피너 표시
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

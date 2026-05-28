@@ -9,91 +9,79 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<nav class="topnav navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/admin}">
-            <i class="bi bi-shield-fill me-1"></i>eActive Hub
-            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
-        </a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-nav btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>직원 상세
-            </a>
-            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
-                <i class="bi bi-speedometer2 me-1"></i>대시보드
-            </a>
-            <a th:href="@{/admin/certificate}" class="btn btn-nav btn-sm">
-                <i class="bi bi-file-earmark-text me-1"></i>재직증명서
-            </a>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
+        <div>
+          <h1 class="page-hd-title"><i class="bi bi-person-gear me-2"></i>역할 변경</h1>
+          <p class="page-hd-sub">직원의 시스템 역할을 변경합니다.</p>
         </div>
-    </div>
-</nav>
+        <div class="page-hd-actions">
+          <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>직원 상세
+          </a>
+        </div>
+      </div>
 
-<div class="container mt-4" style="max-width:520px;">
-    <div class="page-header">
-        <h4><i class="bi bi-person-gear me-2"></i>역할 변경</h4>
-        <p>직원의 시스템 역할을 변경합니다.</p>
-    </div>
-
-    <div class="form-card mb-3">
+      <div class="form-card mb-3">
         <div class="card-header-custom"><i class="bi bi-person-circle me-2"></i>직원 정보</div>
         <div class="card-body">
-            <div class="user-info-row"><span class="user-info-label">이름</span><strong th:text="${user.name}"></strong></div>
-            <div class="user-info-row"><span class="user-info-label">이메일</span><span class="text-muted" th:text="${user.email}"></span></div>
-            <div class="user-info-row">
-                <span class="user-info-label">현재 역할</span>
-                <span th:classappend="${user.role.name() == 'ADMIN'} ? 'role-badge-admin' : (${user.role.name() == 'SALES'} ? 'role-badge-sales' : 'role-badge-emp')"
-                      th:text="${user.role.displayName}"></span>
-            </div>
+          <div class="user-info-row"><span class="user-info-label">이름</span><strong th:text="${user.name}"></strong></div>
+          <div class="user-info-row"><span class="user-info-label">이메일</span><span class="text-muted" th:text="${user.email}"></span></div>
+          <div class="user-info-row">
+            <span class="user-info-label">현재 역할</span>
+            <span th:classappend="${user.role.name() == 'ADMIN'} ? 'role-badge-admin' : (${user.role.name() == 'SALES'} ? 'role-badge-sales' : 'role-badge-emp')"
+                  th:text="${user.role.displayName}"></span>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="form-card">
+      <div class="form-card">
         <div class="card-header-custom"><i class="bi bi-shield-check me-2"></i>새 역할 선택</div>
         <div class="card-body">
-            <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 py-2" style="font-size:.84rem;" id="adminWarning" style="display:none!important;">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                ADMIN 역할은 모든 시스템 기능에 접근 가능합니다. 신중하게 부여하세요.
+          <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 py-2" style="font-size:.84rem;" id="adminWarning" style="display:none!important;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            ADMIN 역할은 모든 시스템 기능에 접근 가능합니다. 신중하게 부여하세요.
+          </div>
+          <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" onsubmit="return confirmIfAdmin(this)">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+            <div th:each="r : ${roles}" class="role-option" th:classappend="${r == user.role} ? 'selected'">
+              <input class="form-check-input m-0" type="radio" name="role"
+                     th:id="'role_' + ${r.name()}"
+                     th:value="${r.name()}"
+                     th:checked="${user.role == r}"
+                     onchange="handleRoleChange(this)">
+              <label th:for="'role_' + ${r.name()}" th:text="${r.displayName}" class="mb-0 fw-semibold" style="cursor:pointer; flex:1;"></label>
             </div>
-            <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" onsubmit="return confirmIfAdmin(this)">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                <div th:each="r : ${roles}" class="role-option" th:classappend="${r == user.role} ? 'selected'">
-                    <input class="form-check-input m-0" type="radio" name="role"
-                           th:id="'role_' + ${r.name()}"
-                           th:value="${r.name()}"
-                           th:checked="${user.role == r}"
-                           onchange="handleRoleChange(this)">
-                    <label th:for="'role_' + ${r.name()}" th:text="${r.displayName}" class="mb-0 fw-semibold" style="cursor:pointer; flex:1;"></label>
-                </div>
-                <div class="d-flex gap-2 mt-3">
-                    <button type="submit" class="btn btn-warning fw-semibold">
-                        <i class="bi bi-check-lg me-1"></i>역할 변경
-                    </button>
-                    <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-outline-secondary">취소</a>
-                </div>
-            </form>
+            <div class="d-flex gap-2 mt-3">
+              <button type="submit" class="btn btn-warning fw-semibold">
+                <i class="bi bi-check-lg me-1"></i>역할 변경
+              </button>
+              <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-outline-secondary">취소</a>
+            </div>
+          </form>
         </div>
-    </div>
-</div>
+      </div>
 
-<!-- 로딩 스피너 오버레이 -->
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
-    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
-        <span class="visually-hidden">처리 중...</span>
-    </div>
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
 <script>
 (function(){
-    var p = window.location.pathname;
-    // 네비바 active 상태
-    document.querySelectorAll('a.btn-nav').forEach(function(el){
-        var h = el.getAttribute('href');
-        if(!h) return;
-        var isRoot = (h==='/admin'||h==='/admin/');
-        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
-        if(active) el.classList.add('active');
-    });
-    // POST 폼 제출 시 스피너 표시
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

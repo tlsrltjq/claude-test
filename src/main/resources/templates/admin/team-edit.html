@@ -9,82 +9,70 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<nav class="topnav navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/admin}">
-            <i class="bi bi-shield-fill me-1"></i>eActive Hub
-            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
-        </a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/teams}" class="btn btn-nav btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>팀 목록
-            </a>
-            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
-                <i class="bi bi-speedometer2 me-1"></i>대시보드
-            </a>
-            <a th:href="@{/admin/certificate}" class="btn btn-nav btn-sm">
-                <i class="bi bi-file-earmark-text me-1"></i>재직증명서
-            </a>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
+        <div>
+          <h1 class="page-hd-title"><i class="bi bi-pencil-square me-2"></i>팀 수정</h1>
+          <p class="page-hd-sub">팀 이름과 설명을 변경합니다.</p>
         </div>
-    </div>
-</nav>
+        <div class="page-hd-actions">
+          <a th:href="@{/admin/teams}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>팀 목록
+          </a>
+        </div>
+      </div>
 
-<div class="container mt-4" style="max-width:560px;">
-    <div class="page-header">
-        <h4><i class="bi bi-pencil-square me-2"></i>팀 수정</h4>
-        <p>팀 이름과 설명을 변경합니다.</p>
-    </div>
-
-    <div class="form-card">
+      <div class="form-card">
         <div class="card-header-custom">
-            <i class="bi bi-diagram-3-fill me-2"></i>팀 정보
+          <i class="bi bi-diagram-3-fill me-2"></i>팀 정보
         </div>
         <div class="card-body">
-            <form th:action="@{/admin/teams/{id}/update(id=${team.id})}"
-                  th:object="${teamRequest}" method="post">
-                <div class="mb-3">
-                    <label class="form-label">팀 이름 <span class="text-danger">*</span></label>
-                    <input type="text" th:field="*{name}" class="form-control"
-                           th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
-                           placeholder="팀 이름을 입력하세요" required>
-                    <div class="invalid-feedback" th:errors="*{name}"></div>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">설명 <span class="text-muted fw-normal">(선택)</span></label>
-                    <input type="text" th:field="*{description}" class="form-control"
-                           placeholder="팀 설명을 입력하세요">
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg me-1"></i>저장
-                    </button>
-                    <a th:href="@{/admin/teams}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg me-1"></i>취소
-                    </a>
-                </div>
-            </form>
+          <form th:action="@{/admin/teams/{id}/update(id=${team.id})}"
+                th:object="${teamRequest}" method="post">
+            <div class="mb-3">
+              <label class="form-label">팀 이름 <span class="text-danger">*</span></label>
+              <input type="text" th:field="*{name}" class="form-control"
+                     th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                     placeholder="팀 이름을 입력하세요" required>
+              <div class="invalid-feedback" th:errors="*{name}"></div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">설명 <span class="text-muted fw-normal">(선택)</span></label>
+              <input type="text" th:field="*{description}" class="form-control"
+                     placeholder="팀 설명을 입력하세요">
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>저장
+              </button>
+              <a th:href="@{/admin/teams}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg me-1"></i>취소
+              </a>
+            </div>
+          </form>
         </div>
-    </div>
-</div>
+      </div>
 
-<!-- 로딩 스피너 오버레이 -->
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
-    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
-        <span class="visually-hidden">처리 중...</span>
-    </div>
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
 <script>
 (function(){
-    var p = window.location.pathname;
-    // 네비바 active 상태
-    document.querySelectorAll('a.btn-nav').forEach(function(el){
-        var h = el.getAttribute('href');
-        if(!h) return;
-        var isRoot = (h==='/admin'||h==='/admin/');
-        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
-        if(active) el.classList.add('active');
-    });
-    // POST 폼 제출 시 스피너 표시
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

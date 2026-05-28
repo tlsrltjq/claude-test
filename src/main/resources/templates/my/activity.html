@@ -10,79 +10,70 @@
 </head>
 <body>
 
-<nav class="topnav">
-    <div class="container d-flex align-items-center gap-3">
-        <a th:href="@{/dashboard}" class="brand me-auto">
-            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
-        </a>
-        <a th:href="@{/my/folder}" class="btn btn-nav btn-sm">
-            <i class="bi bi-folder me-1"></i>내 폴더
-        </a>
-        <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
-            <i class="bi bi-house me-1"></i>대시보드
-        </a>
-        <form th:action="@{/logout}" method="post" class="mb-0">
-            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-            <button type="submit" class="btn btn-nav btn-sm">
-                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
-            </button>
-        </form>
-    </div>
-</nav>
+<div class="app-shell">
 
-<div class="container py-4" style="max-width:760px;">
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <div class="page-header d-flex align-items-center justify-content-between">
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
         <div>
-            <h2><i class="bi bi-clock-history me-2"></i>내 다운로드 이력</h2>
-            <div class="sub">총 <strong th:text="${totalElements}">0</strong>건</div>
+          <h1 class="page-hd-title"><i class="bi bi-clock-history me-2"></i>내 다운로드 이력</h1>
+          <p class="page-hd-sub">총 <strong th:text="${totalElements}">0</strong>건</p>
         </div>
-    </div>
+      </div>
 
-    <!-- 빈 상태 -->
-    <div th:if="${#lists.isEmpty(downloads)}" class="empty-state">
-        <i class="bi bi-download"></i>
-        <p>다운로드 이력이 없습니다.</p>
-    </div>
+      <!-- 빈 상태 -->
+      <div th:if="${#lists.isEmpty(downloads)}" class="empty-state">
+          <i class="bi bi-download"></i>
+          <p>다운로드 이력이 없습니다.</p>
+      </div>
 
-    <!-- 이력 목록 -->
-    <div th:if="${!#lists.isEmpty(downloads)}" class="log-card">
-        <div th:each="log : ${downloads}" class="log-row">
-            <div class="log-icon">
-                <i class="bi bi-download"></i>
-            </div>
-            <div class="log-body">
-                <div class="log-filename"
-                     th:text="${log.reason != null and !log.reason.isBlank() ? log.reason : '파일 다운로드'}"></div>
-                <div class="log-meta">
-                    <span th:text="${log.ipAddress}"></span>
-                </div>
-            </div>
-            <span class="log-date" th:text="${#temporals.format(log.createdAt, 'yy.MM.dd HH:mm')}"></span>
-        </div>
-    </div>
+      <!-- 이력 목록 -->
+      <div th:if="${!#lists.isEmpty(downloads)}" class="log-card">
+          <div th:each="log : ${downloads}" class="log-row">
+              <div class="log-icon">
+                  <i class="bi bi-download"></i>
+              </div>
+              <div class="log-body">
+                  <div class="log-filename"
+                       th:text="${log.reason != null and !log.reason.isBlank() ? log.reason : '파일 다운로드'}"></div>
+                  <div class="log-meta">
+                      <span th:text="${log.ipAddress}"></span>
+                  </div>
+              </div>
+              <span class="log-date" th:text="${#temporals.format(log.createdAt, 'yy.MM.dd HH:mm')}"></span>
+          </div>
+      </div>
 
-    <!-- 페이지네이션 -->
-    <nav th:if="${totalPages > 1}" class="mt-3">
-        <ul class="pagination pagination-sm justify-content-center mb-0">
-            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                <a class="page-link" th:href="@{/my/activity(page=${currentPage - 1})}">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-            </li>
-            <li class="page-item"
-                th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                th:classappend="${i == currentPage} ? 'active'">
-                <a class="page-link" th:href="@{/my/activity(page=${i})}" th:text="${i + 1}"></a>
-            </li>
-            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                <a class="page-link" th:href="@{/my/activity(page=${currentPage + 1})}">
-                    <i class="bi bi-chevron-right"></i>
-                </a>
-            </li>
-        </ul>
-    </nav>
+      <!-- 페이지네이션 -->
+      <nav th:if="${totalPages > 1}" class="mt-3">
+          <ul class="pagination pagination-sm justify-content-center mb-0">
+              <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                  <a class="page-link" th:href="@{/my/activity(page=${currentPage - 1})}">
+                      <i class="bi bi-chevron-left"></i>
+                  </a>
+              </li>
+              <li class="page-item"
+                  th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                  th:classappend="${i == currentPage} ? 'active'">
+                  <a class="page-link" th:href="@{/my/activity(page=${i})}" th:text="${i + 1}"></a>
+              </li>
+              <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                  <a class="page-link" th:href="@{/my/activity(page=${currentPage + 1})}">
+                      <i class="bi bi-chevron-right"></i>
+                  </a>
+              </li>
+          </ul>
+      </nav>
 
-</div>
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

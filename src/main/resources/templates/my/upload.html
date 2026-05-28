@@ -10,143 +10,142 @@
 </head>
 <body>
 
-<nav class="topnav">
-    <div class="container d-flex align-items-center gap-3">
-        <a th:href="@{/dashboard}" class="brand me-auto">
-            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
-        </a>
-        <a th:href="@{/my/folder}" class="btn btn-nav btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>내 폴더
-        </a>
-    </div>
-</nav>
+<div class="app-shell">
 
-<div class="container py-4" style="max-width:640px;">
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <div class="upload-card card">
-        <div class="upload-header">
-            <h2><i class="bi bi-cloud-upload me-2"></i>문서 업로드</h2>
-            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem">내 폴더에 문서를 업로드합니다.</div>
-        </div>
+  <main class="main-content">
+    <div class="page-wrap" style="max-width:640px;">
 
-        <div class="upload-body">
-            <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span th:text="${errorMessage}"></span>
-            </div>
+      <div class="upload-card card">
+          <div class="upload-header">
+              <h2><i class="bi bi-cloud-upload me-2"></i>문서 업로드</h2>
+              <div style="font-size:.85rem;opacity:.8;margin-top:.25rem">내 폴더에 문서를 업로드합니다.</div>
+          </div>
 
-            <div id="largeFileWarn" class="alert alert-warning warn-box d-none">
-                <i class="bi bi-info-circle me-1"></i>
-                <strong>10MB 초과 파일</strong>은 관리자 승인 후 공개됩니다. 업로드는 정상 진행됩니다.
-            </div>
+          <div class="upload-body">
+              <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2">
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                  <span th:text="${errorMessage}"></span>
+              </div>
 
-            <form id="uploadForm" th:action="@{/my/folder/documents}" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+              <div id="largeFileWarn" class="alert alert-warning warn-box d-none">
+                  <i class="bi bi-info-circle me-1"></i>
+                  <strong>10MB 초과 파일</strong>은 관리자 승인 후 공개됩니다. 업로드는 정상 진행됩니다.
+              </div>
 
-                <!-- ── 문서 정보 ── -->
-                <div class="section-label"><i class="bi bi-file-text"></i> 문서 정보</div>
+              <form id="uploadForm" th:action="@{/my/folder/documents}" method="post" enctype="multipart/form-data">
+                  <input type="hidden" name="_csrf" th:value="${_csrf.token}">
 
-                <div class="mb-3">
-                    <label class="form-label">문서 종류 <span class="req">*</span></label>
-                    <select name="documentType" id="docTypeSelect" class="form-select" required onchange="onTypeChange()">
-                        <option value="">선택하세요</option>
-                        <option th:each="dt : ${documentTypes}"
-                                th:value="${dt.name()}"
-                                th:text="${dt.displayName}"></option>
-                    </select>
-                </div>
+                  <!-- ── 문서 정보 ── -->
+                  <div class="section-label"><i class="bi bi-file-text"></i> 문서 정보</div>
 
-                <div class="mb-3">
-                    <label class="form-label">문서 제목 <span class="req">*</span></label>
-                    <input type="text" name="title" class="form-control" required placeholder="문서 종류를 먼저 선택하세요">
-                </div>
+                  <div class="mb-3">
+                      <label class="form-label">문서 종류 <span class="req">*</span></label>
+                      <select name="documentType" id="docTypeSelect" class="form-select" required onchange="onTypeChange()">
+                          <option value="">선택하세요</option>
+                          <option th:each="dt : ${documentTypes}"
+                                  th:value="${dt.name()}"
+                                  th:text="${dt.displayName}"></option>
+                      </select>
+                  </div>
 
-                <!-- ── 학위/자격증 메타 (문서 종류에 따라 동적 표시) ── -->
-                <div id="metaGrad" class="meta-box mb-3" style="display:none">
-                    <div class="meta-title"><i class="bi bi-mortarboard-fill"></i> 학력 정보</div>
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label">학위 종류 <span class="req">*</span></label>
-                            <select name="degreeType" id="degreeTypeSelect" class="form-select">
-                                <option value="">선택</option>
-                                <option value="HIGHSCHOOL">고졸</option>
-                                <option value="ASSOCIATE">전문학사</option>
-                                <option value="BACHELOR">학사</option>
-                                <option value="MASTER">석사</option>
-                                <option value="DOCTORATE">박사</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">졸업일 <span class="req">*</span></label>
-                            <input type="date" name="issuedDate" id="issuedDateGrad" class="form-control">
-                        </div>
-                    </div>
-                </div>
+                  <div class="mb-3">
+                      <label class="form-label">문서 제목 <span class="req">*</span></label>
+                      <input type="text" name="title" class="form-control" required placeholder="문서 종류를 먼저 선택하세요">
+                  </div>
 
-                <div id="metaCert" class="meta-box mb-3" style="display:none">
-                    <div class="meta-title"><i class="bi bi-patch-check-fill"></i> 자격증 정보</div>
-                    <input type="hidden" name="certTypeMeta" value="ENGINEER">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">취득일 <span class="req">*</span></label>
-                            <input type="date" name="issuedDate" id="issuedDateCert" class="form-control">
-                        </div>
-                    </div>
-                </div>
+                  <!-- ── 학위/자격증 메타 (문서 종류에 따라 동적 표시) ── -->
+                  <div id="metaGrad" class="meta-box mb-3" style="display:none">
+                      <div class="meta-title"><i class="bi bi-mortarboard-fill"></i> 학력 정보</div>
+                      <div class="row g-3">
+                          <div class="col-6">
+                              <label class="form-label">학위 종류 <span class="req">*</span></label>
+                              <select name="degreeType" id="degreeTypeSelect" class="form-select">
+                                  <option value="">선택</option>
+                                  <option value="HIGHSCHOOL">고졸</option>
+                                  <option value="ASSOCIATE">전문학사</option>
+                                  <option value="BACHELOR">학사</option>
+                                  <option value="MASTER">석사</option>
+                                  <option value="DOCTORATE">박사</option>
+                              </select>
+                          </div>
+                          <div class="col-6">
+                              <label class="form-label">졸업일 <span class="req">*</span></label>
+                              <input type="date" name="issuedDate" id="issuedDateGrad" class="form-control">
+                          </div>
+                      </div>
+                  </div>
 
-                <!-- ── 파일 ── -->
-                <div class="section-label"><i class="bi bi-paperclip"></i> 파일</div>
+                  <div id="metaCert" class="meta-box mb-3" style="display:none">
+                      <div class="meta-title"><i class="bi bi-patch-check-fill"></i> 자격증 정보</div>
+                      <input type="hidden" name="certTypeMeta" value="ENGINEER">
+                      <div class="row g-3">
+                          <div class="col-12">
+                              <label class="form-label">취득일 <span class="req">*</span></label>
+                              <input type="date" name="issuedDate" id="issuedDateCert" class="form-control">
+                          </div>
+                      </div>
+                  </div>
 
-                <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
-                    <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
-                    <div class="drop-text">클릭하거나 파일을 끌어다 놓으세요</div>
-                    <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, HWPX · 최대 20MB</div>
-                </div>
-                <input type="file" id="fileInput" name="file" class="d-none" required
-                       accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx"
-                       onchange="onFileChange(this)">
-                <div class="file-name-display" id="fileNameDisplay">
-                    <i class="bi bi-file-earmark-fill text-primary"></i>
-                    <span id="fileNameText"></span>
-                    <span id="fileSizeText" class="text-muted ms-auto"></span>
-                </div>
+                  <!-- ── 파일 ── -->
+                  <div class="section-label"><i class="bi bi-paperclip"></i> 파일</div>
 
-                <!-- 만료일 (선택) -->
-                <div class="mt-3">
-                    <label class="form-label">만료일 <span class="opt">(선택 — 자격증·건강보험료 등 유효기간 있는 문서)</span></label>
-                    <input type="date" name="expiresAt" class="form-control"
-                           th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
-                </div>
+                  <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+                      <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                      <div class="drop-text">클릭하거나 파일을 끌어다 놓으세요</div>
+                      <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, HWPX · 최대 20MB</div>
+                  </div>
+                  <input type="file" id="fileInput" name="file" class="d-none" required
+                         accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx"
+                         onchange="onFileChange(this)">
+                  <div class="file-name-display" id="fileNameDisplay">
+                      <i class="bi bi-file-earmark-fill text-primary"></i>
+                      <span id="fileNameText"></span>
+                      <span id="fileSizeText" class="text-muted ms-auto"></span>
+                  </div>
 
-                <!-- 업로드 진행률 -->
-                <div id="progressWrap" class="d-none mt-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small class="text-muted">업로드 중...</small>
-                        <small id="progressText" class="fw-bold text-primary">0%</small>
-                    </div>
-                    <div class="progress" style="height:8px;">
-                        <div id="progressBar"
-                             class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
-                             role="progressbar" style="width:0%"></div>
-                    </div>
-                </div>
+                  <!-- 만료일 (선택) -->
+                  <div class="mt-3">
+                      <label class="form-label">만료일 <span class="opt">(선택 — 자격증·건강보험료 등 유효기간 있는 문서)</span></label>
+                      <input type="date" name="expiresAt" class="form-control"
+                             th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
+                  </div>
 
-                <div id="xhrErrorBox" class="alert alert-danger d-none mt-3">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                    <span id="xhrErrorMsg"></span>
-                </div>
+                  <!-- 업로드 진행률 -->
+                  <div id="progressWrap" class="d-none mt-3">
+                      <div class="d-flex justify-content-between align-items-center mb-1">
+                          <small class="text-muted">업로드 중...</small>
+                          <small id="progressText" class="fw-bold text-primary">0%</small>
+                      </div>
+                      <div class="progress" style="height:8px;">
+                          <div id="progressBar"
+                               class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                               role="progressbar" style="width:0%"></div>
+                      </div>
+                  </div>
 
-                <div class="d-flex gap-2 mt-4">
-                    <button type="submit" id="uploadBtn" class="btn btn-primary flex-fill btn-upload">
-                        <i class="bi bi-cloud-upload me-1"></i>업로드
-                    </button>
-                    <button type="button" id="cancelBtn" class="btn btn-outline-secondary" onclick="onCancelClick()">취소</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+                  <div id="xhrErrorBox" class="alert alert-danger d-none mt-3">
+                      <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                      <span id="xhrErrorMsg"></span>
+                  </div>
 
+                  <div class="d-flex gap-2 mt-4">
+                      <button type="submit" id="uploadBtn" class="btn btn-primary flex-fill btn-upload">
+                          <i class="bi bi-cloud-upload me-1"></i>업로드
+                      </button>
+                      <button type="button" id="cancelBtn" class="btn btn-outline-secondary" onclick="onCancelClick()">취소</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 /* ── 문서 종류별 제목 placeholder 매핑 ── */
 const TITLE_PLACEHOLDER = {

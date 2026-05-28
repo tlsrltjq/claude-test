@@ -8,6 +8,7 @@
 ## UI 디자인 개선 — 색상 통일·버그 수정·리디자인 계획
 
 2026-05-28 | UI | plan: 전면 UI 리디자인 계획 수립 — 사이드바 쉘 구조·새 디자인 토큰·P0~P7 단계 정의 (미착수)
+2026-05-28 | UI | feat: 전면 UI 리디자인 P3~P7 완료 — admin 17개·sales 7개·my/search/settings/shared 8개·error 3개 전체 app-shell+sidebar 마이그레이션 (topnav 제거, page-hd 패턴, 로딩 오버레이 통일)
 2026-05-28 | P0 | feat: app.css Design System v2 전면 재작성 + fragments/sidebar.html 신규 + admin/dashboard.html 쉘 구조 적용
 2026-05-28 | P1 | feat: login.html·signup.html 2-column 레이아웃 리디자인 (auth-2col·auth-left·auth-right·auth-form-box)
 2026-05-28 | P2 | feat: dashboard.html app-shell + sidebar fragment 적용 — topnav·container 제거, 쉘 구조 통일

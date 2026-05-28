@@ -11,141 +11,150 @@
 </head>
 <body>
 
-<nav class="topnav">
-    <div class="container d-flex align-items-center gap-3">
-        <a th:href="@{/dashboard}" class="brand me-auto">
-            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
-        </a>
-        <a th:href="@{/sales/profiles}" class="btn btn-nav btn-sm">
-            <i class="bi bi-table me-1"></i>인력 표
-        </a>
-        <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
-            <i class="bi bi-house me-1"></i>대시보드
-        </a>
-        <form th:action="@{/logout}" method="post" class="mb-0">
-            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-            <button type="submit" class="btn btn-nav btn-sm">
-                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
-            </button>
-        </form>
-    </div>
-</nav>
+<div class="app-shell">
 
-<div class="container py-4">
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <div class="page-header">
-        <h2><i class="bi bi-people-fill me-2"></i>전사 인력 목록</h2>
-        <div class="sub">총 <strong th:text="${#lists.size(members)}">0</strong>명</div>
-    </div>
+  <main class="main-content">
+    <div class="page-wrap">
 
-    <!-- 검색/필터 바 -->
-    <div class="filter-bar">
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
+        <div>
+          <h1 class="page-hd-title"><i class="bi bi-people-fill me-2"></i>전사 인력 목록</h1>
+          <p class="page-hd-sub">총 <strong th:text="${#lists.size(members)}">0</strong>명</p>
+        </div>
+      </div>
+
+      <!-- 검색/필터 바 -->
+      <div class="filter-bar">
         <form method="get" th:action="@{/sales/members}" class="d-flex align-items-center gap-2 flex-wrap">
-            <input type="hidden" name="sort" th:value="${sort}">
-            <input type="hidden" name="direction" th:value="${direction}">
-            <i class="bi bi-funnel text-muted" style="font-size:.95rem;flex-shrink:0"></i>
-            <div style="min-width:180px;max-width:260px" class="flex-fill">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="q" class="form-control border-start-0"
-                           placeholder="이름 또는 이메일" th:value="${q}">
-                </div>
+          <input type="hidden" name="sort" th:value="${sort}">
+          <input type="hidden" name="direction" th:value="${direction}">
+          <i class="bi bi-funnel text-muted" style="font-size:.95rem;flex-shrink:0"></i>
+          <div style="min-width:180px;max-width:260px" class="flex-fill">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" name="q" class="form-control border-start-0"
+                     placeholder="이름 또는 이메일" th:value="${q}">
             </div>
-            <select name="teamId" class="form-select form-select-sm" style="width:auto;min-width:110px">
-                <option value="">전체 팀</option>
-                <option th:each="team : ${teams}"
-                        th:value="${team.id}"
-                        th:text="${team.name}"
-                        th:selected="${teamId != null and teamId == team.id}"></option>
-            </select>
-            <button type="submit" class="btn btn-primary btn-sm fw-semibold px-3">검색</button>
-            <a th:href="@{/sales/members}" class="btn btn-outline-secondary btn-sm">초기화</a>
+          </div>
+          <select name="teamId" class="form-select form-select-sm" style="width:auto;min-width:110px">
+            <option value="">전체 팀</option>
+            <option th:each="team : ${teams}"
+                    th:value="${team.id}"
+                    th:text="${team.name}"
+                    th:selected="${teamId != null and teamId == team.id}"></option>
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm fw-semibold px-3">검색</button>
+          <a th:href="@{/sales/members}" class="btn btn-outline-secondary btn-sm">초기화</a>
         </form>
-    </div>
+      </div>
 
-    <!-- 빈 상태 -->
-    <div th:if="${#lists.isEmpty(members)}" class="empty-state">
+      <!-- 빈 상태 -->
+      <div th:if="${#lists.isEmpty(members)}" class="empty-state">
         <i class="bi bi-person-x"></i>
         <p>조건에 맞는 직원이 없습니다.</p>
-    </div>
+      </div>
 
-    <!-- 테이블 -->
-    <div th:if="${!#lists.isEmpty(members)}" class="members-card">
+      <!-- 테이블 -->
+      <div th:if="${!#lists.isEmpty(members)}" class="members-card">
         <div class="table-responsive">
-            <table class="table members-table">
-                <thead>
-                <tr>
-                    <th>
-                        <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='name',direction=${sort=='name' and direction=='asc'?'desc':'asc'})}">
-                            이름 <span th:if="${sort=='name'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
-                        </a>
-                    </th>
-                    <th>이메일</th>
-                    <th>
-                        <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='team',direction=${sort=='team' and direction=='asc'?'desc':'asc'})}">
-                            팀 <span th:if="${sort=='team'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
-                        </a>
-                    </th>
-                    <th>
-                        <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='position',direction=${sort=='position' and direction=='asc'?'desc':'asc'})}">
-                            직급 <span th:if="${sort=='position'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
-                        </a>
-                    </th>
-                    <th>
-                        <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='role',direction=${sort=='role' and direction=='asc'?'desc':'asc'})}">
-                            역할 <span th:if="${sort=='role'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
-                        </a>
-                    </th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="member : ${members}">
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="avatar"
-                                 th:style="'background:' + ${#strings.isEmpty(member.team) ? '#6c757d' : (member.team.name.hashCode() % 2 == 0 ? '#0d6efd' : '#6366f1')}">
-                                <span th:text="${member.name.substring(0,1)}"></span>
-                            </div>
-                            <div>
-                                <div class="member-name" th:text="${member.name}"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="member-email" th:text="${member.email}"></td>
-                    <td>
-                        <span th:if="${member.team != null}"
-                              class="badge rounded-pill"
-                              style="background:#e7f0ff;color:#1d4ed8;font-size:.75rem"
-                              th:text="${member.team.name}"></span>
-                        <span th:if="${member.team == null}" class="text-muted">-</span>
-                    </td>
-                    <td th:text="${member.position != null ? member.position.displayName : '-'}"
-                        style="color:#495057;font-size:.83rem"></td>
-                    <td>
-                        <span class="badge"
-                              th:classappend="${member.role.name() == 'ADMIN'} ? 'badge-admin' : (${member.role.name() == 'SALES'} ? 'badge-sales' : 'badge-emp')"
-                              th:text="${member.role.displayName}"
-                              style="font-size:.72rem;padding:.25rem .55rem;border-radius:6px"></span>
-                    </td>
-                    <td>
-                        <a sec:authorize="hasRole('ADMIN')"
-                           th:href="@{/admin/employees/{id}/documents(id=${member.id})}"
-                           class="btn btn-sm btn-outline-primary" style="font-size:.78rem;border-radius:6px">
-                            <i class="bi bi-folder2-open me-1"></i>문서
-                        </a>
-                        <a sec:authorize="hasRole('SALES')"
-                           th:href="@{/sales/members/{id}/documents(id=${member.id})}"
-                           class="btn btn-sm btn-outline-primary" style="font-size:.78rem;border-radius:6px">
-                            <i class="bi bi-folder2-open me-1"></i>문서
-                        </a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+          <table class="table members-table">
+            <thead>
+            <tr>
+              <th>
+                <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='name',direction=${sort=='name' and direction=='asc'?'desc':'asc'})}">
+                  이름 <span th:if="${sort=='name'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
+                </a>
+              </th>
+              <th>이메일</th>
+              <th>
+                <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='team',direction=${sort=='team' and direction=='asc'?'desc':'asc'})}">
+                  팀 <span th:if="${sort=='team'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
+                </a>
+              </th>
+              <th>
+                <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='position',direction=${sort=='position' and direction=='asc'?'desc':'asc'})}">
+                  직급 <span th:if="${sort=='position'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
+                </a>
+              </th>
+              <th>
+                <a th:href="@{/sales/members(q=${q},teamId=${teamId},sort='role',direction=${sort=='role' and direction=='asc'?'desc':'asc'})}">
+                  역할 <span th:if="${sort=='role'}" th:text="${direction=='asc'?'↑':'↓'}"></span>
+                </a>
+              </th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="member : ${members}">
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar"
+                       th:style="'background:' + ${#strings.isEmpty(member.team) ? '#6c757d' : (member.team.name.hashCode() % 2 == 0 ? '#0d6efd' : '#6366f1')}">
+                    <span th:text="${member.name.substring(0,1)}"></span>
+                  </div>
+                  <div>
+                    <div class="member-name" th:text="${member.name}"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="member-email" th:text="${member.email}"></td>
+              <td>
+                <span th:if="${member.team != null}"
+                      class="badge rounded-pill"
+                      style="background:#e7f0ff;color:#1d4ed8;font-size:.75rem"
+                      th:text="${member.team.name}"></span>
+                <span th:if="${member.team == null}" class="text-muted">-</span>
+              </td>
+              <td th:text="${member.position != null ? member.position.displayName : '-'}"
+                  style="color:#495057;font-size:.83rem"></td>
+              <td>
+                <span class="badge"
+                      th:classappend="${member.role.name() == 'ADMIN'} ? 'badge-admin' : (${member.role.name() == 'SALES'} ? 'badge-sales' : 'badge-emp')"
+                      th:text="${member.role.displayName}"
+                      style="font-size:.72rem;padding:.25rem .55rem;border-radius:6px"></span>
+              </td>
+              <td>
+                <a sec:authorize="hasRole('ADMIN')"
+                   th:href="@{/admin/employees/{id}/documents(id=${member.id})}"
+                   class="btn btn-sm btn-outline-primary" style="font-size:.78rem;border-radius:6px">
+                  <i class="bi bi-folder2-open me-1"></i>문서
+                </a>
+                <a sec:authorize="hasRole('SALES')"
+                   th:href="@{/sales/members/{id}/documents(id=${member.id})}"
+                   class="btn btn-sm btn-outline-primary" style="font-size:.78rem;border-radius:6px">
+                  <i class="bi bi-folder2-open me-1"></i>문서
+                </a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
-    </div>
+      </div>
 
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
+<script>
+(function(){
+    document.querySelectorAll('form').forEach(function(f){
+        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
+            f.addEventListener('submit',function(){
+                document.getElementById('loadingOverlay').style.display='flex';
+            });
+        }
+    });
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

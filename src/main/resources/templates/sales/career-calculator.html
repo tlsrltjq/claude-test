@@ -10,441 +10,442 @@
 </head>
 <body>
 
-<nav class="topnav">
-    <div class="container d-flex align-items-center gap-3">
-        <a th:href="@{/dashboard}" class="brand me-auto">
-            <i class="bi bi-grid-3x3-gap-fill me-1"></i>eActive Resource Hub
-        </a>
-        <a th:href="@{/sales/profiles}" class="btn btn-nav btn-sm">
-            <i class="bi bi-table me-1"></i>인력 표
-        </a>
-        <a th:href="@{/sales/members}" class="btn btn-nav btn-sm">
-            <i class="bi bi-people me-1"></i>인력 목록
-        </a>
-        <a th:href="@{/dashboard}" class="btn btn-nav btn-sm">
-            <i class="bi bi-house me-1"></i>대시보드
-        </a>
-        <form th:action="@{/logout}" method="post" class="mb-0">
-            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-            <button type="submit" class="btn btn-nav btn-sm">
-                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
-            </button>
-        </form>
-    </div>
-</nav>
+<div class="app-shell">
 
-<div class="container py-4" style="max-width:1280px;">
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <!-- 페이지 타이틀 -->
-    <div class="mb-3">
-        <h2 style="font-size:1.15rem;font-weight:800;margin-bottom:.2rem">
-            <i class="bi bi-calculator-fill text-primary me-2"></i>기술등급 산출
-        </h2>
-        <p class="text-muted" style="font-size:.83rem;margin:0">학위·자격증 기준으로 경력을 계산해 기술등급을 산출합니다.</p>
-    </div>
+  <main class="main-content">
+    <div class="page-wrap">
 
-    <!-- 플래시 -->
-    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center gap-2 alert-dismissible mb-3">
-        <i class="bi bi-check-circle-fill"></i><span th:text="${successMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2 alert-dismissible mb-3">
-        <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${errorMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
+        <div>
+          <h1 class="page-hd-title"><i class="bi bi-calculator-fill me-2"></i>기술등급 산출</h1>
+          <p class="page-hd-sub">학위·자격증 기준으로 경력을 계산해 기술등급을 산출합니다.</p>
+        </div>
+      </div>
 
-    <div class="row g-4 align-items-start">
+      <!-- 플래시 -->
+      <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center gap-2 alert-dismissible mb-3">
+          <i class="bi bi-check-circle-fill"></i><span th:text="${successMessage}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2 alert-dismissible mb-3">
+          <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${errorMessage}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
 
-        <!-- ═══ 왼쪽: 입력 영역 ═══ -->
-        <div class="col-12 col-lg-6">
+      <div class="row g-4 align-items-start">
 
-            <!-- ① 직원 선택 -->
-            <div class="calc-card">
-                <div class="calc-card-header">
-                    <span><i class="bi bi-person-check-fill"></i>직원 선택
-                        <span class="text-muted fw-normal ms-1" style="font-size:.75rem">(선택 후 프로필 저장 가능)</span>
-                    </span>
-                    <span id="selectedBadge">
-                        <span th:if="${targetUserId != null}" class="selected-badge">
-                            <i class="bi bi-person-fill"></i>
-                            <th:block th:each="m : ${members}" th:if="${m.id == targetUserId}">
-                                <span th:text="${m.name}"></span>
-                                <span th:if="${m.team != null}" class="fw-normal opacity-75"
-                                      th:text="'· ' + ${m.team.name}"></span>
-                            </th:block>
-                        </span>
-                        <span th:if="${targetUserId == null}" class="text-muted" style="font-size:.78rem">선택 안 됨</span>
-                    </span>
-                </div>
-                <div class="calc-card-body">
-                    <div class="input-group input-group-sm mb-2">
-                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" id="memberSearch" class="form-control border-start-0"
-                               placeholder="이름 또는 팀으로 검색"
-                               oninput="filterMembers(this.value)"
-                               onkeydown="if(event.key==='Enter'){event.preventDefault();filterMembers(this.value);}">
-                    </div>
-                    <div class="member-list" id="memberList">
-                        <div th:each="m : ${members}"
-                             class="member-item"
-                             th:classappend="${m.id == targetUserId} ? ' selected'"
-                             th:data-id="${m.id}" th:data-name="${m.name}"
-                             th:data-team="${m.team != null ? m.team.name : ''}"
-                             onclick="selectMember(this)">
-                            <span class="name" th:text="${m.name}"></span>
-                            <span class="team" th:text="${m.team != null ? m.team.name : '-'}"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          <!-- ═══ 왼쪽: 입력 영역 ═══ -->
+          <div class="col-12 col-lg-6">
 
-            <form method="post" th:action="@{/sales/career-calculator}" id="calcForm">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                <input type="hidden" name="targetUserId" id="targetUserIdField" th:value="${targetUserId}">
+              <!-- ① 직원 선택 -->
+              <div class="calc-card">
+                  <div class="calc-card-header">
+                      <span><i class="bi bi-person-check-fill"></i>직원 선택
+                          <span class="text-muted fw-normal ms-1" style="font-size:.75rem">(선택 후 프로필 저장 가능)</span>
+                      </span>
+                      <span id="selectedBadge">
+                          <span th:if="${targetUserId != null}" class="selected-badge">
+                              <i class="bi bi-person-fill"></i>
+                              <th:block th:each="m : ${members}" th:if="${m.id == targetUserId}">
+                                  <span th:text="${m.name}"></span>
+                                  <span th:if="${m.team != null}" class="fw-normal opacity-75"
+                                        th:text="'· ' + ${m.team.name}"></span>
+                              </th:block>
+                          </span>
+                          <span th:if="${targetUserId == null}" class="text-muted" style="font-size:.78rem">선택 안 됨</span>
+                      </span>
+                  </div>
+                  <div class="calc-card-body">
+                      <div class="input-group input-group-sm mb-2">
+                          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                          <input type="text" id="memberSearch" class="form-control border-start-0"
+                                 placeholder="이름 또는 팀으로 검색"
+                                 oninput="filterMembers(this.value)"
+                                 onkeydown="if(event.key==='Enter'){event.preventDefault();filterMembers(this.value);}">
+                      </div>
+                      <div class="member-list" id="memberList">
+                          <div th:each="m : ${members}"
+                               class="member-item"
+                               th:classappend="${m.id == targetUserId} ? ' selected'"
+                               th:data-id="${m.id}" th:data-name="${m.name}"
+                               th:data-team="${m.team != null ? m.team.name : ''}"
+                               onclick="selectMember(this)">
+                              <span class="name" th:text="${m.name}"></span>
+                              <span class="team" th:text="${m.team != null ? m.team.name : '-'}"></span>
+                          </div>
+                      </div>
+                  </div>
+              </div>
 
-                <!-- ② 기본 정보 -->
-                <div class="calc-card">
-                    <div class="calc-card-header">
-                        <span><i class="bi bi-mortarboard-fill"></i>기본 정보</span>
-                    </div>
-                    <div class="calc-card-body">
-                        <div class="row g-3">
-                            <div class="col-sm-3">
-                                <div class="field-label">학위 <span class="text-danger">*</span></div>
-                                <select name="degree" id="degreeSelect" class="form-select form-select-sm" required>
-                                    <option value="">선택</option>
-                                    <option th:each="d : ${degrees}"
-                                            th:value="${d.name()}"
-                                            th:text="${d.displayName}"
-                                            th:selected="${degree != null and degree == d.name()}"></option>
-                                </select>
-                            </div>
-                            <div class="col-sm-3">
-                                <div class="field-label">졸업일자 <span class="text-danger">*</span></div>
-                                <input type="date" name="gradDate" class="form-control form-control-sm"
-                                       th:value="${gradDate}" required>
-                                <div class="form-text" style="font-size:.72rem">경력 기산점</div>
-                            </div>
-                            <div class="col-sm-3">
-                                <div class="field-label">자격증</div>
-                                <input type="hidden" name="certType" id="certTypeSelect"
-                                       th:value="${certType != null and certType != 'NONE'} ? 'ENGINEER' : 'NONE'">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="form-check mb-0">
-                                        <input class="form-check-input" type="checkbox" id="certCheck"
-                                               onchange="toggleCertDate()"
-                                               th:checked="${certType != null and certType != 'NONE'}">
-                                        <label class="form-check-label" for="certCheck" style="font-size:.83rem;">정보처리기사</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-3" id="certDateWrap"
-                                 th:style="${certType != null and certType != 'NONE'} ? '' : 'display:none'">
-                                <div class="field-label">취득일자</div>
-                                <input type="date" name="certDate" id="certDateInput" class="form-control form-control-sm"
-                                       th:value="${certDate}">
-                                <div class="form-text" style="font-size:.72rem">경력 기산점</div>
-                            </div>
-                        </div>
+              <form method="post" th:action="@{/sales/career-calculator}" id="calcForm">
+                  <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                  <input type="hidden" name="targetUserId" id="targetUserIdField" th:value="${targetUserId}">
 
-                        <!-- 등급 기준 참고표 -->
-                        <div class="mt-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
-                                    data-bs-toggle="collapse" data-bs-target="#gradeTable"
-                                    style="font-size:.78rem">
-                                <i class="bi bi-table me-1"></i>등급 기준 참고표
-                            </button>
-                            <div class="collapse mt-2" id="gradeTable">
-                                <div class="row g-2">
-                                    <div class="col-md-7">
-                                        <table class="table table-bordered table-sm grade-ref-table mb-0">
-                                            <thead><tr><th>등급</th><th>고졸</th><th>전문학사</th><th>학사</th><th>석사</th><th>박사</th></tr></thead>
-                                            <tbody>
-                                                <tr><td>특급</td><td>-</td><td>15년</td><td>12년</td><td>9년</td><td>3년</td></tr>
-                                                <tr><td>고급</td><td>-</td><td>12년</td><td>9년</td><td>6년</td><td>0년</td></tr>
-                                                <tr><td>중급</td><td>12년</td><td>9년</td><td>6년</td><td>3년</td><td>0년</td></tr>
-                                                <tr><td>초급</td><td>3년</td><td>0년</td><td>0년</td><td>0년</td><td>0년</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="col-md-5">
-                                        <table class="table table-bordered table-sm grade-ref-table mb-0">
-                                            <thead><tr><th>등급</th><th>정보처리기사</th></tr></thead>
-                                            <tbody>
-                                                <tr><td>특급</td><td>9년</td></tr>
-                                                <tr><td>고급</td><td>6년</td></tr>
-                                                <tr><td>중급</td><td>3년</td></tr>
-                                                <tr><td>초급</td><td>0년</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                  <!-- ② 기본 정보 -->
+                  <div class="calc-card">
+                      <div class="calc-card-header">
+                          <span><i class="bi bi-mortarboard-fill"></i>기본 정보</span>
+                      </div>
+                      <div class="calc-card-body">
+                          <div class="row g-3">
+                              <div class="col-sm-3">
+                                  <div class="field-label">학위 <span class="text-danger">*</span></div>
+                                  <select name="degree" id="degreeSelect" class="form-select form-select-sm" required>
+                                      <option value="">선택</option>
+                                      <option th:each="d : ${degrees}"
+                                              th:value="${d.name()}"
+                                              th:text="${d.displayName}"
+                                              th:selected="${degree != null and degree == d.name()}"></option>
+                                  </select>
+                              </div>
+                              <div class="col-sm-3">
+                                  <div class="field-label">졸업일자 <span class="text-danger">*</span></div>
+                                  <input type="date" name="gradDate" class="form-control form-control-sm"
+                                         th:value="${gradDate}" required>
+                                  <div class="form-text" style="font-size:.72rem">경력 기산점</div>
+                              </div>
+                              <div class="col-sm-3">
+                                  <div class="field-label">자격증</div>
+                                  <input type="hidden" name="certType" id="certTypeSelect"
+                                         th:value="${certType != null and certType != 'NONE'} ? 'ENGINEER' : 'NONE'">
+                                  <div class="d-flex align-items-center gap-2">
+                                      <div class="form-check mb-0">
+                                          <input class="form-check-input" type="checkbox" id="certCheck"
+                                                 onchange="toggleCertDate()"
+                                                 th:checked="${certType != null and certType != 'NONE'}">
+                                          <label class="form-check-label" for="certCheck" style="font-size:.83rem;">정보처리기사</label>
+                                      </div>
+                                  </div>
+                              </div>
+                              <div class="col-sm-3" id="certDateWrap"
+                                   th:style="${certType != null and certType != 'NONE'} ? '' : 'display:none'">
+                                  <div class="field-label">취득일자</div>
+                                  <input type="date" name="certDate" id="certDateInput" class="form-control form-control-sm"
+                                         th:value="${certDate}">
+                                  <div class="form-text" style="font-size:.72rem">경력 기산점</div>
+                              </div>
+                          </div>
 
-                <!-- 입력 오류 -->
-                <div th:if="${inputError}" class="alert alert-warning d-flex align-items-center gap-2 py-2">
-                    <i class="bi bi-exclamation-circle-fill"></i>
-                    <span th:text="${inputError}" style="font-size:.85rem"></span>
-                </div>
-                <div th:if="${errors != null and !#lists.isEmpty(errors)}" class="alert alert-danger py-2">
-                    <ul class="mb-0 ps-3" style="font-size:.85rem"><li th:each="err : ${errors}" th:text="${err}"></li></ul>
-                </div>
-                <div th:if="${infoMessage}" class="alert alert-info d-flex align-items-center gap-2 py-2">
-                    <i class="bi bi-info-circle-fill"></i>
-                    <span th:text="${infoMessage}" style="font-size:.85rem"></span>
-                </div>
+                          <!-- 등급 기준 참고표 -->
+                          <div class="mt-3">
+                              <button type="button" class="btn btn-sm btn-outline-secondary"
+                                      data-bs-toggle="collapse" data-bs-target="#gradeTable"
+                                      style="font-size:.78rem">
+                                  <i class="bi bi-table me-1"></i>등급 기준 참고표
+                              </button>
+                              <div class="collapse mt-2" id="gradeTable">
+                                  <div class="row g-2">
+                                      <div class="col-md-7">
+                                          <table class="table table-bordered table-sm grade-ref-table mb-0">
+                                              <thead><tr><th>등급</th><th>고졸</th><th>전문학사</th><th>학사</th><th>석사</th><th>박사</th></tr></thead>
+                                              <tbody>
+                                                  <tr><td>특급</td><td>-</td><td>15년</td><td>12년</td><td>9년</td><td>3년</td></tr>
+                                                  <tr><td>고급</td><td>-</td><td>12년</td><td>9년</td><td>6년</td><td>0년</td></tr>
+                                                  <tr><td>중급</td><td>12년</td><td>9년</td><td>6년</td><td>3년</td><td>0년</td></tr>
+                                                  <tr><td>초급</td><td>3년</td><td>0년</td><td>0년</td><td>0년</td><td>0년</td></tr>
+                                              </tbody>
+                                          </table>
+                                      </div>
+                                      <div class="col-md-5">
+                                          <table class="table table-bordered table-sm grade-ref-table mb-0">
+                                              <thead><tr><th>등급</th><th>정보처리기사</th></tr></thead>
+                                              <tbody>
+                                                  <tr><td>특급</td><td>9년</td></tr>
+                                                  <tr><td>고급</td><td>6년</td></tr>
+                                                  <tr><td>중급</td><td>3년</td></tr>
+                                                  <tr><td>초급</td><td>0년</td></tr>
+                                              </tbody>
+                                          </table>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
 
-                <!-- ③ 경력 기간 -->
-                <div class="calc-card">
-                    <div class="calc-card-header">
-                        <span><i class="bi bi-calendar-range-fill"></i>경력 기간 입력</span>
-                        <div class="form-check form-check-inline mb-0">
-                            <input class="form-check-input" type="checkbox" id="removeOverlap"
-                                   name="removeOverlap" value="true" th:checked="${removeOverlap}">
-                            <label class="form-check-label" for="removeOverlap"
-                                   style="font-size:.78rem">중복 기간 자동 제거</label>
-                        </div>
-                    </div>
-                    <div class="calc-card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table period-table mb-0" id="periodTable">
-                                <thead>
-                                    <tr>
-                                        <th class="text-center" style="width:42px">NO</th>
-                                        <th>소속회사</th>
-                                        <th style="width:140px">시작일자</th>
-                                        <th style="width:140px">종료일자</th>
-                                        <th class="text-center" style="width:75px">일수</th>
-                                        <th class="text-center" style="width:65px">중복</th>
-                                        <th class="text-center" style="width:44px"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="periodBody">
-                                    <tr th:each="startDate, stat : ${startDates}" class="period-row">
-                                        <td class="text-center text-muted align-middle" style="font-size:.78rem"
-                                            th:text="${stat.index + 1}"></td>
-                                        <td>
-                                            <input type="text" name="companies" class="form-control"
-                                                   placeholder="회사명"
-                                                   th:value="${companies != null and stat.index < #lists.size(companies)} ? ${companies[stat.index]} : ''">
-                                        </td>
-                                        <td>
-                                            <input type="date" name="startDates" class="form-control"
-                                                   th:value="${startDate}" onchange="refreshRows()">
-                                        </td>
-                                        <td>
-                                            <input type="date" name="endDates" class="form-control"
-                                                   th:value="${endDates != null and stat.index < #lists.size(endDates)} ? ${endDates[stat.index]} : ''"
-                                                   onchange="refreshRows()">
-                                        </td>
-                                        <td class="text-center align-middle days-cell" style="font-size:.8rem">-</td>
-                                        <td class="text-center align-middle overlap-cell" style="font-size:.78rem">-</td>
-                                        <td class="text-center align-middle">
-                                            <button type="button" class="btn btn-sm btn-outline-danger px-2 py-0"
-                                                    onclick="removeRow(this)"
-                                                    style="font-size:.85rem;border-radius:6px">−</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="4" class="text-end" style="font-size:.82rem">합계</td>
-                                        <td class="text-center" id="totalDaysCell" style="font-size:.82rem">-</td>
-                                        <td colspan="2"></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        <div class="p-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addRow()"
-                                    style="font-size:.82rem;border-radius:7px">
-                                <i class="bi bi-plus-lg me-1"></i>기간 추가
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                  <!-- 입력 오류 -->
+                  <div th:if="${inputError}" class="alert alert-warning d-flex align-items-center gap-2 py-2">
+                      <i class="bi bi-exclamation-circle-fill"></i>
+                      <span th:text="${inputError}" style="font-size:.85rem"></span>
+                  </div>
+                  <div th:if="${errors != null and !#lists.isEmpty(errors)}" class="alert alert-danger py-2">
+                      <ul class="mb-0 ps-3" style="font-size:.85rem"><li th:each="err : ${errors}" th:text="${err}"></li></ul>
+                  </div>
+                  <div th:if="${infoMessage}" class="alert alert-info d-flex align-items-center gap-2 py-2">
+                      <i class="bi bi-info-circle-fill"></i>
+                      <span th:text="${infoMessage}" style="font-size:.85rem"></span>
+                  </div>
 
-                <div class="d-flex gap-2 mb-4">
-                    <button type="submit" class="btn btn-primary fw-semibold px-4">
-                        <i class="bi bi-calculator me-1"></i>등급 산출
-                    </button>
-                    <a th:href="@{/sales/career-calculator}" class="btn btn-outline-secondary">초기화</a>
-                </div>
-            </form>
+                  <!-- ③ 경력 기간 -->
+                  <div class="calc-card">
+                      <div class="calc-card-header">
+                          <span><i class="bi bi-calendar-range-fill"></i>경력 기간 입력</span>
+                          <div class="form-check form-check-inline mb-0">
+                              <input class="form-check-input" type="checkbox" id="removeOverlap"
+                                     name="removeOverlap" value="true" th:checked="${removeOverlap}">
+                              <label class="form-check-label" for="removeOverlap"
+                                     style="font-size:.78rem">중복 기간 자동 제거</label>
+                          </div>
+                      </div>
+                      <div class="calc-card-body p-0">
+                          <div class="table-responsive">
+                              <table class="table period-table mb-0" id="periodTable">
+                                  <thead>
+                                      <tr>
+                                          <th class="text-center" style="width:42px">NO</th>
+                                          <th>소속회사</th>
+                                          <th style="width:140px">시작일자</th>
+                                          <th style="width:140px">종료일자</th>
+                                          <th class="text-center" style="width:75px">일수</th>
+                                          <th class="text-center" style="width:65px">중복</th>
+                                          <th class="text-center" style="width:44px"></th>
+                                      </tr>
+                                  </thead>
+                                  <tbody id="periodBody">
+                                      <tr th:each="startDate, stat : ${startDates}" class="period-row">
+                                          <td class="text-center text-muted align-middle" style="font-size:.78rem"
+                                              th:text="${stat.index + 1}"></td>
+                                          <td>
+                                              <input type="text" name="companies" class="form-control"
+                                                     placeholder="회사명"
+                                                     th:value="${companies != null and stat.index < #lists.size(companies)} ? ${companies[stat.index]} : ''">
+                                          </td>
+                                          <td>
+                                              <input type="date" name="startDates" class="form-control"
+                                                     th:value="${startDate}" onchange="refreshRows()">
+                                          </td>
+                                          <td>
+                                              <input type="date" name="endDates" class="form-control"
+                                                     th:value="${endDates != null and stat.index < #lists.size(endDates)} ? ${endDates[stat.index]} : ''"
+                                                     onchange="refreshRows()">
+                                          </td>
+                                          <td class="text-center align-middle days-cell" style="font-size:.8rem">-</td>
+                                          <td class="text-center align-middle overlap-cell" style="font-size:.78rem">-</td>
+                                          <td class="text-center align-middle">
+                                              <button type="button" class="btn btn-sm btn-outline-danger px-2 py-0"
+                                                      onclick="removeRow(this)"
+                                                      style="font-size:.85rem;border-radius:6px">−</button>
+                                          </td>
+                                      </tr>
+                                  </tbody>
+                                  <tfoot>
+                                      <tr>
+                                          <td colspan="4" class="text-end" style="font-size:.82rem">합계</td>
+                                          <td class="text-center" id="totalDaysCell" style="font-size:.82rem">-</td>
+                                          <td colspan="2"></td>
+                                      </tr>
+                                  </tfoot>
+                              </table>
+                          </div>
+                          <div class="p-3">
+                              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addRow()"
+                                      style="font-size:.82rem;border-radius:7px">
+                                  <i class="bi bi-plus-lg me-1"></i>기간 추가
+                              </button>
+                          </div>
+                      </div>
+                  </div>
 
-        </div><!-- /left col -->
+                  <div class="d-flex gap-2 mb-4">
+                      <button type="submit" class="btn btn-primary fw-semibold px-4">
+                          <i class="bi bi-calculator me-1"></i>등급 산출
+                      </button>
+                      <a th:href="@{/sales/career-calculator}" class="btn btn-outline-secondary">초기화</a>
+                  </div>
+              </form>
 
-        <!-- ═══ 오른쪽: 결과 패널 (sticky) ═══ -->
-        <div class="col-12 col-lg-6">
-            <div class="result-panel">
+          </div><!-- /left col -->
 
-                <!-- 결과 없을 때 안내 -->
-                <div th:if="${result == null}" class="result-placeholder">
-                    <i class="bi bi-calculator text-muted"></i>
-                    <p>경력 기간을 입력하고<br><strong>등급 산출</strong>을 누르면<br>결과가 여기에 표시됩니다.</p>
-                </div>
+          <!-- ═══ 오른쪽: 결과 패널 (sticky) ═══ -->
+          <div class="col-12 col-lg-6">
+              <div class="result-panel">
 
-                <!-- ④ 계산 결과 -->
-                <div th:if="${result != null}">
+                  <!-- 결과 없을 때 안내 -->
+                  <div th:if="${result == null}" class="result-placeholder">
+                      <i class="bi bi-calculator text-muted"></i>
+                      <p>경력 기간을 입력하고<br><strong>등급 산출</strong>을 누르면<br>결과가 여기에 표시됩니다.</p>
+                  </div>
 
-                    <!-- 제안등급 배너 -->
-                    <div th:class="'result-grade-banner ' +
-                                    (${result.proposedGrade == '특급'} ? 'banner-special' :
-                                    (${result.proposedGrade == '고급'} ? 'banner-high' :
-                                    (${result.proposedGrade == '중급'} ? 'banner-mid' :
-                                    (${result.proposedGrade != null}    ? 'banner-low' : 'banner-none'))))">
-                        <div class="label">최종 제안등급</div>
-                        <div class="grade" th:text="${result.proposedGrade != null ? result.proposedGrade : '등급 미달'}"></div>
-                        <div class="basis" th:if="${result.proposedBasis != null}"
-                             th:text="${result.proposedBasis + ' 기준'}"></div>
-                    </div>
+                  <!-- ④ 계산 결과 -->
+                  <div th:if="${result != null}">
 
-                    <!-- 저장 (배너 바로 아래) -->
-                    <div class="calc-card">
-                        <div class="calc-card-header">
-                            <span><i class="bi bi-floppy-fill"></i>프로필 저장</span>
-                        </div>
-                        <div class="calc-card-body">
-                            <form th:action="@{/sales/career-calculator/save}" method="post"
-                                  class="d-flex align-items-end gap-3 flex-wrap">
-                                <input type="hidden" name="_csrf"           th:value="${_csrf.token}">
-                                <input type="hidden" name="targetUserId"    th:value="${targetUserId}">
-                                <input type="hidden" name="careerMonths"    th:value="${result.rawMonths()}">
-                                <input type="hidden" name="careerTotalDays" th:value="${result.totalRawDays()}">
-                                <div>
-                                    <div class="field-label">개발자 등급 (저장)</div>
-                                    <select name="developerGrade" class="form-select form-select-sm" style="min-width:110px">
-                                        <option value="">등급 없음</option>
-                                        <option th:each="g : ${grades}" th:value="${g}" th:text="${g}"
-                                                th:selected="${result.proposedGrade != null and result.proposedGrade == g}"></option>
-                                    </select>
-                                </div>
-                                <div th:if="${targetUserId != null}">
-                                    <button type="submit" class="btn btn-success fw-semibold px-4">
-                                        <i class="bi bi-floppy me-1"></i>프로필에 저장
-                                    </button>
-                                </div>
-                                <div th:if="${targetUserId == null}" class="text-muted align-self-center" style="font-size:.82rem">
-                                    <i class="bi bi-info-circle me-1"></i>직원을 먼저 선택해야 저장할 수 있습니다.
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                      <!-- 제안등급 배너 -->
+                      <div th:class="'result-grade-banner ' +
+                                      (${result.proposedGrade == '특급'} ? 'banner-special' :
+                                      (${result.proposedGrade == '고급'} ? 'banner-high' :
+                                      (${result.proposedGrade == '중급'} ? 'banner-mid' :
+                                      (${result.proposedGrade != null}    ? 'banner-low' : 'banner-none'))))">
+                          <div class="label">최종 제안등급</div>
+                          <div class="grade" th:text="${result.proposedGrade != null ? result.proposedGrade : '등급 미달'}"></div>
+                          <div class="basis" th:if="${result.proposedBasis != null}"
+                               th:text="${result.proposedBasis + ' 기준'}"></div>
+                      </div>
 
-                    <!-- 기준별 비교 -->
-                    <div class="calc-card">
-                        <div class="calc-card-header">
-                            <span><i class="bi bi-bar-chart-fill"></i>기준별 경력 비교</span>
-                        </div>
-                        <div class="calc-card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table result-table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-start">구분</th>
-                                            <th>인정일수</th>
-                                            <th>경력기간</th>
-                                            <th>환산경력</th>
-                                            <th>적용등급</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:with="er=${result.educationResult}">
-                                            <td class="text-start fw-semibold" th:text="${er.basisLabel() + ' 기준'}"></td>
-                                            <td th:text="${#numbers.formatInteger(er.totalDays(), 1, 'COMMA') + '일'}"></td>
-                                            <td th:text="${er.displayText()}"></td>
-                                            <td th:text="${er.summary()}"></td>
-                                            <td>
-                                                <span th:if="${er.grade() == '특급'}" class="grade-pill-special">특급</span>
-                                                <span th:if="${er.grade() == '고급'}" class="grade-pill-high">고급</span>
-                                                <span th:if="${er.grade() == '중급'}" class="grade-pill-mid">중급</span>
-                                                <span th:if="${er.grade() == '초급'}" class="grade-pill-low">초급</span>
-                                                <span th:if="${er.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
-                                            </td>
-                                        </tr>
-                                        <tr th:if="${result.certResult != null}" th:with="cr=${result.certResult}">
-                                            <td class="text-start fw-semibold" th:text="${cr.basisLabel() + ' 기준'}"></td>
-                                            <td th:text="${#numbers.formatInteger(cr.totalDays(), 1, 'COMMA') + '일'}"></td>
-                                            <td th:text="${cr.displayText()}"></td>
-                                            <td th:text="${cr.summary()}"></td>
-                                            <td>
-                                                <span th:if="${cr.grade() == '특급'}" class="grade-pill-special">특급</span>
-                                                <span th:if="${cr.grade() == '고급'}" class="grade-pill-high">고급</span>
-                                                <span th:if="${cr.grade() == '중급'}" class="grade-pill-mid">중급</span>
-                                                <span th:if="${cr.grade() == '초급'}" class="grade-pill-low">초급</span>
-                                                <span th:if="${cr.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                      <!-- 저장 (배너 바로 아래) -->
+                      <div class="calc-card">
+                          <div class="calc-card-header">
+                              <span><i class="bi bi-floppy-fill"></i>프로필 저장</span>
+                          </div>
+                          <div class="calc-card-body">
+                              <form th:action="@{/sales/career-calculator/save}" method="post"
+                                    class="d-flex align-items-end gap-3 flex-wrap">
+                                  <input type="hidden" name="_csrf"           th:value="${_csrf.token}">
+                                  <input type="hidden" name="targetUserId"    th:value="${targetUserId}">
+                                  <input type="hidden" name="careerMonths"    th:value="${result.rawMonths()}">
+                                  <input type="hidden" name="careerTotalDays" th:value="${result.totalRawDays()}">
+                                  <div>
+                                      <div class="field-label">개발자 등급 (저장)</div>
+                                      <select name="developerGrade" class="form-select form-select-sm" style="min-width:110px">
+                                          <option value="">등급 없음</option>
+                                          <option th:each="g : ${grades}" th:value="${g}" th:text="${g}"
+                                                  th:selected="${result.proposedGrade != null and result.proposedGrade == g}"></option>
+                                      </select>
+                                  </div>
+                                  <div th:if="${targetUserId != null}">
+                                      <button type="submit" class="btn btn-success fw-semibold px-4">
+                                          <i class="bi bi-floppy me-1"></i>프로필에 저장
+                                      </button>
+                                  </div>
+                                  <div th:if="${targetUserId == null}" class="text-muted align-self-center" style="font-size:.82rem">
+                                      <i class="bi bi-info-circle me-1"></i>직원을 먼저 선택해야 저장할 수 있습니다.
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
 
-                    <!-- 경력 기간 상세 -->
-                    <div class="calc-card">
-                        <div class="calc-card-header">
-                            <span><i class="bi bi-list-columns-reverse"></i>경력 기간 상세</span>
-                        </div>
-                        <div class="calc-card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table result-table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th style="width:42px">NO</th>
-                                            <th class="text-start">소속회사</th>
-                                            <th>시작일</th>
-                                            <th>종료일</th>
-                                            <th>총일수</th>
-                                            <th>학력인정</th>
-                                            <th th:if="${result.certResult != null}">자격증인정</th>
-                                            <th>상태</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="row : ${result.rows}"
-                                            th:class="${row.overlap()} ? 'table-warning' : ''">
-                                            <td th:text="${row.no()}"></td>
-                                            <td class="text-start" th:text="${row.company() != null and !row.company().isBlank() ? row.company() : '-'}"></td>
-                                            <td th:text="${row.start()}"></td>
-                                            <td th:text="${row.end()}"></td>
-                                            <td th:text="${#numbers.formatInteger(row.totalDays(), 1, 'COMMA')}"></td>
-                                            <td th:text="${#numbers.formatInteger(row.educationDays(), 1, 'COMMA')}"></td>
-                                            <td th:if="${result.certResult != null}"
-                                                th:text="${#numbers.formatInteger(row.certDays(), 1, 'COMMA')}"></td>
-                                            <td>
-                                                <span th:if="${row.overlap()}" class="overlap-warn" style="font-size:.78rem">중복</span>
-                                                <span th:unless="${row.overlap()}" class="text-success" style="font-size:.78rem">정상</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="4" class="text-end">합계</td>
-                                            <td th:text="${#numbers.formatInteger(result.totalRawDays(), 1, 'COMMA')}"></td>
-                                            <td th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA')}"></td>
-                                            <td th:if="${result.certResult != null}"
-                                                th:text="${#numbers.formatInteger(result.certResult.totalDays(), 1, 'COMMA')}"></td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                      <!-- 기준별 비교 -->
+                      <div class="calc-card">
+                          <div class="calc-card-header">
+                              <span><i class="bi bi-bar-chart-fill"></i>기준별 경력 비교</span>
+                          </div>
+                          <div class="calc-card-body p-0">
+                              <div class="table-responsive">
+                                  <table class="table result-table mb-0">
+                                      <thead>
+                                          <tr>
+                                              <th class="text-start">구분</th>
+                                              <th>인정일수</th>
+                                              <th>경력기간</th>
+                                              <th>환산경력</th>
+                                              <th>적용등급</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          <tr th:with="er=${result.educationResult}">
+                                              <td class="text-start fw-semibold" th:text="${er.basisLabel() + ' 기준'}"></td>
+                                              <td th:text="${#numbers.formatInteger(er.totalDays(), 1, 'COMMA') + '일'}"></td>
+                                              <td th:text="${er.displayText()}"></td>
+                                              <td th:text="${er.summary()}"></td>
+                                              <td>
+                                                  <span th:if="${er.grade() == '특급'}" class="grade-pill-special">특급</span>
+                                                  <span th:if="${er.grade() == '고급'}" class="grade-pill-high">고급</span>
+                                                  <span th:if="${er.grade() == '중급'}" class="grade-pill-mid">중급</span>
+                                                  <span th:if="${er.grade() == '초급'}" class="grade-pill-low">초급</span>
+                                                  <span th:if="${er.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
+                                              </td>
+                                          </tr>
+                                          <tr th:if="${result.certResult != null}" th:with="cr=${result.certResult}">
+                                              <td class="text-start fw-semibold" th:text="${cr.basisLabel() + ' 기준'}"></td>
+                                              <td th:text="${#numbers.formatInteger(cr.totalDays(), 1, 'COMMA') + '일'}"></td>
+                                              <td th:text="${cr.displayText()}"></td>
+                                              <td th:text="${cr.summary()}"></td>
+                                              <td>
+                                                  <span th:if="${cr.grade() == '특급'}" class="grade-pill-special">특급</span>
+                                                  <span th:if="${cr.grade() == '고급'}" class="grade-pill-high">고급</span>
+                                                  <span th:if="${cr.grade() == '중급'}" class="grade-pill-mid">중급</span>
+                                                  <span th:if="${cr.grade() == '초급'}" class="grade-pill-low">초급</span>
+                                                  <span th:if="${cr.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
+                                              </td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                      </div>
 
-                </div><!-- /result -->
+                      <!-- 경력 기간 상세 -->
+                      <div class="calc-card">
+                          <div class="calc-card-header">
+                              <span><i class="bi bi-list-columns-reverse"></i>경력 기간 상세</span>
+                          </div>
+                          <div class="calc-card-body p-0">
+                              <div class="table-responsive">
+                                  <table class="table result-table mb-0">
+                                      <thead>
+                                          <tr>
+                                              <th style="width:42px">NO</th>
+                                              <th class="text-start">소속회사</th>
+                                              <th>시작일</th>
+                                              <th>종료일</th>
+                                              <th>총일수</th>
+                                              <th>학력인정</th>
+                                              <th th:if="${result.certResult != null}">자격증인정</th>
+                                              <th>상태</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          <tr th:each="row : ${result.rows}"
+                                              th:class="${row.overlap()} ? 'table-warning' : ''">
+                                              <td th:text="${row.no()}"></td>
+                                              <td class="text-start" th:text="${row.company() != null and !row.company().isBlank() ? row.company() : '-'}"></td>
+                                              <td th:text="${row.start()}"></td>
+                                              <td th:text="${row.end()}"></td>
+                                              <td th:text="${#numbers.formatInteger(row.totalDays(), 1, 'COMMA')}"></td>
+                                              <td th:text="${#numbers.formatInteger(row.educationDays(), 1, 'COMMA')}"></td>
+                                              <td th:if="${result.certResult != null}"
+                                                  th:text="${#numbers.formatInteger(row.certDays(), 1, 'COMMA')}"></td>
+                                              <td>
+                                                  <span th:if="${row.overlap()}" class="overlap-warn" style="font-size:.78rem">중복</span>
+                                                  <span th:unless="${row.overlap()}" class="text-success" style="font-size:.78rem">정상</span>
+                                              </td>
+                                          </tr>
+                                      </tbody>
+                                      <tfoot>
+                                          <tr>
+                                              <td colspan="4" class="text-end">합계</td>
+                                              <td th:text="${#numbers.formatInteger(result.totalRawDays(), 1, 'COMMA')}"></td>
+                                              <td th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA')}"></td>
+                                              <td th:if="${result.certResult != null}"
+                                                  th:text="${#numbers.formatInteger(result.certResult.totalDays(), 1, 'COMMA')}"></td>
+                                              <td></td>
+                                          </tr>
+                                      </tfoot>
+                                  </table>
+                              </div>
+                          </div>
+                      </div>
 
-            </div><!-- /result-panel (sticky) -->
-        </div><!-- /right col -->
+                  </div><!-- /result -->
 
-    </div><!-- /row -->
+              </div><!-- /result-panel (sticky) -->
+          </div><!-- /right col -->
 
+      </div><!-- /row -->
+
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
-
+<script>
+(function(){
+    document.querySelectorAll('form').forEach(function(f){
+        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
+            f.addEventListener('submit',function(){
+                document.getElementById('loadingOverlay').style.display='flex';
+            });
+        }
+    });
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // ── 직원 선택 ─────────────────────────────────────────────────────────────────

@@ -8,10 +8,12 @@
    `현재 단계: [단계명] / 목표: [목표] / 완료 기준: [기준]`
 4. 위 확인 완료 후 작업 시작
 
-## 세션 종료 시 필수 작업 (사람이 "세션 종료 마무리" 지시 후 자동 실행)
+## 세션 종료 시 필수 작업 (사람이 "세션 종료" 지시 후 자동 실행)
 1. `HARNESS.md` "현재 상태" 섹션 갱신
 2. `CHANGELOG.md` 한 줄 추가 (형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs: 내용`)
 3. `tasks/current.md` "이전 세션에서 멈춘 곳" 갱신
+4. 변경 사항 git commit & push (`origin/main`)
+5. 도커 재빌드 및 재기동: `docker compose build --no-cache app && docker compose up -d app`
 
 ## 작업 중 행동 규칙
 - 코드 수정 전: 영향 받는 파일 목록 먼저 보고

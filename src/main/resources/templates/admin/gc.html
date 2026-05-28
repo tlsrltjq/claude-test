@@ -10,117 +10,126 @@
 </head>
 <body>
 
-<nav class="topnav d-flex align-items-center gap-2 mb-0">
-    <a class="navbar-brand me-3" href="/admin">eActive Resource Hub</a>
-    <a href="/admin/employees" class="btn btn-sm btn-nav">직원 관리</a>
-    <a href="/admin/documents/review" class="btn btn-sm btn-nav">문서 검토</a>
-    <a href="/admin/documents/expiry" class="btn btn-sm btn-nav">만료 관리</a>
-    <a href="/admin/statistics" class="btn btn-sm btn-nav">통계</a>
-    <a href="/admin/gc" class="btn btn-sm btn-nav active">파일 GC</a>
-    <a href="/admin/certificate" class="btn btn-sm btn-nav">재직증명서</a>
-    <a href="/admin/allowed-emails" class="btn btn-sm btn-nav">가입 허용</a>
-    <form th:action="@{/logout}" method="post" class="ms-auto">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-        <button class="btn btn-sm btn-outline-light">로그아웃</button>
-    </form>
-</nav>
+<div class="app-shell">
 
-<div class="container py-4">
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <div class="page-header d-flex align-items-center justify-content-between">
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
         <div>
-            <h4 class="mb-1"><i class="bi bi-trash3 me-2"></i>파일 GC (Garbage Collection)</h4>
-            <p class="mb-0 opacity-75" style="font-size:.9rem">
-                소프트 삭제된 문서의 물리 파일을 영구 제거합니다. 매일 새벽 2시 자동 실행됩니다.
-            </p>
+          <h1 class="page-hd-title"><i class="bi bi-trash3 me-2"></i>파일 GC (Garbage Collection)</h1>
+          <p class="page-hd-sub">소프트 삭제된 문서의 물리 파일을 영구 제거합니다. 매일 새벽 2시 자동 실행됩니다.</p>
         </div>
-    </div>
+      </div>
 
-    <div th:if="${gcResult}" class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
+      <div th:if="${gcResult}" class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
         <i class="bi bi-check-circle-fill"></i>
         <span th:text="${gcResult}"></span>
-    </div>
+      </div>
 
-    <div class="row g-3">
+      <div class="row g-3">
 
         <!-- GC 정책 -->
         <div class="col-md-5">
-            <div class="card h-100">
-                <div class="card-header fw-semibold bg-white border-bottom py-3">
-                    <i class="bi bi-info-circle me-1 text-primary"></i> GC 정책
-                </div>
-                <div class="card-body">
-                    <div class="info-row">
-                        <span class="info-label">보존 기간</span>
-                        <span class="info-value" th:text="${retentionDays} + '일'"></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">자동 실행</span>
-                        <span class="info-value">매일 새벽 02:00</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">대상 조건</span>
-                        <span class="info-value" style="font-size:.85rem; font-weight:400">
-                            status = DELETED<br>
-                            deleted_at &lt; now() − 보존기간<br>
-                            files_purged_at IS NULL
-                        </span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">삭제 대상</span>
-                        <span class="info-value" style="font-size:.85rem; font-weight:400">
-                            각 버전의 원본 파일 + 미리보기 파일
-                        </span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">보존 기간 변경</span>
-                        <span class="info-value" style="font-size:.82rem; font-weight:400; color:#666">
-                            환경변수 RESOURCEHUB_GC_RETENTION_DAYS
-                        </span>
-                    </div>
-                </div>
+          <div class="card h-100">
+            <div class="card-header fw-semibold bg-white border-bottom py-3">
+              <i class="bi bi-info-circle me-1 text-primary"></i> GC 정책
             </div>
+            <div class="card-body">
+              <div class="info-row">
+                <span class="info-label">보존 기간</span>
+                <span class="info-value" th:text="${retentionDays} + '일'"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">자동 실행</span>
+                <span class="info-value">매일 새벽 02:00</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">대상 조건</span>
+                <span class="info-value" style="font-size:.85rem; font-weight:400">
+                  status = DELETED<br>
+                  deleted_at &lt; now() − 보존기간<br>
+                  files_purged_at IS NULL
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">삭제 대상</span>
+                <span class="info-value" style="font-size:.85rem; font-weight:400">
+                  각 버전의 원본 파일 + 미리보기 파일
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">보존 기간 변경</span>
+                <span class="info-value" style="font-size:.82rem; font-weight:400; color:#666">
+                  환경변수 RESOURCEHUB_GC_RETENTION_DAYS
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 수동 실행 -->
         <div class="col-md-7">
-            <div class="card h-100">
-                <div class="card-header fw-semibold bg-white border-bottom py-3">
-                    <i class="bi bi-play-circle me-1 text-success"></i> 수동 실행
-                </div>
-                <div class="card-body d-flex flex-column">
-                    <div class="alert alert-warning d-flex gap-2 mb-4" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
-                        <div>
-                            <strong>주의:</strong> 수동 실행 시 삭제된 파일은 복구할 수 없습니다.
-                            보존 기간(<span th:text="${retentionDays}"></span>일)이 지난 문서의 물리 파일만 삭제됩니다.
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <p class="text-muted mb-1" style="font-size:.9rem">
-                            GC를 지금 즉시 실행합니다. 조건을 충족하는 문서가 없으면 아무 작업도 수행하지 않습니다.
-                        </p>
-                        <ul class="text-muted mb-0" style="font-size:.85rem">
-                            <li>개별 파일 삭제 실패는 경고 로그만 남기고 계속 진행됩니다.</li>
-                            <li>처리 완료된 문서는 files_purged_at이 기록됩니다.</li>
-                        </ul>
-                    </div>
-                    <div class="mt-auto">
-                        <form th:action="@{/admin/gc/run}" method="post"
-                              onsubmit="return confirm('GC를 지금 실행하시겠습니까?\n보존 기간이 지난 삭제 문서의 파일이 영구 제거됩니다.');">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-trash3 me-1"></i> 지금 GC 실행
-                            </button>
-                        </form>
-                    </div>
-                </div>
+          <div class="card h-100">
+            <div class="card-header fw-semibold bg-white border-bottom py-3">
+              <i class="bi bi-play-circle me-1 text-success"></i> 수동 실행
             </div>
+            <div class="card-body d-flex flex-column">
+              <div class="alert alert-warning d-flex gap-2 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+                <div>
+                  <strong>주의:</strong> 수동 실행 시 삭제된 파일은 복구할 수 없습니다.
+                  보존 기간(<span th:text="${retentionDays}"></span>일)이 지난 문서의 물리 파일만 삭제됩니다.
+                </div>
+              </div>
+              <div class="mb-3">
+                <p class="text-muted mb-1" style="font-size:.9rem">
+                  GC를 지금 즉시 실행합니다. 조건을 충족하는 문서가 없으면 아무 작업도 수행하지 않습니다.
+                </p>
+                <ul class="text-muted mb-0" style="font-size:.85rem">
+                  <li>개별 파일 삭제 실패는 경고 로그만 남기고 계속 진행됩니다.</li>
+                  <li>처리 완료된 문서는 files_purged_at이 기록됩니다.</li>
+                </ul>
+              </div>
+              <div class="mt-auto">
+                <form th:action="@{/admin/gc/run}" method="post"
+                      onsubmit="return confirm('GC를 지금 실행하시겠습니까?\n보존 기간이 지난 삭제 문서의 파일이 영구 제거됩니다.');">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash3 me-1"></i> 지금 GC 실행
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
 
-    </div>
-</div>
+      </div>
 
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
+</div>
+<script>
+(function(){
+    document.querySelectorAll('form').forEach(function(f){
+        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
+            f.addEventListener('submit',function(){
+                document.getElementById('loadingOverlay').style.display='flex';
+            });
+        }
+    });
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

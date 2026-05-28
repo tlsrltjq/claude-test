@@ -9,138 +9,126 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<nav class="topnav navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/admin}">
-            <i class="bi bi-shield-fill me-1"></i>eActive Hub
-            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
-        </a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/documents/review}" class="btn btn-nav btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>검토 목록
-            </a>
-            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
-                <i class="bi bi-speedometer2 me-1"></i>대시보드
-            </a>
-            <a th:href="@{/admin/certificate}" class="btn btn-nav btn-sm">
-                <i class="bi bi-file-earmark-text me-1"></i>재직증명서
-            </a>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
+        <div>
+          <h1 class="page-hd-title"><i class="bi bi-pencil-square me-2"></i>문서 검토</h1>
+          <p class="page-hd-sub">문서 내용을 확인한 후 승인 또는 반려를 결정합니다.</p>
         </div>
-    </div>
-</nav>
+        <div class="page-hd-actions">
+          <a th:href="@{/admin/documents/review}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>검토 목록
+          </a>
+        </div>
+      </div>
 
-<div class="container mt-4">
-    <div class="page-header">
-        <h4><i class="bi bi-pencil-square me-2"></i>문서 검토</h4>
-        <p>문서 내용을 확인한 후 승인 또는 반려를 결정합니다.</p>
-    </div>
-
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
         <i class="bi bi-check-circle me-1"></i><span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
+      </div>
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
         <i class="bi bi-exclamation-triangle me-1"></i><span th:text="${errorMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+      </div>
 
-    <div class="row g-3">
+      <div class="row g-3">
         <!-- 왼쪽 패널 -->
         <div class="col-lg-4">
-            <!-- 문서 정보 -->
-            <div class="side-card">
-                <div class="card-header-custom"><i class="bi bi-file-earmark-text me-2"></i>문서 정보</div>
-                <div class="card-body">
-                    <div class="info-row"><span class="info-label">직원</span><span class="info-val fw-semibold" th:text="${version.document.folder.owner.name}"></span></div>
-                    <div class="info-row"><span class="info-label">팀</span><span class="info-val" th:text="${version.document.folder.owner.team != null ? version.document.folder.owner.team.name : '-'}"></span></div>
-                    <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${version.document.documentType.displayName}"></span></span></div>
-                    <div class="info-row"><span class="info-label">제목</span><span class="info-val" th:text="${version.document.title}"></span></div>
-                    <div class="info-row"><span class="info-label">버전</span><span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${version.versionNo}"></span></span></div>
-                    <div class="info-row"><span class="info-label">파일명</span><span class="info-val text-muted" th:text="${version.originalFileName}"></span></div>
-                    <div class="info-row"><span class="info-label">업로드일</span><span class="info-val text-muted" th:text="${#temporals.format(version.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
-                    <div class="info-row">
-                        <span class="info-label">상태</span>
-                        <span class="info-val">
-                            <span class="badge rounded-pill px-2" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.72rem;">
-                                <i class="bi bi-hourglass-split me-1"></i>검토 대기
-                            </span>
-                        </span>
-                    </div>
-                </div>
+          <!-- 문서 정보 -->
+          <div class="side-card">
+            <div class="card-header-custom"><i class="bi bi-file-earmark-text me-2"></i>문서 정보</div>
+            <div class="card-body">
+              <div class="info-row"><span class="info-label">직원</span><span class="info-val fw-semibold" th:text="${version.document.folder.owner.name}"></span></div>
+              <div class="info-row"><span class="info-label">팀</span><span class="info-val" th:text="${version.document.folder.owner.team != null ? version.document.folder.owner.team.name : '-'}"></span></div>
+              <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${version.document.documentType.displayName}"></span></span></div>
+              <div class="info-row"><span class="info-label">제목</span><span class="info-val" th:text="${version.document.title}"></span></div>
+              <div class="info-row"><span class="info-label">버전</span><span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${version.versionNo}"></span></span></div>
+              <div class="info-row"><span class="info-label">파일명</span><span class="info-val text-muted" th:text="${version.originalFileName}"></span></div>
+              <div class="info-row"><span class="info-label">업로드일</span><span class="info-val text-muted" th:text="${#temporals.format(version.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+              <div class="info-row">
+                <span class="info-label">상태</span>
+                <span class="info-val">
+                  <span class="badge rounded-pill px-2" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.72rem;">
+                    <i class="bi bi-hourglass-split me-1"></i>검토 대기
+                  </span>
+                </span>
+              </div>
             </div>
+          </div>
 
-            <!-- 승인 버튼 -->
-            <form th:action="@{/admin/documents/review/{id}/approve(id=${version.id})}" method="post" class="mb-2">
+          <!-- 승인 버튼 -->
+          <form th:action="@{/admin/documents/review/{id}/approve(id=${version.id})}" method="post" class="mb-2">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+            <button type="submit" class="btn btn-success w-100 fw-semibold"
+                    onclick="return confirm('이 문서를 승인하시겠습니까?')">
+              <i class="bi bi-check-circle-fill me-1"></i>승인
+            </button>
+          </form>
+
+          <!-- 반려 폼 -->
+          <div class="reject-card">
+            <div class="card-header-custom"><i class="bi bi-x-circle-fill me-2"></i>반려</div>
+            <div class="card-body">
+              <form th:action="@{/admin/documents/review/{id}/reject(id=${version.id})}" method="post">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                <button type="submit" class="btn btn-success w-100 fw-semibold"
-                        onclick="return confirm('이 문서를 승인하시겠습니까?')">
-                    <i class="bi bi-check-circle-fill me-1"></i>승인
-                </button>
-            </form>
-
-            <!-- 반려 폼 -->
-            <div class="reject-card">
-                <div class="card-header-custom"><i class="bi bi-x-circle-fill me-2"></i>반려</div>
-                <div class="card-body">
-                    <form th:action="@{/admin/documents/review/{id}/reject(id=${version.id})}" method="post">
-                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold">반려 사유 <span class="text-danger">*</span></label>
-                            <textarea name="reason" class="form-control form-control-sm" rows="3"
-                                      minlength="2" required placeholder="반려 사유를 입력하세요 (최소 2자)"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-danger w-100 btn-sm fw-semibold">
-                            <i class="bi bi-x-lg me-1"></i>반려
-                        </button>
-                    </form>
+                <div class="mb-2">
+                  <label class="form-label small fw-semibold">반려 사유 <span class="text-danger">*</span></label>
+                  <textarea name="reason" class="form-control form-control-sm" rows="3"
+                            minlength="2" required placeholder="반려 사유를 입력하세요 (최소 2자)"></textarea>
                 </div>
+                <button type="submit" class="btn btn-danger w-100 btn-sm fw-semibold">
+                  <i class="bi bi-x-lg me-1"></i>반려
+                </button>
+              </form>
             </div>
+          </div>
         </div>
 
         <!-- 오른쪽: 미리보기 -->
         <div class="col-lg-8">
-            <div class="preview-card">
-                <div class="card-header-custom"><i class="bi bi-eye me-2"></i>미리보기</div>
-                <div class="card-body p-2" style="min-height:600px;">
-                    <iframe th:if="${previewType == 'pdf'}"
-                            th:src="@{/documents/{id}/preview(id=${version.id})}"
-                            width="100%" height="640" style="border:none; border-radius:6px;"></iframe>
-                    <img th:if="${previewType == 'image'}"
-                         th:src="@{/documents/{id}/preview(id=${version.id})}"
-                         class="img-fluid rounded" alt="미리보기">
-                    <div th:if="${previewType == 'none'}"
-                         class="d-flex align-items-center justify-content-center text-muted"
-                         style="min-height:300px;">
-                        <div class="text-center">
-                            <i class="bi bi-file-earmark-x" style="font-size:3rem; opacity:.3; display:block; margin-bottom:.75rem;"></i>
-                            <p class="mb-0">미리보기를 지원하지 않는 파일 형식입니다.</p>
-                            <p class="small text-muted">DOCX·HWP·HWPX는 미리보기 PDF를 업로드하면 표시됩니다.</p>
-                        </div>
-                    </div>
+          <div class="preview-card">
+            <div class="card-header-custom"><i class="bi bi-eye me-2"></i>미리보기</div>
+            <div class="card-body p-2" style="min-height:600px;">
+              <iframe th:if="${previewType == 'pdf'}"
+                      th:src="@{/documents/{id}/preview(id=${version.id})}"
+                      width="100%" height="640" style="border:none; border-radius:6px;"></iframe>
+              <img th:if="${previewType == 'image'}"
+                   th:src="@{/documents/{id}/preview(id=${version.id})}"
+                   class="img-fluid rounded" alt="미리보기">
+              <div th:if="${previewType == 'none'}"
+                   class="d-flex align-items-center justify-content-center text-muted"
+                   style="min-height:300px;">
+                <div class="text-center">
+                  <i class="bi bi-file-earmark-x" style="font-size:3rem; opacity:.3; display:block; margin-bottom:.75rem;"></i>
+                  <p class="mb-0">미리보기를 지원하지 않는 파일 형식입니다.</p>
+                  <p class="small text-muted">DOCX·HWP·HWPX는 미리보기 PDF를 업로드하면 표시됩니다.</p>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-</div>
+      </div>
 
-<!-- 로딩 스피너 오버레이 -->
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
-    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
-        <span class="visually-hidden">처리 중...</span>
-    </div>
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
 <script>
 (function(){
-    var p = window.location.pathname;
-    // 네비바 active 상태
-    document.querySelectorAll('a.btn-nav').forEach(function(el){
-        var h = el.getAttribute('href');
-        if(!h) return;
-        var isRoot = (h==='/admin'||h==='/admin/');
-        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
-        if(active) el.classList.add('active');
-    });
-    // POST 폼 제출 시 스피너 표시
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

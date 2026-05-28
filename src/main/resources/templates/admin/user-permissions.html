@@ -9,119 +9,107 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<nav class="topnav navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/admin}">
-            <i class="bi bi-shield-fill me-1"></i>eActive Hub
-            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">ADMIN</span>
-        </a>
-        <div class="ms-auto d-flex gap-2">
-            <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-nav btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>직원 상세
-            </a>
-            <a th:href="@{/admin}" class="btn btn-nav btn-sm">
-                <i class="bi bi-speedometer2 me-1"></i>대시보드
-            </a>
-            <a th:href="@{/admin/certificate}" class="btn btn-nav btn-sm">
-                <i class="bi bi-file-earmark-text me-1"></i>재직증명서
-            </a>
+
+<div class="app-shell">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-hd">
+        <div>
+          <h1 class="page-hd-title"><i class="bi bi-key me-2"></i>권한 관리</h1>
+          <p class="page-hd-sub" th:text="${user.name} + ' (' + ${user.email} + ') — ' + ${user.role.displayName}"></p>
         </div>
-    </div>
-</nav>
+        <div class="page-hd-actions">
+          <a th:href="@{/admin/employees/{id}(id=${user.id})}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>직원 상세
+          </a>
+        </div>
+      </div>
 
-<div class="container mt-4">
-    <div class="page-header">
-        <h4><i class="bi bi-key me-2"></i>권한 관리</h4>
-        <p th:text="${user.name} + ' (' + ${user.email} + ') — ' + ${user.role.displayName}"></p>
-    </div>
-
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
         <i class="bi bi-check-circle me-1"></i><span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
+      </div>
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
         <i class="bi bi-exclamation-triangle me-1"></i><span th:text="${errorMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+      </div>
 
-    <div class="row g-4">
+      <div class="row g-4">
         <!-- 현재 권한 -->
         <div class="col-md-6">
-            <div class="perm-card">
-                <div class="card-header-custom"><i class="bi bi-list-check me-2"></i>현재 폴더 접근 권한</div>
-                <div class="card-body">
-                    <div th:if="${#lists.isEmpty(permissions)}" class="empty-state">
-                        <i class="bi bi-folder-x"></i>
-                        <p>부여된 권한이 없습니다.</p>
-                    </div>
-                    <div th:if="${!#lists.isEmpty(permissions)}">
-                        <div th:each="perm : ${permissions}" class="perm-row">
-                            <div>
-                                <span class="fw-semibold small">폴더 ID: </span>
-                                <span class="badge bg-secondary rounded-pill" th:text="${perm.targetId}"></span>
-                            </div>
-                            <form th:action="@{/admin/users/{id}/permissions/revoke(id=${user.id})}"
-                                  method="post" class="d-inline">
-                                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                                <input type="hidden" name="folderId" th:value="${perm.targetId}">
-                                <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2"
-                                        onclick="return confirm('권한을 회수하시겠습니까?')">
-                                    <i class="bi bi-trash me-1"></i>회수
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+          <div class="perm-card">
+            <div class="card-header-custom"><i class="bi bi-list-check me-2"></i>현재 폴더 접근 권한</div>
+            <div class="card-body">
+              <div th:if="${#lists.isEmpty(permissions)}" class="empty-state">
+                <i class="bi bi-folder-x"></i>
+                <p>부여된 권한이 없습니다.</p>
+              </div>
+              <div th:if="${!#lists.isEmpty(permissions)}">
+                <div th:each="perm : ${permissions}" class="perm-row">
+                  <div>
+                    <span class="fw-semibold small">폴더 ID: </span>
+                    <span class="badge bg-secondary rounded-pill" th:text="${perm.targetId}"></span>
+                  </div>
+                  <form th:action="@{/admin/users/{id}/permissions/revoke(id=${user.id})}"
+                        method="post" class="d-inline">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <input type="hidden" name="folderId" th:value="${perm.targetId}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2"
+                            onclick="return confirm('권한을 회수하시겠습니까?')">
+                      <i class="bi bi-trash me-1"></i>회수
+                    </button>
+                  </form>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
 
         <!-- 권한 부여 -->
         <div class="col-md-6">
-            <div class="perm-card">
-                <div class="card-header-custom"><i class="bi bi-plus-circle me-2"></i>폴더 접근 권한 부여</div>
-                <div class="card-body">
-                    <div th:if="${#lists.isEmpty(grantableFolders)}" class="empty-state">
-                        <i class="bi bi-folder-check"></i>
-                        <p>부여 가능한 폴더가 없습니다.</p>
-                    </div>
-                    <form th:if="${!#lists.isEmpty(grantableFolders)}"
-                          th:action="@{/admin/users/{id}/permissions/grant(id=${user.id})}"
-                          method="post">
-                        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                        <label class="form-label small fw-semibold text-muted">폴더 선택</label>
-                        <select name="folderId" class="form-select mb-3">
-                            <option th:each="folder : ${grantableFolders}"
-                                    th:value="${folder.id}"
-                                    th:text="${folder.folderName + ' (' + folder.owner.name + ')'}"></option>
-                        </select>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-plus-lg me-1"></i>권한 부여
-                        </button>
-                    </form>
-                </div>
+          <div class="perm-card">
+            <div class="card-header-custom"><i class="bi bi-plus-circle me-2"></i>폴더 접근 권한 부여</div>
+            <div class="card-body">
+              <div th:if="${#lists.isEmpty(grantableFolders)}" class="empty-state">
+                <i class="bi bi-folder-check"></i>
+                <p>부여 가능한 폴더가 없습니다.</p>
+              </div>
+              <form th:if="${!#lists.isEmpty(grantableFolders)}"
+                    th:action="@{/admin/users/{id}/permissions/grant(id=${user.id})}"
+                    method="post">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <label class="form-label small fw-semibold text-muted">폴더 선택</label>
+                <select name="folderId" class="form-select mb-3">
+                  <option th:each="folder : ${grantableFolders}"
+                          th:value="${folder.id}"
+                          th:text="${folder.folderName + ' (' + folder.owner.name + ')'}"></option>
+                </select>
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-plus-lg me-1"></i>권한 부여
+                </button>
+              </form>
             </div>
+          </div>
         </div>
-    </div>
-</div>
+      </div>
 
-<!-- 로딩 스피너 오버레이 -->
+    </div><!-- /.page-wrap -->
+  </main>
+
+</div><!-- /.app-shell -->
+
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
-    <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
-        <span class="visually-hidden">처리 중...</span>
-    </div>
+  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
+    <span class="visually-hidden">처리 중...</span>
+  </div>
 </div>
 <script>
 (function(){
-    var p = window.location.pathname;
-    // 네비바 active 상태
-    document.querySelectorAll('a.btn-nav').forEach(function(el){
-        var h = el.getAttribute('href');
-        if(!h) return;
-        var isRoot = (h==='/admin'||h==='/admin/');
-        var active = isRoot ? (p==='/admin'||p==='/admin/') : p.startsWith(h);
-        if(active) el.classList.add('active');
-    });
-    // POST 폼 제출 시 스피너 표시
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){
