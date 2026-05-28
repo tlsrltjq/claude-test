@@ -27,6 +27,15 @@ public class GlobalExceptionHandler {
         return "redirect:/";
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public String handleResourceNotFound(ResourceNotFoundException e,
+                                         HttpServletResponse response, Model model) {
+        if (response.isCommitted()) return null;
+        response.setStatus(404);
+        model.addAttribute("message", e.getMessage());
+        return "error/404";
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public String handleResponseStatus(ResponseStatusException e,
                                        Model model,

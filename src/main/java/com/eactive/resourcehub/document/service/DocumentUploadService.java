@@ -2,6 +2,7 @@ package com.eactive.resourcehub.document.service;
 
 import com.eactive.resourcehub.audit.entity.AuditActionType;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
+import com.eactive.resourcehub.common.exception.ResourceNotFoundException;
 import com.eactive.resourcehub.common.file.FileStorage;
 import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.document.dto.DocumentUploadRequest;
@@ -59,7 +60,7 @@ public class DocumentUploadService {
     @Transactional
     public Document upload(Long ownerId, DocumentUploadRequest req, HttpServletRequest httpRequest) {
         Folder folder = folderRepository.findByOwnerIdAndType(ownerId, FolderType.PERSONAL)
-                .orElseThrow(() -> new IllegalStateException("개인 폴더가 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("개인 폴더가 없습니다."));
 
         validateFile(req.getFile());
         String checksum = computeChecksum(req.getFile());
@@ -97,7 +98,7 @@ public class DocumentUploadService {
     public Document uploadToFolder(Long folderId, Long uploaderId,
                                    DocumentUploadRequest req, HttpServletRequest httpRequest) {
         Folder folder = folderRepository.findById(folderId)
-                .orElseThrow(() -> new IllegalStateException("폴더를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("폴더를 찾을 수 없습니다."));
 
         validateFile(req.getFile());
         String checksum = computeChecksum(req.getFile());
@@ -150,7 +151,7 @@ public class DocumentUploadService {
         boolean committed = false;
         try {
             User uploader = userRepository.findById(uploaderId)
-                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
 
             DocumentVersion version = DocumentVersion.create(
                     document, versionNo,
