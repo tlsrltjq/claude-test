@@ -3,7 +3,9 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 
-<aside th:fragment="sidebar" id="appSidebar" class="app-sidebar">
+<th:block th:fragment="sidebar">
+
+<aside id="appSidebar" class="app-sidebar">
 
   <!-- Brand -->
   <div class="sb-brand">
@@ -141,14 +143,13 @@
   }
 
   if (collapseBtn) {
-    collapseBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      desktopCollapse();
-    });
+    collapseBtn.addEventListener('click', desktopCollapse);
   }
   openBtn.addEventListener('click', desktopExpand);
 })();
 </script>
+
+</th:block>
 
 </body>
 </html>
