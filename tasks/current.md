@@ -58,14 +58,13 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: 캘린더 개편 전 단계(1~10) 완료 후 추가 버그 수정 및 기능 개선.
+2026-05-28: UI 개선 완료 + 캘린더 권한·필터·LazyInit 수정 일괄 커밋.
 
-- fix: findActiveOn/findEndingSoon/findPlannedFrom/findActiveByUserId/findOverlapping에 JOIN FETCH pa.project 추가 → 대시보드 LazyInitializationException 해소
-- feat: 프로젝트 CRUD 엔드포인트 /admin/projects/** → /sales/projects/** 이동 (SecurityConfig 무수정)
-- feat: ProjectService·ProjectAssignmentService requireAdmin() → ADMIN or SALES 허용
-- feat: calendar.html·project-detail.html ADMIN 전용 UI → ADMIN/SALES 공통 노출
-- feat: getMonthlyAssignments·findAssignableUsers에 projectTeam=true 팀 필터 추가
-- feat: 캘린더 하단 이번달 프로젝트 리스트 카드 추가 (ProjectListItem 레코드, 대표자·외N명)
-- test: ProjectAssignmentServiceTest에 projectTeam 팀 주입, makeAssignment project ID 세팅
-- Flyway 현재 V223. BUILD SUCCESSFUL (239 tests). Docker 재배포 완료.
+- feat: static/css/app.css 신규 — 통합 디자인 시스템 (nav #1c2538·accent #2563eb·flat card)
+- refactor: 전체 41개 Thymeleaf 템플릿 인라인 <style> 블록 → app.css 단일 외부 CSS로 통합
+- feat: 주소검색 Daum/Kakao Postcode API 위젯 (signup.html·settings.html)
+- fix: findActiveOn/findEndingSoon/findPlannedFrom/findActiveByUserId/findOverlapping JOIN FETCH pa.project 추가
+- feat: 프로젝트 CRUD /admin/projects/** → /sales/projects/**, SALES 권한 허용
+- feat: 캘린더 하단 이번달 프로젝트 리스트 (ProjectListItem: 대표자·인원수)
+- Flyway 현재 V223. BUILD SUCCESSFUL. security-lint 15/15 PASS.
 - 다음: 요구사항 추가 발생 시 이어서 진행
