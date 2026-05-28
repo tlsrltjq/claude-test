@@ -1,6 +1,8 @@
 package com.eactive.resourcehub.project.dto;
 
 import com.eactive.resourcehub.project.entity.ProjectStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,10 +12,17 @@ import java.time.LocalDate;
 @Setter
 public class ProjectUpdateRequest {
 
+    @NotBlank(message = "프로젝트명은 필수입니다.")
     private String name;
+
     private String clientName;
+
+    @NotNull(message = "시작일을 입력해주세요.")
     private LocalDate startDate;
+
+    @NotNull(message = "종료일을 입력해주세요.")
     private LocalDate endDate;
+
     private String memo;
     private ProjectStatus status;
 

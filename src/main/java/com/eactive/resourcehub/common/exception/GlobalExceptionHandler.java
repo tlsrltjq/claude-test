@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -25,6 +26,19 @@ public class GlobalExceptionHandler {
             return "redirect:/my/folder/documents/upload";
         }
         return "redirect:/";
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public String handleValidation(MethodArgumentNotValidException e,
+                                   HttpServletResponse response, Model model) {
+        if (response.isCommitted()) return null;
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(fe -> fe.getDefaultMessage())
+                .orElse("입력값이 올바르지 않습니다.");
+        response.setStatus(400);
+        model.addAttribute("message", message);
+        return "error/500";
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
