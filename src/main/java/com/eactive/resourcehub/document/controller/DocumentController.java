@@ -7,6 +7,7 @@ import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.service.DocumentAccessService;
+import com.eactive.resourcehub.document.service.DocumentPreviewResolver;
 import com.eactive.resourcehub.document.service.ThumbnailService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,20 +25,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
 import com.eactive.resourcehub.common.util.FileUtils;
 
 @Controller
 @RequiredArgsConstructor
 public class DocumentController {
 
-    private static final Set<String> IMAGE_EXTS = Set.of("jpg", "jpeg", "png");
-    private static final Set<String> OFFICE_EXTS = Set.of("docx", "hwp", "hwpx");
-
     private final DocumentAccessService accessService;
     private final AuditService auditService;
     private final FileStorage fileStorage;
     private final ThumbnailService thumbnailService;
+    private final DocumentPreviewResolver previewResolver;
 
     // GET /documents/{documentVersionId}/preview
     @GetMapping("/documents/{documentVersionId}/preview")
@@ -57,7 +55,7 @@ public class DocumentController {
             mediaType = MediaType.APPLICATION_PDF;
         } else if ("png".equals(ext)) {
             mediaType = MediaType.IMAGE_PNG;
-        } else if (IMAGE_EXTS.contains(ext)) {
+        } else if ("jpg".equals(ext) || "jpeg".equals(ext)) {
             mediaType = MediaType.IMAGE_JPEG;
         } else {
             mediaType = MediaType.APPLICATION_OCTET_STREAM;

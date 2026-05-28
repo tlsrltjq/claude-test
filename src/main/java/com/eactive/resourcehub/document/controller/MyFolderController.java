@@ -8,6 +8,7 @@ import com.eactive.resourcehub.document.entity.DocumentType;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.entity.Folder;
 import com.eactive.resourcehub.document.service.DocumentDeleteService;
+import com.eactive.resourcehub.document.service.DocumentPreviewResolver;
 import com.eactive.resourcehub.document.service.DocumentUploadService;
 import com.eactive.resourcehub.document.service.MyFolderService;
 import com.eactive.resourcehub.template.service.ResumeTemplateService;
@@ -17,7 +18,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,8 +29,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.eactive.resourcehub.common.util.FileUtils;
-
 @Controller
 @RequestMapping("/my/folder")
 @RequiredArgsConstructor
@@ -40,6 +38,7 @@ public class MyFolderController {
     private final DocumentUploadService documentUploadService;
     private final DocumentDeleteService documentDeleteService;
     private final ResumeTemplateService resumeTemplateService;
+    private final DocumentPreviewResolver previewResolver;
 
     @GetMapping
     public String myFolder(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -119,19 +118,9 @@ public class MyFolderController {
         model.addAttribute("document", document);
         model.addAttribute("currentVersion", currentVersion);
         model.addAttribute("versions", versions);
-        model.addAttribute("previewType", resolvePreviewType(currentVersion));
+        model.addAttribute("previewType", previewResolver.resolve(currentVersion));
         model.addAttribute("isOwner", isOwner);
         return "my/document-detail";
-    }
-
-    private String resolvePreviewType(DocumentVersion version) {
-        if (version == null) return "none";
-        String ext = FileUtils.extension(version.getOriginalFileName());
-        if ("pdf".equals(ext)) return "pdf";
-        if (Set.of("jpg", "jpeg", "png").contains(ext)) return "image";
-        if (Set.of("docx", "hwp", "hwpx").contains(ext))
-            return version.getPreviewStoragePath() != null ? "pdf" : "none";
-        return "none";
     }
 
     @PostMapping("/documents/{documentId}/expiry")

@@ -6,6 +6,7 @@ import com.eactive.resourcehub.document.entity.FolderType;
 import com.eactive.resourcehub.document.repository.FolderRepository;
 import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.team.repository.TeamRepository;
+import com.eactive.resourcehub.common.util.PasswordValidator;
 import com.eactive.resourcehub.user.dto.SignupRequest;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.repository.AllowedEmailRepository;
@@ -95,20 +96,7 @@ public class SignupService {
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
-        validatePasswordComplexity(request.getPassword());
-    }
-
-    private void validatePasswordComplexity(String password) {
-        if (password == null || password.length() < 8) {
-            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
-        }
-        int types = 0;
-        if (password.matches(".*[a-zA-Z].*")) types++;
-        if (password.matches(".*[0-9].*")) types++;
-        if (password.matches(".*[^a-zA-Z0-9].*")) types++;
-        if (types < 3) {
-            throw new IllegalArgumentException("비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.");
-        }
+        PasswordValidator.validate(request.getPassword());
     }
 
     private LocalDate parseBirthDate(String birthDateStr) {

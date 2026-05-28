@@ -68,17 +68,9 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: Design System v3 모던 플랫 재개선 완료. .page-wrap max-width 제거(전체 화면 너비 활용).
-- app.css: accent #2563eb, sidebar #1e293b/240px, 테이블 헤더 전부 라이트(#f1f5f9+대문자), 카드 shadow-sm, 메뉴아이템 스프링 cubic-bezier 애니메이션
-- dashboard.html: welcome-hero 그라디언트 + 아바타 + 전체너비 메뉴그리드(설명 텍스트 포함, 5개 메뉴)
-- sales/project-detail.html: horizontal 정보카드 + assign-table + 아바타 멤버 테이블
+2026-05-28: 리팩토링 1단계 완료. BUILD SUCCESSFUL. security-lint 15/15 PASS.
+- PasswordValidator (common/util) 추출 — SignupService·PasswordResetService 중복 제거
+- DocumentPreviewResolver (@Component) 추출 — MyFolderController·AdminController·DocumentController 중복 제거
+- DocumentUploadService private helper 분리 (upload/uploadToFolder → createDocument·applyDocumentMeta·buildAndSaveVersion·handleApproval·recordAudit·generateThumbnailSilently)
 
-**P3~P7 완료 (이번 세션):**
-- P3: admin 직원 4개 (employees, employee-detail, employee-documents, employee-document-detail)
-- P4: admin 나머지 13개 (teams, team-edit, statistics, documents-review, document-review-detail, documents-expiry, allowed-emails, certificate, gc, project-settings, user-permissions, user-role, resume-template)
-- P5: sales 7개 (members, member-documents, employee-documents, calendar, project-detail, profiles, career-calculator)
-- P6: my 4개 (folder, upload, activity, document-detail) + search, settings, shared/public-folder, dashboard(기완료)
-- P7: error 3개 (403, 404, 500) — 독립 레이아웃 유지, Bootstrap JS 추가
-- 빌드: BUILD SUCCESSFUL, security-lint 15/15 PASS
-
-**다음 작업 없음 — UI 리디자인 완전 완료**
+**다음 작업: 2단계(예외 계층 정리)·3단계(N+1 최적화)·4단계(DTO 검증)·5단계(테스트 보강) 중 사용자 지시 시 진행**

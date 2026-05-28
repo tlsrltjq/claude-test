@@ -7,6 +7,7 @@ import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.service.DocumentDeleteService;
 import com.eactive.resourcehub.document.service.DocumentExpiryService;
 import com.eactive.resourcehub.document.service.DocumentFileGcService;
+import com.eactive.resourcehub.document.service.DocumentPreviewResolver;
 import com.eactive.resourcehub.document.service.DocumentReviewService;
 import com.eactive.resourcehub.permission.service.FolderPermissionService;
 import com.eactive.resourcehub.team.service.TeamService;
@@ -28,8 +29,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Set;
-import com.eactive.resourcehub.common.util.FileUtils;
 
 @Controller
 @RequestMapping("/admin")
@@ -44,6 +43,7 @@ public class AdminController {
     private final DocumentReviewService documentReviewService;
     private final DocumentDeleteService documentDeleteService;
     private final StatisticsService statisticsService;
+    private final DocumentPreviewResolver previewResolver;
     private final DocumentExpiryService documentExpiryService;
     private final DocumentFileGcService documentFileGcService;
     private final SessionRegistry sessionRegistry;
@@ -183,7 +183,7 @@ public class AdminController {
         model.addAttribute("document", document);
         model.addAttribute("currentVersion", currentVersion);
         model.addAttribute("versions", versions);
-        model.addAttribute("previewType", resolvePreviewType(currentVersion));
+        model.addAttribute("previewType", previewResolver.resolve(currentVersion));
         return "admin/employee-document-detail";
     }
 
@@ -289,7 +289,7 @@ public class AdminController {
     public String reviewDetail(@PathVariable Long documentVersionId, Model model) {
         DocumentVersion version = documentReviewService.findVersionForReview(documentVersionId);
         model.addAttribute("version", version);
-        model.addAttribute("previewType", resolvePreviewType(version));
+        model.addAttribute("previewType", previewResolver.resolve(version));
         return "admin/document-review-detail";
     }
 
@@ -386,16 +386,6 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("gcResult",
                 count == 0 ? "정리 대상 없음" : count + "건 처리 완료");
         return "redirect:/admin/gc";
-    }
-
-    private String resolvePreviewType(DocumentVersion version) {
-        if (version == null) return "none";
-        String ext = FileUtils.extension(version.getOriginalFileName());
-        if ("pdf".equals(ext)) return "pdf";
-        if (Set.of("jpg", "jpeg", "png").contains(ext)) return "image";
-        if (Set.of("docx", "hwp", "hwpx").contains(ext))
-            return version.getPreviewStoragePath() != null ? "pdf" : "none";
-        return "none";
     }
 
 }

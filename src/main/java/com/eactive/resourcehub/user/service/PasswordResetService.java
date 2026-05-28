@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.user.service;
 
 import com.eactive.resourcehub.audit.entity.AuditActionType;
+import com.eactive.resourcehub.common.util.PasswordValidator;
 import com.eactive.resourcehub.audit.entity.AuditTargetType;
 import com.eactive.resourcehub.common.email.EmailSender;
 import com.eactive.resourcehub.common.service.AuditService;
@@ -81,7 +82,7 @@ public class PasswordResetService {
             throw new IllegalStateException("유효하지 않은 재설정 요청입니다.");
         }
 
-        validatePasswordComplexity(newPassword);
+        PasswordValidator.validate(newPassword);
 
         User user = token.getUser();
         user.changePassword(passwordEncoder.encode(newPassword));
@@ -90,17 +91,6 @@ public class PasswordResetService {
         auditService.log(user.getId(), AuditActionType.RESET_PASSWORD,
                 AuditTargetType.USER, user.getId(), "비밀번호 재설정", request);
         log.info("[PASSWORD_RESET] 완료 — email={}", email);
-    }
-
-    private void validatePasswordComplexity(String password) {
-        if (password == null || password.length() < 8)
-            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
-        int types = 0;
-        if (password.matches(".*[a-zA-Z].*")) types++;
-        if (password.matches(".*[0-9].*")) types++;
-        if (password.matches(".*[^a-zA-Z0-9].*")) types++;
-        if (types < 3)
-            throw new IllegalArgumentException("비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.");
     }
 
     private String generateCode() {
