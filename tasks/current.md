@@ -1,6 +1,6 @@
 # 현재 작업 컨텍스트
 
-## 지금 단계: 투입 캘린더 개편 (미구현)
+## 지금 단계: 전면 UI 리디자인 (P0 미착수)
 
 > 상세 기획: `docs/CALENDAR_REDESIGN.md`
 
@@ -44,7 +44,17 @@
 - [x] HARNESS.md·CHANGELOG.md·tasks/current.md 문서 최신화
 
 ## 다음 진행 항목
-→ 위 "다음 구현 단계" 참조 (투입 캘린더 개편)
+→ 전면 UI 리디자인 P0부터 순서대로 진행
+
+### 리디자인 단계 계획
+- [ ] **P0** — `app.css` 전면 재작성 + `fragments/sidebar.html` + `fragments/topbar.html` 신규 생성
+- [ ] **P1** — 인증 화면: `login.html`, `signup.html`, `login-forgot*.html`, `signup-verify.html`
+- [ ] **P2** — 대시보드: `dashboard.html`, `admin/dashboard.html`
+- [ ] **P3** — 어드민 직원: `admin/employees.html`, `admin/employee-detail.html`, `admin/employee-documents.html`, `admin/employee-document-detail.html`
+- [ ] **P4** — 어드민 나머지: `admin/teams.html`, `admin/team-edit.html`, `admin/documents-*.html`, `admin/statistics.html` 외 6개
+- [ ] **P5** — 영업: `sales/calendar.html`, `sales/members.html`, `sales/profiles.html`, `sales/career-calculator.html` 외 3개
+- [ ] **P6** — 내 화면: `my/folder.html`, `my/upload.html`, `my/activity.html`, `search.html`, `settings.html` 외 2개
+- [ ] **P7** — 에러 페이지: `error/403.html`, `error/404.html`, `error/500.html`
 
 ## 건드리면 안 되는 파일
 - `src/main/resources/db/migration/V1~V216.sql` — 기존 마이그레이션 절대 수정 금지
@@ -58,13 +68,11 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: UI 개선 완료 + 캘린더 권한·필터·LazyInit 수정 일괄 커밋.
+2026-05-28: 버그 수정 + 색상 변경 완료. 전면 UI 리디자인 계획 수립 후 미착수.
 
-- feat: static/css/app.css 신규 — 통합 디자인 시스템 (nav #1c2538·accent #2563eb·flat card)
-- refactor: 전체 41개 Thymeleaf 템플릿 인라인 <style> 블록 → app.css 단일 외부 CSS로 통합
-- feat: 주소검색 Daum/Kakao Postcode API 위젯 (signup.html·settings.html)
-- fix: findActiveOn/findEndingSoon/findPlannedFrom/findActiveByUserId/findOverlapping JOIN FETCH pa.project 추가
-- feat: 프로젝트 CRUD /admin/projects/** → /sales/projects/**, SALES 권한 허용
-- feat: 캘린더 하단 이번달 프로젝트 리스트 (ProjectListItem: 대표자·인원수)
-- Flyway 현재 V223. BUILD SUCCESSFUL. security-lint 15/15 PASS.
-- 다음: 요구사항 추가 발생 시 이어서 진행
+- fix: SecurityConfig CSP — `*.daumcdn.net`, `*.kakao.com` 추가 (script-src·frame-src·connect-src·img-src)
+- fix: signup.html Bootstrap JS 누락 추가 → 개인정보 동의 모달 작동
+- fix: 주소검색 script URL `//` → `https://` 명시 (HTTP 환경에서 Kakao 서버 거부 방지)
+- chore: app.css 전체 색상 `#0d6efd` (Bootstrap 기본 파란색)으로 통일 (`#1c2538`, `#2563eb` 제거)
+- plan: 전면 UI 리디자인 계획 수립 (P0~P7, 사이드바 쉘 구조 + 새 디자인 토큰)
+- 다음: P0부터 순서대로 리디자인 진행 (각 단계별 확인 후 다음 단계)

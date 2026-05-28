@@ -21,6 +21,8 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V223 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
+**현재 상태 (2026-05-28):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. E2E 21/21 PASS. app.css 단일 외부 CSS 통합 완료. 전면 UI 리디자인 계획 수립 완료(P0~P7), 미착수. 다음: P0(app.css 재작성 + 사이드바 fragment)부터 순차 진행.
+
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
 ---

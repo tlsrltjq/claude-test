@@ -41,11 +41,12 @@ public class SecurityConfig {
                     ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
                     "default-src 'self'; " +
-                    "script-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
+                    "script-src 'self' cdn.jsdelivr.net *.daumcdn.net *.kakao.com 'unsafe-inline'; " +
                     "style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
-                    "img-src 'self' data:; " +
+                    "img-src 'self' data: *.daumcdn.net *.kakao.com *.kakaocdn.net; " +
                     "font-src 'self' cdn.jsdelivr.net; " +
-                    "frame-src 'self'"
+                    "frame-src 'self' *.daumcdn.net *.kakao.com; " +
+                    "connect-src 'self' *.daumcdn.net *.kakao.com"
                 ))
             )
             .authorizeHttpRequests(auth -> auth

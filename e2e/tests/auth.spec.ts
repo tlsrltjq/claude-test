@@ -52,11 +52,14 @@ test.describe('어드민 흐름', () => {
   test('관리자 대시보드 — 핵심 카드 노출', async ({ page }) => {
     await login(page, ADMIN_EMAIL, ADMIN_PW);
     await page.goto('/admin');
-    // 네비바
-    await expect(page.locator('.topnav')).toBeVisible();
+    // 사이드바
+    await expect(page.locator('.app-sidebar')).toBeVisible();
+    // KPI 카드
+    await expect(page.locator('.kpi-card').first()).toBeVisible();
+    // 빠른 메뉴
+    await expect(page.locator('.menu-list-item').first()).toBeVisible();
     // 인라인 style 없음
-    const styleTags = page.locator('style');
-    await expect(styleTags).toHaveCount(0);
+    await expect(page.locator('style')).toHaveCount(0);
     // 페이지 제목 포함
     await expect(page).toHaveTitle(/관리자 대시보드/);
   });
@@ -131,7 +134,8 @@ test.describe('내 화면(My) 흐름', () => {
   test('대시보드 — welcome-banner 렌더링', async ({ page }) => {
     await login(page, ADMIN_EMAIL, ADMIN_PW);
     await page.goto('/dashboard');
-    await expect(page.locator('.welcome-banner, .topnav')).toBeVisible();
+    await expect(page.locator('.topnav').first()).toBeVisible();
+    await expect(page.locator('.welcome-banner')).toBeVisible();
     await expect(page.locator('style')).toHaveCount(0);
   });
 
@@ -159,7 +163,7 @@ test.describe('내 화면(My) 흐름', () => {
 
   test('공용 폴더 페이지 렌더링', async ({ page }) => {
     await login(page, ADMIN_EMAIL, ADMIN_PW);
-    await page.goto('/folders/public');
+    await page.goto('/shared/folders/public');
     await expect(page.locator('.topnav')).toBeVisible();
     await expect(page.locator('style')).toHaveCount(0);
   });
