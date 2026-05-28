@@ -12,6 +12,9 @@
       <div class="sb-brand-text">eActive Hub</div>
       <span class="sb-brand-sub">Resource Hub</span>
     </div>
+    <button id="sbCollapseBtn" class="sb-collapse-btn" title="사이드바 닫기" aria-label="사이드바 닫기">
+      <i class="bi bi-chevron-left"></i>
+    </button>
   </a>
 
   <!-- Nav -->
@@ -87,27 +90,61 @@
     if (active) link.classList.add('active');
   });
 
-  /* Mobile toggle */
   var sidebar = document.getElementById('appSidebar');
   if (!sidebar) return;
 
+  /* ── Mobile toggle ── */
   var overlay = document.createElement('div');
   overlay.className = 'sb-overlay';
   document.body.appendChild(overlay);
 
-  var btn = document.createElement('button');
-  btn.className = 'sb-toggle';
-  btn.setAttribute('aria-label', '메뉴 열기');
-  btn.innerHTML = '<i class="bi bi-list"></i>';
-  document.body.appendChild(btn);
+  var mobileBtn = document.createElement('button');
+  mobileBtn.className = 'sb-toggle';
+  mobileBtn.setAttribute('aria-label', '메뉴 열기');
+  mobileBtn.innerHTML = '<i class="bi bi-list"></i>';
+  document.body.appendChild(mobileBtn);
 
-  function open()  { sidebar.classList.add('open');  overlay.classList.add('show'); }
-  function close() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+  function mobileOpen()  { sidebar.classList.add('open');    overlay.classList.add('show'); }
+  function mobileClose() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
 
-  btn.addEventListener('click', function () {
-    sidebar.classList.contains('open') ? close() : open();
+  mobileBtn.addEventListener('click', function () {
+    sidebar.classList.contains('open') ? mobileClose() : mobileOpen();
   });
-  overlay.addEventListener('click', close);
+  overlay.addEventListener('click', mobileClose);
+
+  /* ── Desktop collapse ── */
+  var isMobile = function () { return window.innerWidth < 768; };
+
+  var openBtn = document.createElement('button');
+  openBtn.className = 'sb-open-btn';
+  openBtn.setAttribute('aria-label', '사이드바 열기');
+  openBtn.title = '사이드바 열기';
+  openBtn.innerHTML = '<i class="bi bi-layout-sidebar"></i>';
+  document.body.appendChild(openBtn);
+
+  var collapseBtn = document.getElementById('sbCollapseBtn');
+
+  function desktopCollapse() {
+    document.body.classList.add('sidebar-collapsed');
+    localStorage.setItem('sidebarCollapsed', '1');
+  }
+  function desktopExpand() {
+    document.body.classList.remove('sidebar-collapsed');
+    localStorage.setItem('sidebarCollapsed', '0');
+  }
+
+  /* Restore saved state on page load */
+  if (!isMobile() && localStorage.getItem('sidebarCollapsed') === '1') {
+    document.body.classList.add('sidebar-collapsed');
+  }
+
+  if (collapseBtn) {
+    collapseBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      desktopCollapse();
+    });
+  }
+  openBtn.addEventListener('click', desktopExpand);
 })();
 </script>
 
