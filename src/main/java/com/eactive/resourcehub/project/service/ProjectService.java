@@ -56,6 +56,12 @@ public class ProjectService {
         return projectRepository.findAllNonCancelled();
     }
 
+    /** 캘린더 사이드 목록용 — 종료 프로젝트는 since 이후로 제한 */
+    @Transactional(readOnly = true)
+    public List<Project> getAllNonCancelledProjectsSince(LocalDate since) {
+        return projectRepository.findNonCancelledSince(since);
+    }
+
     @Transactional(readOnly = true)
     public List<ProjectAssignment> getMembersForProject(Long projectId) {
         return assignmentRepository.findByProjectId(projectId);

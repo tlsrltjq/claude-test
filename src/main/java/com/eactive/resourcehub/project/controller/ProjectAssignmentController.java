@@ -53,8 +53,9 @@ public class ProjectAssignmentController {
         List<ProjectAssignment> assignments = assignmentService.getMonthlyAssignments(ym, q, project, status);
         List<Project> monthlyProjects       = projectService.getMonthlyProjects(ym);
 
-        // 전체 프로젝트 목록 (취소 제외) + 인원 수
-        List<Project> allProjects = projectService.getAllNonCancelledProjects();
+        // 전체 프로젝트 목록 — 취소 제외, 종료 프로젝트는 6개월 이내만 표시
+        List<Project> allProjects = projectService.getAllNonCancelledProjectsSince(
+                today.minusMonths(6).withDayOfMonth(1));
         Map<Long, Long> memberCounts = assignmentService.getMemberCountsByProject();
 
         List<Project> activeAndPlannedProjects = allProjects.stream()

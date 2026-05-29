@@ -85,7 +85,7 @@ public class ProjectAssignmentService {
                         (a, b) -> a));
     }
 
-    /** 대시보드 통계 */
+    /** 대시보드 통계 — COUNT 쿼리로 목록 전체 로드를 피함 */
     @Transactional(readOnly = true)
     public DeployStats getDeployStats() {
         LocalDate today  = LocalDate.now();
@@ -93,10 +93,9 @@ public class ProjectAssignmentService {
         LocalDate mStart = ym.atDay(1);
         LocalDate mEnd   = ym.atEndOfMonth();
 
-        long startingThisMonth = assignmentRepository.findStartingBetween(mStart, mEnd).size();
-        long endingThisMonth   = assignmentRepository.findEndingBetween(mStart, mEnd).size();
-        long currentlyDeployed = assignmentRepository.findActiveOn(today).stream()
-                .map(pa -> pa.getUser().getId()).distinct().count();
+        long startingThisMonth = assignmentRepository.countStartingBetween(mStart, mEnd);
+        long endingThisMonth   = assignmentRepository.countEndingBetween(mStart, mEnd);
+        long currentlyDeployed = assignmentRepository.countActiveDistinctUsersOn(today);
         long totalNonAdmin     = userRepository.findByStatus(UserStatus.ACTIVE).stream()
                 .filter(u -> u.getRole() != UserRole.ADMIN).count();
         long notDeployed       = Math.max(0, totalNonAdmin - currentlyDeployed);

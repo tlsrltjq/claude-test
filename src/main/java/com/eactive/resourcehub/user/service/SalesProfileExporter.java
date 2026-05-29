@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
@@ -40,8 +41,8 @@ public class SalesProfileExporter {
         new ColDef("etc",                           "기타자료")
     );
 
-    /** 전체 또는 선택 행 export. visibleCols 비어있으면 전체 컬럼. careerDisplay: ymd/m/d */
-    public byte[] export(List<ProfileRow> rows, Set<String> visibleCols, String careerDisplay) {
+    /** 응답 스트림에 직접 write — 메모리에 전체 파일을 적재하지 않음. */
+    public void export(List<ProfileRow> rows, Set<String> visibleCols, String careerDisplay, OutputStream out) throws IOException {
         boolean showAll = visibleCols == null || visibleCols.isEmpty();
         List<ColDef> effective = COL_ORDER.stream()
                 .filter(cd -> cd.key() == null || showAll || visibleCols.contains(cd.key()))
@@ -101,16 +102,22 @@ public class SalesProfileExporter {
                 }
             }
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
             wb.dispose();
-            return out.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException("엑셀 생성 실패", e);
         }
     }
 
-    /** 하위호환 — careerDisplay 없이 호출 시 기본값 */
+    /** 하위호환 — byte[] 반환이 필요한 경우 */
+    public byte[] export(List<ProfileRow> rows, Set<String> visibleCols, String careerDisplay) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            export(rows, visibleCols, careerDisplay, bos);
+        } catch (IOException e) {
+            throw new RuntimeException("엑셀 생성 실패", e);
+        }
+        return bos.toByteArray();
+    }
+
     public byte[] export(List<ProfileRow> rows, Set<String> visibleCols) {
         return export(rows, visibleCols, "ymd");
     }

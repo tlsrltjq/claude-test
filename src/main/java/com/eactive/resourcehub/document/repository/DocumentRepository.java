@@ -49,7 +49,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findExpiringSoon(@Param("today") LocalDate today,
                                     @Param("threshold") LocalDate threshold);
 
-    // 본인 개인 폴더 문서 검색 — 제목·파일명 키워드, 종류 필터
+    // 본인 개인 폴더 문서 검색 — 제목·파일명 키워드, 종류·업로더·날짜 필터 (DB 처리)
     @Query("SELECT DISTINCT d FROM Document d " +
            "JOIN FETCH d.folder f JOIN FETCH f.owner " +
            "LEFT JOIN FETCH d.currentVersion cv " +
@@ -58,10 +58,16 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
            "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword " +
            "     OR (cv IS NOT NULL AND LOWER(cv.originalFileName) LIKE :keyword)) " +
            "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
+           "AND (:uploaderKw IS NULL OR (cv IS NOT NULL AND LOWER(uploader.name) LIKE :uploaderKw)) " +
+           "AND (:from IS NULL OR d.createdAt >= :from) " +
+           "AND (:to IS NULL OR d.createdAt <= :to) " +
            "ORDER BY d.createdAt DESC")
     List<Document> searchOwn(@Param("ownerId") Long ownerId,
                              @Param("keyword") String keyword,
-                             @Param("typeFilter") DocumentType typeFilter);
+                             @Param("typeFilter") DocumentType typeFilter,
+                             @Param("uploaderKw") String uploaderKw,
+                             @Param("from") java.time.LocalDateTime from,
+                             @Param("to") java.time.LocalDateTime to);
 
     // 특정 폴더 목록 문서 검색 (공유·공용 폴더)
     @Query("SELECT DISTINCT d FROM Document d " +
@@ -72,10 +78,16 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
            "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword " +
            "     OR (cv IS NOT NULL AND LOWER(cv.originalFileName) LIKE :keyword)) " +
            "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
+           "AND (:uploaderKw IS NULL OR (cv IS NOT NULL AND LOWER(uploader.name) LIKE :uploaderKw)) " +
+           "AND (:from IS NULL OR d.createdAt >= :from) " +
+           "AND (:to IS NULL OR d.createdAt <= :to) " +
            "ORDER BY d.createdAt DESC")
     List<Document> searchInFolders(@Param("folderIds") List<Long> folderIds,
                                    @Param("keyword") String keyword,
-                                   @Param("typeFilter") DocumentType typeFilter);
+                                   @Param("typeFilter") DocumentType typeFilter,
+                                   @Param("uploaderKw") String uploaderKw,
+                                   @Param("from") java.time.LocalDateTime from,
+                                   @Param("to") java.time.LocalDateTime to);
 
     // 관리자: 전체 문서 검색
     @Query("SELECT DISTINCT d FROM Document d " +
@@ -87,9 +99,15 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
            "AND (:keyword IS NULL OR LOWER(d.title) LIKE :keyword " +
            "     OR (cv IS NOT NULL AND LOWER(cv.originalFileName) LIKE :keyword)) " +
            "AND (:typeFilter IS NULL OR d.documentType = :typeFilter) " +
+           "AND (:uploaderKw IS NULL OR (cv IS NOT NULL AND LOWER(uploader.name) LIKE :uploaderKw)) " +
+           "AND (:from IS NULL OR d.createdAt >= :from) " +
+           "AND (:to IS NULL OR d.createdAt <= :to) " +
            "ORDER BY d.createdAt DESC")
     List<Document> searchAll(@Param("keyword") String keyword,
-                             @Param("typeFilter") DocumentType typeFilter);
+                             @Param("typeFilter") DocumentType typeFilter,
+                             @Param("uploaderKw") String uploaderKw,
+                             @Param("from") java.time.LocalDateTime from,
+                             @Param("to") java.time.LocalDateTime to);
 
     // 프로필 표용: folder_ids 배치 조회, ACTIVE 문서 + currentVersion (reviewStatus 무관)
     @Query("SELECT d FROM Document d JOIN FETCH d.currentVersion " +

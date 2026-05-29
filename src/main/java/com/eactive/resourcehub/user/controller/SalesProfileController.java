@@ -25,6 +25,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -70,22 +71,21 @@ public class SalesProfileController {
         return "sales/profiles";
     }
 
-    /** GET — 전체 또는 cols 파라미터로 컬럼 지정 (기존 방식 유지) */
+    /** GET — 전체 또는 cols 파라미터로 컬럼 지정 */
     @GetMapping("/sales/profiles/export")
-    public ResponseEntity<byte[]> exportExcelGet(
+    public ResponseEntity<StreamingResponseBody> exportExcelGet(
             @ModelAttribute SalesProfileQuery query,
             HttpServletRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         List<ProfileRow> rows = profileQueryService.findAllProfiles(query);
         String[] colsArr = request.getParameterValues("cols");
         Set<String> visibleCols = (colsArr != null && colsArr.length > 0) ? Set.of(colsArr) : Set.of();
-        byte[] data = excelExportService.export(rows, visibleCols, query.getCareerDisplay());
-        return buildExcelResponse(data, rows.size(), visibleCols, userDetails, request);
+        return buildExcelStreamResponse(rows, visibleCols, query.getCareerDisplay(), userDetails, request);
     }
 
     /** POST — selectedIds 체크박스 선택 export */
     @PostMapping("/sales/profiles/export")
-    public ResponseEntity<byte[]> exportExcelPost(
+    public ResponseEntity<StreamingResponseBody> exportExcelPost(
             @ModelAttribute SalesProfileQuery query,
             @RequestParam(required = false) List<Long> selectedIds,
             @RequestParam(required = false) String columnsJson,
@@ -93,8 +93,6 @@ public class SalesProfileController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         List<ProfileRow> all = profileQueryService.findAllProfiles(query);
-
-        // selectedIds 있으면 교집합, 없으면 전체
         List<ProfileRow> rows;
         if (selectedIds != null && !selectedIds.isEmpty()) {
             Set<Long> idSet = Set.copyOf(selectedIds);
@@ -103,15 +101,13 @@ public class SalesProfileController {
             rows = all;
         }
 
-        // columnsJson으로 visibleCols 결정
         Set<String> visibleCols = parseColumnsJson(columnsJson);
-        byte[] data = excelExportService.export(rows, visibleCols, query.getCareerDisplay());
-        return buildExcelResponse(data, rows.size(), visibleCols, userDetails, request);
+        return buildExcelStreamResponse(rows, visibleCols, query.getCareerDisplay(), userDetails, request);
     }
 
-    /** POST — selectedIds로 ZIP 다운로드 */
+    /** POST — selectedIds로 ZIP 스트리밍 다운로드 */
     @PostMapping("/sales/profiles/bundle-download")
-    public ResponseEntity<byte[]> bundleDownload(
+    public ResponseEntity<StreamingResponseBody> bundleDownload(
             @ModelAttribute SalesProfileQuery query,
             @RequestParam(required = false) List<Long> selectedIds,
             HttpServletRequest request,
@@ -126,38 +122,33 @@ public class SalesProfileController {
             rows = all;
         }
 
-        byte[] data;
-        try {
-            data = bundleDownloadService.buildZip(rows);
-        } catch (java.io.IOException e) {
-            log.warn("번들 ZIP 생성 실패: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-
         String filename = "투입인력서_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".zip";
         auditService.log(userDetails.getUser().getId(), AuditActionType.BUNDLE_DOWNLOAD,
                 AuditTargetType.USER, null, "selected:" + rows.size() + "명", request);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(
-                ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build());
-        headers.setContentType(MediaType.parseMediaType("application/zip"));
-        return ResponseEntity.ok().headers(headers).body(data);
+        StreamingResponseBody body = out -> bundleDownloadService.buildZip(rows, out);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(body);
     }
 
-    private ResponseEntity<byte[]> buildExcelResponse(byte[] data, int count, Set<String> cols,
-                                                       CustomUserDetails userDetails,
-                                                       HttpServletRequest request) {
+    private ResponseEntity<StreamingResponseBody> buildExcelStreamResponse(
+            List<ProfileRow> rows, Set<String> cols, String careerDisplay,
+            CustomUserDetails userDetails, HttpServletRequest request) {
         String filename = "인력프로필_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
         auditService.log(userDetails.getUser().getId(), AuditActionType.EXPORT_PROFILES,
                 AuditTargetType.USER, null,
-                "selected:" + count + "명 / cols:" + cols.size(), request);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(
-                ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build());
-        headers.setContentType(MediaType.parseMediaType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-        return ResponseEntity.ok().headers(headers).body(data);
+                "selected:" + rows.size() + "명 / cols:" + cols.size(), request);
+        StreamingResponseBody body = out -> excelExportService.export(rows, cols, careerDisplay, out);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(body);
     }
 
     private Set<String> parseColumnsJson(String columnsJson) {

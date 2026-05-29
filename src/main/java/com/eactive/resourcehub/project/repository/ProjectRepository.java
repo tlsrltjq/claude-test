@@ -32,6 +32,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p WHERE p.status != 'CANCELLED' ORDER BY p.startDate ASC")
     List<Project> findAllNonCancelled();
 
+    /** 취소 제외, 종료 프로젝트는 since 이후 종료된 것만 포함 (캘린더 사이드 목록용) */
+    @Query("SELECT p FROM Project p WHERE p.status != 'CANCELLED' " +
+           "AND (p.status != 'ENDED' OR p.endDate >= :since) ORDER BY p.startDate ASC")
+    List<Project> findNonCancelledSince(@Param("since") LocalDate since);
+
     /** 자동 상태 전환: ACTIVE → ENDED (endDate 경과) */
     @Modifying
     @Query("UPDATE Project p SET p.status = 'ENDED' " +

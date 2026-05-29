@@ -29,6 +29,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
@@ -39,8 +42,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ThumbnailService {
 
-    private static final int THUMBNAIL_WIDTH = 240;
-    private static final Set<String> IMAGE_EXTS = Set.of("jpg", "jpeg", "png");
+    private static final int  THUMBNAIL_WIDTH         = 240;
+    private static final long MAX_THUMBNAIL_FILE_BYTES = 30L * 1024 * 1024; // 30MB 초과 시 건너뜀
+    private static final Set<String> IMAGE_EXTS  = Set.of("jpg", "jpeg", "png");
     private static final Set<String> OFFICE_EXTS = Set.of("docx", "hwp", "hwpx");
 
     private final FileStorage fileStorage;
@@ -106,9 +110,16 @@ public class ThumbnailService {
 
     /**
      * Returns thumbnail bytes, or null if unsupported / preview unavailable.
+     * 30MB 초과 파일은 OOM 방지를 위해 건너뜀.
      */
     private byte[] generate(DocumentVersion version) throws Exception {
         String ext = FileUtils.extension(version.getOriginalFileName());
+
+        Long fileSize = version.getFileSize();
+        if (fileSize != null && fileSize > MAX_THUMBNAIL_FILE_BYTES) {
+            log.info("썸네일 건너뜀 (파일 크기 초과 {}MB): versionId={}", fileSize / 1024 / 1024, version.getId());
+            return null;
+        }
 
         if ("pdf".equals(ext)) {
             return pdfFirstPagePng(fileStorage.load(version.getStoragePath()));
@@ -122,15 +133,21 @@ public class ThumbnailService {
         return null;
     }
 
+    /** PDF 첫 페이지를 PNG로 렌더링. 임시 파일을 통해 PDFBox가 랜덤 접근하도록 하여 메모리 사용 절감. */
     private byte[] pdfFirstPagePng(InputStream in) throws IOException {
-        byte[] data = in.readAllBytes();
-        in.close();
-        try (PDDocument pdf = Loader.loadPDF(data)) {
-            PDFRenderer renderer = new PDFRenderer(pdf);
-            BufferedImage img = renderer.renderImageWithDPI(0, 96, ImageType.RGB);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            Thumbnails.of(img).width(THUMBNAIL_WIDTH).outputFormat("png").toOutputStream(out);
-            return out.toByteArray();
+        Path tempFile = Files.createTempFile("resourcehub_thumb_", ".pdf");
+        try {
+            Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            in.close();
+            try (PDDocument pdf = Loader.loadPDF(tempFile.toFile())) {
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                BufferedImage img = renderer.renderImageWithDPI(0, 96, ImageType.RGB);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                Thumbnails.of(img).width(THUMBNAIL_WIDTH).outputFormat("png").toOutputStream(out);
+                return out.toByteArray();
+            }
+        } finally {
+            Files.deleteIfExists(tempFile);
         }
     }
 

@@ -9,9 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -23,10 +23,9 @@ public class BundleDownloadService {
 
     private final FileStorage fileStorage;
 
-    @Transactional(readOnly = true)
-    public byte[] buildZip(List<ProfileRow> rows) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try (ZipOutputStream zos = new ZipOutputStream(bos, java.nio.charset.StandardCharsets.UTF_8)) {
+    /** ZIP을 응답 스트림에 직접 씀 — 메모리에 전체 파일을 적재하지 않음. */
+    public void buildZip(List<ProfileRow> rows, OutputStream out) throws IOException {
+        try (ZipOutputStream zos = new ZipOutputStream(out, java.nio.charset.StandardCharsets.UTF_8)) {
             int fileCount = 0;
             for (ProfileRow row : rows) {
                 String dir = buildDirName(row);
@@ -46,7 +45,6 @@ public class BundleDownloadService {
             }
             log.info("번들 ZIP 생성 완료 — 직원={}, 파일={}", rows.size(), fileCount);
         }
-        return bos.toByteArray();
     }
 
     private String buildDirName(ProfileRow row) {

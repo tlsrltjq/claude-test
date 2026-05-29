@@ -111,6 +111,20 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
            "WHERE pa.status IN ('ACTIVE', 'PLANNED')")
     List<ProjectAssignment> findActiveAndPlanned();
 
+    /** 대시보드 통계용 COUNT 쿼리 — 목록 조회 후 size() 호출 대비 DB 부하 절감 */
+
+    @Query("SELECT COUNT(DISTINCT pa.user.id) FROM ProjectAssignment pa " +
+           "WHERE pa.status = 'ACTIVE' AND pa.startDate <= :today AND pa.endDate >= :today")
+    long countActiveDistinctUsersOn(@Param("today") LocalDate today);
+
+    @Query("SELECT COUNT(pa) FROM ProjectAssignment pa " +
+           "WHERE pa.status != 'CANCELLED' AND pa.startDate BETWEEN :from AND :to")
+    long countStartingBetween(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("SELECT COUNT(pa) FROM ProjectAssignment pa " +
+           "WHERE pa.status != 'CANCELLED' AND pa.endDate BETWEEN :from AND :to")
+    long countEndingBetween(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
     /** 자동 상태 전환: ACTIVE → ENDED (endDate 경과) */
     @Modifying
     @Query("UPDATE ProjectAssignment pa SET pa.status = 'ENDED' " +

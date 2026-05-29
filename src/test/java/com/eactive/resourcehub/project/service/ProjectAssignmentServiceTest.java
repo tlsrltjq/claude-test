@@ -158,9 +158,9 @@ class ProjectAssignmentServiceTest {
         // ADMIN 1명 + 비ADMIN 2명 (empUser, salesUser)
         when(userRepository.findByStatus(UserStatus.ACTIVE))
                 .thenReturn(List.of(adminUser, empUser, salesUser));
-        when(assignmentRepository.findActiveOn(any())).thenReturn(List.of());
-        when(assignmentRepository.findStartingBetween(any(), any())).thenReturn(List.of());
-        when(assignmentRepository.findEndingBetween(any(), any())).thenReturn(List.of());
+        when(assignmentRepository.countActiveDistinctUsersOn(any())).thenReturn(0L);
+        when(assignmentRepository.countStartingBetween(any(), any())).thenReturn(0L);
+        when(assignmentRepository.countEndingBetween(any(), any())).thenReturn(0L);
 
         DeployStats stats = service.getDeployStats();
 
@@ -170,15 +170,11 @@ class ProjectAssignmentServiceTest {
 
     @Test
     void 통계_미투입은_음수가_되지_않음() {
-        // 비ADMIN 2명, 투입 중 3명(다른 직원이 여러 프로젝트) — 음수 방지
-        ProjectAssignment pa1 = makeAssignment(10L, empUser,   TODAY.minusDays(1), TODAY.plusDays(10));
-        ProjectAssignment pa2 = makeAssignment(20L, salesUser, TODAY.minusDays(1), TODAY.plusDays(10));
-        ProjectAssignment pa3 = makeAssignment(30L, empUser,   TODAY.minusDays(2), TODAY.plusDays(5));
-
+        // 비ADMIN 2명, DB COUNT가 2 반환 (distinct 처리)
         when(userRepository.findByStatus(UserStatus.ACTIVE)).thenReturn(List.of(empUser, salesUser));
-        when(assignmentRepository.findActiveOn(any())).thenReturn(List.of(pa1, pa2, pa3));
-        when(assignmentRepository.findStartingBetween(any(), any())).thenReturn(List.of());
-        when(assignmentRepository.findEndingBetween(any(), any())).thenReturn(List.of());
+        when(assignmentRepository.countActiveDistinctUsersOn(any())).thenReturn(2L);
+        when(assignmentRepository.countStartingBetween(any(), any())).thenReturn(0L);
+        when(assignmentRepository.countEndingBetween(any(), any())).thenReturn(0L);
 
         DeployStats stats = service.getDeployStats();
 
@@ -187,18 +183,15 @@ class ProjectAssignmentServiceTest {
 
     @Test
     void 통계_현재_투입_중_직원_수는_distinct_처리() {
-        // empUser 2개 배정 → 1명으로 카운트
-        ProjectAssignment pa1 = makeAssignment(10L, empUser, TODAY.minusDays(1), TODAY.plusDays(5));
-        ProjectAssignment pa2 = makeAssignment(20L, empUser, TODAY.minusDays(2), TODAY.plusDays(10));
-
+        // DB COUNT DISTINCT — empUser 2개 배정이어도 1명으로 집계
         when(userRepository.findByStatus(UserStatus.ACTIVE)).thenReturn(List.of(empUser));
-        when(assignmentRepository.findActiveOn(any())).thenReturn(List.of(pa1, pa2));
-        when(assignmentRepository.findStartingBetween(any(), any())).thenReturn(List.of());
-        when(assignmentRepository.findEndingBetween(any(), any())).thenReturn(List.of());
+        when(assignmentRepository.countActiveDistinctUsersOn(any())).thenReturn(1L);
+        when(assignmentRepository.countStartingBetween(any(), any())).thenReturn(0L);
+        when(assignmentRepository.countEndingBetween(any(), any())).thenReturn(0L);
 
         DeployStats stats = service.getDeployStats();
 
-        assertEquals(1, stats.currentlyDeployed(), "같은 직원 복수 배정은 1명으로 카운트");
+        assertEquals(1, stats.currentlyDeployed(), "같은 직원 복수 배정은 DB COUNT DISTINCT로 1명 처리");
     }
 
     // ── 투입 정보 선택 로직 ──────────────────────────────────────────
