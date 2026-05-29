@@ -60,11 +60,12 @@ def template_status():
 def list_files():
     if not OUTPUT_DIR.exists():
         return jsonify({"files": []})
-    files = sorted(
-        (f.name for f in OUTPUT_DIR.iterdir() if f.is_file()),
+    files_sorted = sorted(
+        [f for f in OUTPUT_DIR.iterdir() if f.is_file()],
+        key=lambda f: f.stat().st_mtime,
         reverse=True,
     )
-    return jsonify({"files": files})
+    return jsonify({"files": [f.name for f in files_sorted]})
 
 
 @app.route("/files/cleanup", methods=["POST"])
@@ -78,7 +79,8 @@ def cleanup_files():
 
     all_files = sorted(
         [f for f in OUTPUT_DIR.iterdir() if f.is_file()],
-        reverse=True,   # 파일명 내림차순 = 날짜 내림차순 (최신 먼저)
+        key=lambda f: f.stat().st_mtime,
+        reverse=True,   # 최신 파일 먼저, 오래된 파일을 maxFiles 초과 시 삭제
     )
 
     deleted = []
