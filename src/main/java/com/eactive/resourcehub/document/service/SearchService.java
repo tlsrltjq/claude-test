@@ -40,8 +40,9 @@ public class SearchService {
                                  String folderKind) {
         String kw         = kw(keyword);
         String uploaderKw  = kw(uploaderName);
-        LocalDateTime from = dateFrom != null ? dateFrom.atStartOfDay() : null;
-        LocalDateTime to   = dateTo   != null ? dateTo.atTime(LocalTime.MAX) : null;
+        // PostgreSQL JDBC는 null LocalDateTime의 타입 추론 불가 → sentinel 사용
+        LocalDateTime from = dateFrom != null ? dateFrom.atStartOfDay()    : LocalDateTime.of(1970, 1, 1, 0, 0, 0);
+        LocalDateTime to   = dateTo   != null ? dateTo.atTime(LocalTime.MAX) : LocalDateTime.of(9999, 12, 31, 23, 59, 59);
 
         List<Document> raw;
 
