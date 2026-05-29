@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V226 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-29):** Flyway V226. BUILD SUCCESSFUL. security-lint 15/15 PASS. 이번 세션 완료 항목: 대시보드 LazyInitializationException 버그 수정(findByUserId JOIN FETCH pa.project 추가 — 사원 500·영업 빈화면 해결), 파일 크기 임계값 10MB→20MB(즉시 승인) / multipart 한도 100MB 확장, zip·xlsx·xls 확장자 허용 추가(magic bytes 검증), 전체 문서 최신화(V226 기준).
+**현재 상태 (2026-05-29):** Flyway V227. BUILD SUCCESSFUL. security-lint 15/15 PASS. 이번 세션 완료 항목: 캘린더 정합성 수정(CANCELLED 배정 cascade·memberCounts·dayMap·6개월 필터), 성능 개선 6건(ZIP/Excel 스트리밍·DeployStats COUNT 쿼리·검색 DB 위임·PDF 썸네일 temp파일·audit_logs 인덱스 V227), 회원가입 개인정보 동의서(7개 섹션 모달·5체크박스·전체동의 토글·내용보기 스크롤·폼 제출 검증).
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
