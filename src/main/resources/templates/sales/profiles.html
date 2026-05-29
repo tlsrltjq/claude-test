@@ -35,23 +35,10 @@
         </div>
       </div>
 
-      <!-- 등급별 현황 -->
-      <div class="row g-2 mb-3">
-          <div th:each="entry : ${gradeCounts}" class="col-6 col-sm-3 col-md-2">
-              <div class="grade-card"
-                   th:classappend="${entry.key == '특급'} ? 'grade-special' :
-                                    (${entry.key == '고급'} ? 'grade-high' :
-                                    (${entry.key == '중급'} ? 'grade-mid' :
-                                    (${entry.key == '초급'} ? 'grade-low' : '')))">
-                  <div class="grade-num" th:text="${entry.value}">0</div>
-                  <div class="grade-label" th:text="${entry.key}">등급</div>
-              </div>
-          </div>
-      </div>
-
       <!-- 검색/필터 -->
       <div class="filter-card">
-          <form id="filterForm" method="get" th:action="@{/sales/profiles}" class="d-flex align-items-end gap-2 flex-wrap">
+          <div class="d-flex align-items-end gap-2 flex-wrap">
+          <form id="filterForm" method="get" th:action="@{/sales/profiles}" class="d-flex align-items-end gap-2 flex-wrap" style="flex:1;min-width:0">
               <div>
                   <div class="filter-label">이름·이메일</div>
                   <div class="input-group input-group-sm" style="min-width:170px">
@@ -132,6 +119,25 @@
                   <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetAll()">초기화</button>
               </div>
           </form>
+          <div class="grade-stats-inline ms-auto flex-shrink-0">
+              <div class="grade-stat grade-stat-special">
+                  <strong th:text="${gradeCounts != null and gradeCounts['특급'] != null ? gradeCounts['특급'] : 0}">0</strong>
+                  <span>특급</span>
+              </div>
+              <div class="grade-stat grade-stat-high">
+                  <strong th:text="${gradeCounts != null and gradeCounts['고급'] != null ? gradeCounts['고급'] : 0}">0</strong>
+                  <span>고급</span>
+              </div>
+              <div class="grade-stat grade-stat-mid">
+                  <strong th:text="${gradeCounts != null and gradeCounts['중급'] != null ? gradeCounts['중급'] : 0}">0</strong>
+                  <span>중급</span>
+              </div>
+              <div class="grade-stat grade-stat-low">
+                  <strong th:text="${gradeCounts != null and gradeCounts['초급'] != null ? gradeCounts['초급'] : 0}">0</strong>
+                  <span>초급</span>
+              </div>
+          </div>
+          </div>
       </div>
 
       <!-- 툴바 -->
@@ -451,24 +457,21 @@
                       <td data-col="updatedAt" th:text="${row.user.updatedAt != null ? #temporals.format(row.user.updatedAt, 'yy.MM.dd') : '-'}"></td>
 
                       <!-- 투입 정보 -->
-                      <td class="assign-cell" data-col="assignmentInfo">
+                      <td class="assign-cell" data-col="assignmentInfo" style="white-space:nowrap">
                           <th:block th:with="cur=${currentAssignments != null ? currentAssignments[row.user.id] : null},
                                              nxt=${nextAssignments != null ? nextAssignments[row.user.id] : null}">
-                              <span th:if="${cur != null}" class="d-flex flex-column gap-1">
-                                  <span><span class="badge bg-success" style="font-size:.7rem">투입 중</span></span>
-                                  <span class="assign-name" th:text="${cur.project.name}"></span>
-                                  <span class="assign-sub" th:text="${cur.project.clientName}"></span>
+                              <span th:if="${cur != null}" class="d-flex align-items-center gap-1">
+                                  <span class="badge bg-success" style="font-size:.68rem">투입 중</span>
                                   <span th:with="days=${cur.remainingDays()}"
                                         th:class="${days <= 14 ? 'assign-end-urgent' : 'assign-end-normal'}"
                                         th:text="${'~' + #temporals.format(cur.endDate, 'MM/dd') + ' (' + days + '일)'}"></span>
                               </span>
-                              <span th:if="${cur == null and nxt != null}" class="d-flex flex-column gap-1">
-                                  <span><span class="badge bg-primary" style="font-size:.7rem">투입 예정</span></span>
-                                  <span class="assign-name" th:text="${nxt.project.name}"></span>
-                                  <span class="assign-sub" th:text="${#temporals.format(nxt.startDate, 'MM/dd') + ' 시작'}"></span>
+                              <span th:if="${cur == null and nxt != null}" class="d-flex align-items-center gap-1">
+                                  <span class="badge bg-primary" style="font-size:.68rem">투입 예정</span>
+                                  <span class="assign-end-normal" th:text="${#temporals.format(nxt.startDate, 'MM/dd') + '~'}"></span>
                               </span>
                               <span th:if="${cur == null and nxt == null}">
-                                  <span class="badge bg-secondary" style="font-size:.7rem">미투입</span>
+                                  <span class="badge bg-secondary" style="font-size:.68rem">미투입</span>
                               </span>
                           </th:block>
                       </td>
@@ -557,6 +560,7 @@ function applyPreset(presetId) {
     if (!presetId) return;
     const opt = document.querySelector('#presetSelect option[value="' + presetId + '"]');
     if (!opt) return;
+    localStorage.setItem('profiles_preset_id', presetId);
     try {
         const cols = JSON.parse(opt.dataset.cols || '[]');
         const hidden = COLS.filter(c => !cols.includes(c));
@@ -577,6 +581,7 @@ function applyPreset(presetId) {
 
 function resetAll() {
     localStorage.removeItem('profiles_hidden_cols');
+    localStorage.removeItem('profiles_preset_id');
     window.location.href = '/sales/profiles';
 }
 
@@ -633,6 +638,13 @@ document.addEventListener('DOMContentLoaded', function() {
     applyColVisibility();
     updateTeamLabel();
     updateGradeLabel();
+    const savedPreset = localStorage.getItem('profiles_preset_id');
+    if (savedPreset) {
+        const sel = document.getElementById('presetSelect');
+        if (sel && sel.querySelector('option[value="' + savedPreset + '"]')) {
+            sel.value = savedPreset;
+        }
+    }
 });
 </script>
 </body>

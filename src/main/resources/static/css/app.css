@@ -1037,6 +1037,14 @@ nav.topnav { background: var(--accent); }
 .grade-high    .grade-num { color: #d97706; }
 .grade-mid     .grade-num { color: var(--accent); }
 .grade-low     .grade-num { color: #6b7280; }
+/* 필터 바 인라인 등급 통계 */
+.grade-stats-inline { display: flex; align-items: center; gap: 1.1rem; flex-shrink: 0; padding-left: 1rem; border-left: 1px solid var(--border); }
+.grade-stat { font-size: .75rem; font-weight: 600; color: var(--tx2); white-space: nowrap; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.grade-stat strong { font-size: 1.05rem; font-weight: 800; }
+.grade-stat-special strong { color: #dc2626; }
+.grade-stat-high    strong { color: #d97706; }
+.grade-stat-mid     strong { color: var(--accent); }
+.grade-stat-low     strong { color: #6b7280; }
 .col-panel { background: #f8f9fa; border: 1px solid var(--border); border-radius: var(--radius); padding: .75rem 1rem; margin-bottom: .75rem; }
 .col-panel .col-label { font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--tx2); margin-bottom: .55rem; }
 .preset-panel { background: #f0f6ff; border: 1px solid #bfdbfe; border-radius: var(--radius); padding: .75rem 1rem; margin-bottom: .75rem; }
