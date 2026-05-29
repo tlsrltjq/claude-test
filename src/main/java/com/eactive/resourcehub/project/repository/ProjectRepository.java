@@ -3,6 +3,7 @@ package com.eactive.resourcehub.project.repository;
 import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,4 +31,16 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     /** 취소 제외 전체 프로젝트 (시작일 오름차순) */
     @Query("SELECT p FROM Project p WHERE p.status != 'CANCELLED' ORDER BY p.startDate ASC")
     List<Project> findAllNonCancelled();
+
+    /** 자동 상태 전환: ACTIVE → ENDED (endDate 경과) */
+    @Modifying
+    @Query("UPDATE Project p SET p.status = 'ENDED' " +
+           "WHERE p.status = 'ACTIVE' AND p.endDate < :today")
+    int expireActive(@Param("today") LocalDate today);
+
+    /** 자동 상태 전환: PLANNED → ACTIVE (startDate 도달) */
+    @Modifying
+    @Query("UPDATE Project p SET p.status = 'ACTIVE' " +
+           "WHERE p.status = 'PLANNED' AND p.startDate <= :today AND p.endDate >= :today")
+    int activatePlanned(@Param("today") LocalDate today);
 }

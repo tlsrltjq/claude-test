@@ -2,6 +2,7 @@ package com.eactive.resourcehub.project.repository;
 
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -94,4 +95,16 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
            "WHERE pa.status = 'PLANNED' AND pa.startDate > :today " +
            "ORDER BY pa.startDate ASC")
     List<ProjectAssignment> findPlannedFrom(@Param("today") LocalDate today);
+
+    /** 자동 상태 전환: ACTIVE → ENDED (endDate 경과) */
+    @Modifying
+    @Query("UPDATE ProjectAssignment pa SET pa.status = 'ENDED' " +
+           "WHERE pa.status = 'ACTIVE' AND pa.endDate < :today")
+    int expireActive(@Param("today") LocalDate today);
+
+    /** 자동 상태 전환: PLANNED → ACTIVE (startDate 도달, endDate 미경과) */
+    @Modifying
+    @Query("UPDATE ProjectAssignment pa SET pa.status = 'ACTIVE' " +
+           "WHERE pa.status = 'PLANNED' AND pa.startDate <= :today AND pa.endDate >= :today")
+    int activatePlanned(@Param("today") LocalDate today);
 }
