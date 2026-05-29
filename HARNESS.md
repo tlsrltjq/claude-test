@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V223 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-29):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. 투입 캘린더 2모드 리디자인 완료 — 캘린더 뷰(진행중 프로젝트 목록, 잔여일 배지) + 인력 현황 뷰(전체 인력 투입중/미투입 테이블, 통계 카드). 모드 탭 localStorage 유지.
+**현재 상태 (2026-05-29):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. 투입 캘린더 개선 완료 — 전체 프로젝트 리스트(ACTIVE+PLANNED 표시, ENDED 접기/펼치기), 배정 인원 수 표시, AJAX 월 이동(슬라이드 애니메이션), 인력현황 툴바 1줄 통합(검색+통계). 모드 탭 localStorage 유지.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
