@@ -5,6 +5,9 @@
 
 ---
 
+2026-05-29 | fix | fix: 대시보드 LazyInitializationException 수정 — findByUserId에 JOIN FETCH pa.project 추가, 사원 500·영업 빈화면 해결
+2026-05-29 | feature | feat: 파일 크기 임계값 10MB→20MB(즉시승인) / 100MB 이하 허용, zip·xlsx·xls 확장자 추가
+2026-05-29 | docs | docs: architecture·data-model·decisions·spec·frontend·tasks/current.md V226 기준 전체 최신화
 2026-05-29 | feature | feat: 허용 이메일 일괄 등록 — 텍스트(쉼표·줄바꿈) + 엑셀(.xlsx/.xls) 업로드, 메모 제거, 2컬럼 레이아웃·검색 필터
 2026-05-29 | fix | fix: 계정 삭제 FK 전면 수정(V226) — project_assignments SET NULL+user_name 스냅샷, 누락 FK 6개 CASCADE/SET NULL 추가
 2026-05-29 | feature | feat: join_date(입사일) 필드 추가 — 회원가입 선택 입력, 설정 편집, 재직증명서 {{입사일}} 연동

@@ -12,14 +12,14 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-29: 기능 개선 + 문서 최신화 완료. Flyway V226. BUILD SUCCESSFUL.
+2026-05-29: 버그 수정 + 기능 개선 + 문서 최신화 완료. Flyway V226. BUILD SUCCESSFUL.
 
 완료 항목:
-- join_date(입사일) 필드: V225 마이그레이션, User 엔티티, 회원가입(선택)·설정 편집·재직증명서 {{입사일}} 연동
-- 대시보드(/dashboard): 내 프로젝트 현황 카드(모든 권한), 영업 메뉴 버튼 우선→KPI 아래, KPI 4종 아이콘+컬러 재디자인, 종료임박 프로젝트명 우선 레이아웃, 관리자 메뉴 4종(재직증명서·허용이메일 추가)
-- 계정 삭제 FK 전면 수정(V226): project_assignments → SET NULL + user_name 스냅샷(이름 보존), 누락 FK 6개(email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL)
-- ProjectAssignment.getDisplayName(): user null 시 userName 스냅샷 fallback, 관련 템플릿(dashboard·project-detail) 적용
-- 허용 이메일(/admin/allowed-emails): 단건·텍스트 일괄(쉼표·줄바꿈)·엑셀(.xlsx/.xls) 일괄 등록, 메모 제거, 2컬럼 레이아웃·목록 내 검색 필터
-- 문서 최신화: tasks/current.md·HARNESS.md·docs/architecture.md·docs/data-model.md·docs/decisions.md·docs/spec.md·docs/frontend.md 전체 업데이트
+- fix: 대시보드 LazyInitializationException — ProjectAssignmentRepository.findByUserId에 JOIN FETCH pa.project 추가 (사원 500 오류·영업 빈화면 해결)
+- feat: 파일 크기 임계값 10MB→20MB (20MB 이하 즉시 승인, 초과 시 관리자 검토)
+- feat: multipart max-file-size 100MB로 확장, max-request-size 200MB
+- feat: zip·xlsx·xls 확장자 허용 추가 (magic bytes 검증 포함)
+- docs: architecture·data-model·decisions·spec·frontend 전체 최신화 (V226 기준, ADR-039 추가)
+- chore: tasks/current.md 간소화
 
 **다음 작업 없음 — 사용자 지시 대기**
