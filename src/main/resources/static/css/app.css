@@ -986,14 +986,17 @@ nav.topnav { background: var(--accent); }
 .cal-anim-from-right { animation: calFromRight .22s ease-out; }
 .cal-loading { opacity: .45; pointer-events: none; transition: opacity .1s; }
 
-/* Personnel stats */
-.personnel-stats { display: flex; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
-.pstat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: .65rem 1.25rem; text-align: center; min-width: 110px; }
-.pstat-card .pstat-num { font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
-.pstat-card .pstat-label { font-size: .72rem; color: var(--tx2); font-weight: 600; margin-top: .2rem; }
-.pstat-total .pstat-num { color: var(--tx1); }
+/* Personnel toolbar: filter + stats in one row */
+.personnel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: #f8f9fa; border: 1px solid var(--border); border-radius: var(--radius); padding: .55rem 1rem; margin-bottom: .75rem; }
+.personnel-toolbar .filter-inputs { display: flex; align-items: flex-end; gap: .5rem; flex-wrap: wrap; }
+.personnel-toolbar label { font-size: .75rem; font-weight: 600; color: var(--tx2); margin-bottom: .15rem; display: block; }
+.personnel-stats-inline { display: flex; gap: 1.5rem; flex-shrink: 0; align-items: center; }
+.pstat-inline { text-align: center; }
+.pstat-inline .pstat-num { font-size: 1.2rem; font-weight: 800; line-height: 1; display: block; }
+.pstat-inline .pstat-label { font-size: .68rem; color: var(--tx2); font-weight: 600; }
+.pstat-total   .pstat-num { color: var(--tx1); }
 .pstat-deployed .pstat-num { color: #1d4ed8; }
-.pstat-idle .pstat-num { color: #9ca3af; }
+.pstat-idle    .pstat-num { color: #9ca3af; }
 
 /* Personnel table */
 .personnel-table { font-size: .8rem; margin: 0; }

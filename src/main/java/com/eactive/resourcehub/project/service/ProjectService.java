@@ -51,6 +51,11 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
+    public List<Project> getAllNonCancelledProjects() {
+        return projectRepository.findAllNonCancelled();
+    }
+
+    @Transactional(readOnly = true)
     public List<ProjectAssignment> getMembersForProject(Long projectId) {
         return assignmentRepository.findByProjectId(projectId);
     }

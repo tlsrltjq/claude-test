@@ -107,6 +107,15 @@ public class ProjectAssignmentService {
         return assignmentRepository.findOverlapping(userId, start, end, excludeId);
     }
 
+    /** 프로젝트별 배정 인원 수 맵 (취소 제외) */
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getMemberCountsByProject() {
+        return assignmentRepository.countAssignmentsByProject().stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]));
+    }
+
     /** 인력표·캘린더 모달용 활성 직원 목록 (인력표 노출 팀만) */
     @Transactional(readOnly = true)
     public List<User> findAssignableUsers() {

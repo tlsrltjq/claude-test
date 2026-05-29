@@ -22,8 +22,8 @@
         <div>
           <h1 class="page-hd-title"><i class="bi bi-calendar-range-fill me-2"></i>프로젝트 투입 캘린더</h1>
           <p class="page-hd-sub" id="hd-sub-calendar">
-            총 <strong th:text="${#lists.size(monthlyProjects)}">0</strong>개 프로젝트
-            · <strong th:text="${#lists.size(allAssignments)}">0</strong>건 투입
+            진행중 <strong th:text="${#lists.size(activeAndPlannedProjects)}">0</strong>건
+            · 이번달 배정 <strong th:text="${#lists.size(allAssignments)}">0</strong>건
           </p>
           <p class="page-hd-sub" id="hd-sub-personnel" style="display:none">
             전체 <strong th:text="${totalPersonnel}">0</strong>명
@@ -45,18 +45,11 @@
 
       <!-- 알림 배너 -->
       <div th:if="${success}" class="alert alert-success alert-dismissible fade show py-2 px-3 mb-2" role="alert">
-        <i class="bi bi-check-circle-fill me-1"></i>
-        <span th:text="${success}"></span>
+        <i class="bi bi-check-circle-fill me-1"></i><span th:text="${success}"></span>
         <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
       </div>
       <div th:if="${error}" class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-2" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-1"></i>
-        <span th:text="${error}"></span>
-        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
-      </div>
-      <div th:if="${overlapWarning}" class="alert alert-warning alert-dismissible fade show py-2 px-3 mb-2" role="alert">
-        <i class="bi bi-exclamation-circle-fill me-1"></i>
-        <span th:text="${overlapWarning}"></span>
+        <i class="bi bi-exclamation-triangle-fill me-1"></i><span th:text="${error}"></span>
         <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
       </div>
 
@@ -65,7 +58,6 @@
            ═══════════════════════════════════════════════════════ -->
       <div id="view-calendar">
 
-        <!--/* th:fragment="calendarContent" — AJAX 월 이동 시 이 영역만 교체 */-->
         <div id="cal-content" th:fragment="calendarContent">
 
           <!-- 월 네비 + 프로젝트 등록 버튼 -->
@@ -76,8 +68,7 @@
                       data-dir="prev" aria-label="이전 달">
                 <i class="bi bi-chevron-left"></i>
               </button>
-              <span class="month-title"
-                    th:text="|${ym.year}년 ${ym.monthValue}월|">2026년 5월</span>
+              <span class="month-title" th:text="|${ym.year}년 ${ym.monthValue}월|">2026년 5월</span>
               <button type="button" class="btn-month cal-nav-btn"
                       th:attr="data-year=${next.year},data-month=${next.monthValue}"
                       data-dir="next" aria-label="다음 달">
@@ -92,58 +83,101 @@
             </div>
           </div>
 
-          <!-- 현재 진행중인 프로젝트 목록 -->
+          <!-- 전체 프로젝트 목록 (진행중 + 예정) -->
           <div class="list-card">
             <div class="card-head">
               <i class="bi bi-folder2-open"></i>
-              <span>현재 진행중인 프로젝트</span>
+              <span>전체 프로젝트</span>
               <span class="ms-1 text-muted fw-400" style="font-size:.75rem;"
-                    th:text="${'(' + #lists.size(activeProjectItems) + '건)'}"></span>
+                    th:text="${'진행중·예정 ' + #lists.size(activeAndPlannedProjects) + '건'}"></span>
             </div>
 
-            <div th:if="${#lists.isEmpty(activeProjectItems)}" class="empty-state">
-              <i class="bi bi-calendar-x"></i>
-              <div class="fw-600 mb-1" style="color:#6c757d;">오늘 기준 진행중인 프로젝트가 없습니다.</div>
+            <div th:if="${#lists.isEmpty(activeAndPlannedProjects)}" class="empty-state">
+              <i class="bi bi-folder-x"></i>
+              <div class="fw-600" style="color:#6c757d;">등록된 프로젝트가 없습니다.</div>
             </div>
 
-            <div th:unless="${#lists.isEmpty(activeProjectItems)}" class="table-responsive">
+            <div th:unless="${#lists.isEmpty(activeAndPlannedProjects)}" class="table-responsive">
               <table class="table assign-table mb-0">
                 <thead>
                   <tr>
+                    <th style="width:72px">상태</th>
                     <th>프로젝트</th>
                     <th>고객사</th>
                     <th>기간</th>
-                    <th>투입 인원</th>
-                    <th>잔여일</th>
+                    <th>인원</th>
+                    <th>일정</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr th:each="item : ${activeProjectItems}">
+                  <tr th:each="p : ${activeAndPlannedProjects}">
                     <td>
-                      <a th:href="@{/sales/projects/{id}(id=${item.project.id})}"
-                         class="fw-600 text-decoration-none"
-                         th:text="${item.project.name}">프로젝트명</a>
+                      <span class="badge rounded-pill px-2 py-1"
+                            th:classappend="${'badge-' + #strings.toLowerCase(p.status.name())}"
+                            th:text="${p.status.displayName}">상태</span>
                     </td>
-                    <td th:text="${item.project.clientName != null ? item.project.clientName : '—'}">고객사</td>
+                    <td>
+                      <a th:href="@{/sales/projects/{id}(id=${p.id})}"
+                         class="fw-600 text-decoration-none" th:text="${p.name}">프로젝트명</a>
+                    </td>
+                    <td th:text="${p.clientName != null ? p.clientName : '—'}">고객사</td>
                     <td class="text-nowrap" style="font-size:.78rem;">
-                      <span th:text="${#temporals.format(item.project.startDate,'yy.MM.dd')}"></span>
+                      <span th:text="${#temporals.format(p.startDate,'yy.MM.dd')}"></span>
                       ~
-                      <span th:text="${#temporals.format(item.project.endDate,'yy.MM.dd')}"></span>
+                      <span th:text="${#temporals.format(p.endDate,'yy.MM.dd')}"></span>
                     </td>
+                    <td th:with="cnt=${memberCounts[p.id] != null ? memberCounts[p.id] : 0}"
+                        th:text="${cnt + '명'}">0명</td>
                     <td>
-                      <span th:if="${item.lead != null}" class="fw-600" th:text="${item.lead.name}"></span>
-                      <span th:if="${item.totalCount > 1}" class="text-muted"
-                            th:text="|외 ${item.totalCount - 1}명|"></span>
-                      <span th:if="${item.lead == null}" class="text-muted">—</span>
-                    </td>
-                    <td>
-                      <span th:with="days=${item.project.endDate.toEpochDay() - today.toEpochDay()}"
+                      <!-- 진행중: 잔여일 -->
+                      <span th:if="${p.status.name() == 'ACTIVE'}"
+                            th:with="days=${p.endDate.toEpochDay() - today.toEpochDay()}"
                             th:class="${days <= 7 ? 'fw-700 text-danger' : (days <= 30 ? 'fw-600 text-warning' : 'text-muted')}"
-                            th:text="${days + '일'}">N일</span>
+                            th:text="${'잔여 ' + days + '일'}"></span>
+                      <!-- 예정: D-day -->
+                      <span th:if="${p.status.name() == 'PLANNED'}"
+                            th:with="days=${p.startDate.toEpochDay() - today.toEpochDay()}"
+                            class="text-muted"
+                            th:text="${'D-' + days}"></span>
                     </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- 종료 프로젝트 토글 -->
+            <div th:if="${!#lists.isEmpty(endedProjects)}"
+                 style="padding:.5rem 1rem; border-top:1px solid #f0f1f3;">
+              <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                      id="toggleEnded"
+                      th:text="${'완료된 프로젝트 ' + #lists.size(endedProjects) + '건 보기 ▾'}">
+              </button>
+              <div id="endedSection" style="display:none; margin-top:.5rem;">
+                <table class="table assign-table mb-0" style="opacity:.65;">
+                  <tbody>
+                    <tr th:each="p : ${endedProjects}">
+                      <td style="width:72px">
+                        <span class="badge rounded-pill px-2 py-1 badge-ended">종료</span>
+                      </td>
+                      <td>
+                        <a th:href="@{/sales/projects/{id}(id=${p.id})}"
+                           class="text-decoration-none text-muted" th:text="${p.name}">프로젝트명</a>
+                      </td>
+                      <td class="text-muted" th:text="${p.clientName != null ? p.clientName : '—'}">고객사</td>
+                      <td class="text-nowrap text-muted" style="font-size:.78rem;">
+                        <span th:text="${#temporals.format(p.startDate,'yy.MM.dd')}"></span>
+                        ~
+                        <span th:text="${#temporals.format(p.endDate,'yy.MM.dd')}"></span>
+                      </td>
+                      <td class="text-muted"
+                          th:with="cnt=${memberCounts[p.id] != null ? memberCounts[p.id] : 0}"
+                          th:text="${cnt + '명'}">0명</td>
+                      <td class="text-muted" style="font-size:.78rem;"
+                          th:text="${#temporals.format(p.endDate,'yy.MM.dd') + ' 종료'}"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -152,13 +186,8 @@
             <table class="cal-table">
               <thead>
                 <tr>
-                  <th class="cal-sun">일</th>
-                  <th>월</th>
-                  <th>화</th>
-                  <th>수</th>
-                  <th>목</th>
-                  <th>금</th>
-                  <th class="cal-sat">토</th>
+                  <th class="cal-sun">일</th><th>월</th><th>화</th>
+                  <th>수</th><th>목</th><th>금</th><th class="cal-sat">토</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,42 +233,42 @@
            ═══════════════════════════════════════════════════════ -->
       <div id="view-personnel" style="display:none">
 
-        <!-- 검색 필터 -->
-        <div class="filter-bar">
-          <div class="row g-2 align-items-end">
-            <div class="col-sm-5 col-md-3">
+        <!-- 툴바: 필터 + 통계 한 줄 -->
+        <div class="personnel-toolbar">
+          <div class="filter-inputs">
+            <div>
               <label>직원명</label>
               <input id="personnelSearch" type="text" class="form-control form-control-sm"
-                     placeholder="이름 검색">
+                     placeholder="이름 검색" style="width:160px;">
             </div>
-            <div class="col-sm-4 col-md-2">
+            <div>
               <label>상태</label>
-              <select id="personnelStatusFilter" class="form-select form-select-sm">
+              <select id="personnelStatusFilter" class="form-select form-select-sm" style="width:110px;">
                 <option value="">전체</option>
                 <option value="deployed">투입중</option>
                 <option value="planned">투입 예정</option>
                 <option value="idle">미투입</option>
               </select>
             </div>
-            <div class="col-auto">
+            <div style="padding-top:1.2rem;">
               <button type="button" class="btn btn-outline-secondary btn-sm" id="personnelReset">초기화</button>
             </div>
           </div>
-        </div>
 
-        <!-- 통계 카드 -->
-        <div class="personnel-stats">
-          <div class="pstat-card pstat-total">
-            <div class="pstat-num" th:text="${totalPersonnel}">0</div>
-            <div class="pstat-label">전체 인원</div>
-          </div>
-          <div class="pstat-card pstat-deployed">
-            <div class="pstat-num" th:text="${deployedCount}">0</div>
-            <div class="pstat-label">투입중</div>
-          </div>
-          <div class="pstat-card pstat-idle">
-            <div class="pstat-num" th:text="${idleCount}">0</div>
-            <div class="pstat-label">미투입</div>
+          <!-- 인라인 통계 -->
+          <div class="personnel-stats-inline">
+            <div class="pstat-inline pstat-total">
+              <span class="pstat-num" th:text="${totalPersonnel}">0</span>
+              <span class="pstat-label">전체</span>
+            </div>
+            <div class="pstat-inline pstat-deployed">
+              <span class="pstat-num" th:text="${deployedCount}">0</span>
+              <span class="pstat-label">투입중</span>
+            </div>
+            <div class="pstat-inline pstat-idle">
+              <span class="pstat-num" th:text="${idleCount}">0</span>
+              <span class="pstat-label">미투입</span>
+            </div>
           </div>
         </div>
 
@@ -263,11 +292,7 @@
             <table class="table personnel-table mb-0" id="personnelTable">
               <thead>
                 <tr>
-                  <th>직원</th>
-                  <th>직급</th>
-                  <th>상태</th>
-                  <th>투입 프로젝트</th>
-                  <th>날짜</th>
+                  <th>직원</th><th>직급</th><th>상태</th><th>투입 프로젝트</th><th>날짜</th>
                 </tr>
               </thead>
               <tbody>
@@ -282,16 +307,14 @@
                     <span th:if="${item.activeAssignment == null and item.plannedAssignment == null}" class="badge-idle">미투입</span>
                   </td>
                   <td>
-                    <span th:if="${item.activeAssignment != null}">
-                      <a th:href="@{/sales/projects/{id}(id=${item.activeAssignment.project.id})}"
-                         th:text="${item.activeAssignment.project.name}"
-                         class="fw-600 text-decoration-none">프로젝트</a>
-                    </span>
-                    <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}">
-                      <a th:href="@{/sales/projects/{id}(id=${item.plannedAssignment.project.id})}"
-                         th:text="${item.plannedAssignment.project.name}"
-                         class="text-decoration-none" style="color:#92400e;">프로젝트</a>
-                    </span>
+                    <a th:if="${item.activeAssignment != null}"
+                       th:href="@{/sales/projects/{id}(id=${item.activeAssignment.project.id})}"
+                       th:text="${item.activeAssignment.project.name}"
+                       class="fw-600 text-decoration-none">프로젝트</a>
+                    <a th:if="${item.activeAssignment == null and item.plannedAssignment != null}"
+                       th:href="@{/sales/projects/{id}(id=${item.plannedAssignment.project.id})}"
+                       th:text="${item.plannedAssignment.project.name}"
+                       class="text-decoration-none" style="color:#92400e;">프로젝트</a>
                     <span th:if="${item.activeAssignment == null and item.plannedAssignment == null}" class="text-muted">—</span>
                   </td>
                   <td style="font-size:.8rem;">
@@ -301,8 +324,7 @@
                       <span th:text="${#temporals.format(item.activeAssignment.endDate, 'MM.dd')}"></span>
                       <span class="ms-1" th:text="${'(' + days + '일)'}"></span>
                     </span>
-                    <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}"
-                          class="text-muted">
+                    <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}" class="text-muted">
                       <span th:text="${#temporals.format(item.plannedAssignment.startDate, 'MM.dd')}"></span>
                       <span class="ms-1" style="font-size:.72rem;">시작</span>
                     </span>
@@ -329,22 +351,18 @@
       <form th:action="@{/sales/projects}" method="post">
         <input type="hidden" name="_csrf" th:value="${_csrf.token}">
         <div class="modal-header py-2 px-3">
-          <h6 class="modal-title fw-700">
-            <i class="bi bi-folder-plus me-1 text-success"></i>프로젝트 등록
-          </h6>
+          <h6 class="modal-title fw-700"><i class="bi bi-folder-plus me-1 text-success"></i>프로젝트 등록</h6>
           <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body px-3 py-3">
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label fw-600 small">프로젝트명 <span class="text-danger">*</span></label>
-              <input type="text" name="name" class="form-control form-control-sm"
-                     placeholder="프로젝트명" required maxlength="200">
+              <input type="text" name="name" class="form-control form-control-sm" placeholder="프로젝트명" required maxlength="200">
             </div>
             <div class="col-12">
               <label class="form-label fw-600 small">고객사</label>
-              <input type="text" name="clientName" class="form-control form-control-sm"
-                     placeholder="고객사명" maxlength="200">
+              <input type="text" name="clientName" class="form-control form-control-sm" placeholder="고객사명" maxlength="200">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-600 small">시작일 <span class="text-danger">*</span></label>
@@ -356,31 +374,25 @@
             </div>
             <div class="col-12">
               <label class="form-label fw-600 small">메모</label>
-              <textarea name="memo" class="form-control form-control-sm" rows="2"
-                        placeholder="특이사항 등"></textarea>
+              <textarea name="memo" class="form-control form-control-sm" rows="2" placeholder="특이사항 등"></textarea>
             </div>
             <div class="col-12">
               <label class="form-label fw-600 small">투입 직원 선택</label>
               <div class="border rounded p-2" style="max-height:160px;overflow-y:auto;">
                 <div th:each="u : ${assignableUsers}" class="form-check">
-                  <input class="form-check-input" type="checkbox"
-                         name="selectedUserIds" th:value="${u.id}"
-                         th:id="|chk-${u.id}|">
-                  <label class="form-check-label small"
-                         th:for="|chk-${u.id}|"
+                  <input class="form-check-input" type="checkbox" name="selectedUserIds"
+                         th:value="${u.id}" th:id="|chk-${u.id}|">
+                  <label class="form-check-label small" th:for="|chk-${u.id}|"
                          th:text="${u.name + (u.team != null ? ' (' + u.team.name + ')' : '')}">직원</label>
                 </div>
-                <div th:if="${#lists.isEmpty(assignableUsers)}"
-                     class="text-muted small">활성 직원이 없습니다.</div>
+                <div th:if="${#lists.isEmpty(assignableUsers)}" class="text-muted small">활성 직원이 없습니다.</div>
               </div>
             </div>
           </div>
         </div>
         <div class="modal-footer py-2 px-3">
           <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">취소</button>
-          <button type="submit" class="btn btn-success btn-sm">
-            <i class="bi bi-check-lg me-1"></i>등록
-          </button>
+          <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-lg me-1"></i>등록</button>
         </div>
       </form>
     </div>
@@ -413,43 +425,42 @@
   function loadCalendar(year, month, dir) {
     var oldEl = document.getElementById('cal-content');
     if (!oldEl || oldEl.classList.contains('cal-loading')) return;
-
     oldEl.classList.add('cal-loading');
 
-    fetch('/sales/calendar?year=' + year + '&month=' + month + '&partial=true', {
-      credentials: 'same-origin'
-    })
-    .then(function (r) {
-      if (!r.ok) throw new Error('fetch failed');
-      return r.text();
-    })
-    .then(function (html) {
-      var parser = new DOMParser();
-      var doc    = parser.parseFromString(html, 'text/html');
-      var newEl  = doc.getElementById('cal-content');
-      if (!newEl) throw new Error('fragment not found');
-
-      var container = document.getElementById('cal-content');
-      container.parentNode.replaceChild(newEl, container);
-
-      var animClass = dir === 'next' ? 'cal-anim-from-right' : 'cal-anim-from-left';
-      newEl.classList.add(animClass);
-      setTimeout(function () { newEl.classList.remove(animClass); }, 280);
-    })
-    .catch(function () {
-      window.location.href = '/sales/calendar?year=' + year + '&month=' + month;
-    });
+    fetch('/sales/calendar?year=' + year + '&month=' + month + '&partial=true', { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.text(); })
+      .then(function (html) {
+        var doc   = new DOMParser().parseFromString(html, 'text/html');
+        var newEl = doc.getElementById('cal-content');
+        if (!newEl) throw new Error();
+        var container = document.getElementById('cal-content');
+        container.parentNode.replaceChild(newEl, container);
+        var animClass = dir === 'next' ? 'cal-anim-from-right' : 'cal-anim-from-left';
+        newEl.classList.add(animClass);
+        setTimeout(function () { newEl.classList.remove(animClass); }, 280);
+      })
+      .catch(function () {
+        window.location.href = '/sales/calendar?year=' + year + '&month=' + month;
+      });
   }
 
-  /* 월 이동 버튼 — 이벤트 위임 (동적 교체 후에도 동작) */
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('.cal-nav-btn');
     if (!btn) return;
     e.preventDefault();
-    var year  = parseInt(btn.getAttribute('data-year'),  10);
-    var month = parseInt(btn.getAttribute('data-month'), 10);
-    var dir   = btn.getAttribute('data-dir');
-    loadCalendar(year, month, dir);
+    loadCalendar(parseInt(btn.dataset.year, 10), parseInt(btn.dataset.month, 10), btn.dataset.dir);
+  });
+
+  /* ── 종료 프로젝트 토글 ── */
+  document.addEventListener('click', function (e) {
+    if (e.target.id !== 'toggleEnded') return;
+    var section = document.getElementById('endedSection');
+    if (!section) return;
+    var open = section.style.display !== 'none';
+    section.style.display = open ? 'none' : '';
+    e.target.textContent = open
+      ? e.target.textContent.replace('▴', '▾')
+      : e.target.textContent.replace('▾', '▴');
   });
 
   /* ── 인력 현황 클라이언트 필터 ── */
@@ -464,9 +475,8 @@
     var rows   = document.querySelectorAll('#personnelTable tbody tr');
     var visible = 0;
     rows.forEach(function (row) {
-      var name      = (row.getAttribute('data-name')   || '').toLowerCase();
-      var rowStatus = (row.getAttribute('data-status') || '');
-      var show = (!q || name.includes(q)) && (!status || rowStatus === status);
+      var show = (!q || (row.dataset.name || '').toLowerCase().includes(q))
+              && (!status || row.dataset.status === status);
       row.style.display = show ? '' : 'none';
       if (show) visible++;
     });
@@ -475,15 +485,13 @@
 
   if (searchInput)  searchInput.addEventListener('input', filterPersonnel);
   if (statusSelect) statusSelect.addEventListener('change', filterPersonnel);
-  if (resetBtn) {
-    resetBtn.addEventListener('click', function () {
-      if (searchInput)  searchInput.value  = '';
-      if (statusSelect) statusSelect.value = '';
-      filterPersonnel();
-    });
-  }
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    if (searchInput)  searchInput.value  = '';
+    if (statusSelect) statusSelect.value = '';
+    filterPersonnel();
+  });
 
-  /* ── 로딩 오버레이 (모달 POST 폼) ── */
+  /* ── 로딩 오버레이 ── */
   document.querySelectorAll('form').forEach(function (f) {
     if ((f.getAttribute('method') || 'get').toLowerCase() !== 'get') {
       f.addEventListener('submit', function () {

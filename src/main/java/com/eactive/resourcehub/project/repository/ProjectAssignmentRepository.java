@@ -66,6 +66,11 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
     List<ProjectAssignment> findStartingBetween(@Param("from") LocalDate from,
                                                   @Param("to")   LocalDate to);
 
+    /** 프로젝트별 배정 인원 수 (취소 제외) */
+    @Query("SELECT pa.project.id, COUNT(pa) FROM ProjectAssignment pa " +
+           "WHERE pa.status != 'CANCELLED' GROUP BY pa.project.id")
+    List<Object[]> countAssignmentsByProject();
+
     /** 이번달 종료하는 배정 (대시보드 카드용) */
     @Query("SELECT pa FROM ProjectAssignment pa " +
            "WHERE pa.status != 'CANCELLED' AND pa.endDate BETWEEN :from AND :to")

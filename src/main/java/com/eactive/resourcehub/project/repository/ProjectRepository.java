@@ -26,4 +26,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findActiveOn(@Param("date") LocalDate date);
 
     List<Project> findByStatusOrderByStartDateAsc(ProjectStatus status);
+
+    /** 취소 제외 전체 프로젝트 (시작일 오름차순) */
+    @Query("SELECT p FROM Project p WHERE p.status != 'CANCELLED' ORDER BY p.startDate ASC")
+    List<Project> findAllNonCancelled();
 }
