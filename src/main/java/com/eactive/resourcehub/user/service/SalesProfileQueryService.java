@@ -111,7 +111,12 @@ public class SalesProfileQueryService {
         if (pos != null && pos != row.getUser().getPosition()) return false;
         if (query.getDeveloperGrades() != null && !query.getDeveloperGrades().isEmpty()) {
             String grade = row.getDeveloperGrade();
-            if (grade == null || !query.getDeveloperGrades().contains(grade.trim())) return false;
+            boolean isUnset = grade == null || grade.isBlank();
+            if (isUnset) {
+                if (!query.getDeveloperGrades().contains("미설정")) return false;
+            } else if (!query.getDeveloperGrades().contains(grade.trim())) {
+                return false;
+            }
         }
         if (query.getTeamIds() != null && !query.getTeamIds().isEmpty()) {
             var team = row.getUser().getTeam();
