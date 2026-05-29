@@ -16,8 +16,10 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -145,7 +147,42 @@ public class DocumentFileGcService {
         return count;
     }
 
+    /** GC 실행 시 삭제될 파일 목록을 반환한다. 실제 삭제는 하지 않는다. */
+    @Transactional(readOnly = true)
+    public List<GcPreviewItem> previewGc() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(retentionDays);
+        List<Document> candidates = documentRepository.findPurgeCandidates(threshold);
+        if (candidates.isEmpty()) return List.of();
+
+        List<Long> documentIds = candidates.stream().map(Document::getId).toList();
+        List<DocumentVersion> allVersions = documentVersionRepository.findByDocumentIdIn(documentIds);
+
+        Map<Long, List<DocumentVersion>> versionByDocId = new HashMap<>();
+        for (DocumentVersion v : allVersions) {
+            Long docId = v.getDocument().getId();
+            versionByDocId.computeIfAbsent(docId, k -> new ArrayList<>()).add(v);
+        }
+
+        return candidates.stream().map(doc -> {
+            List<DocumentVersion> versions = versionByDocId.getOrDefault(doc.getId(), List.of());
+            int fileCount = collectPaths(versions).size();
+            String ownerName = doc.getFolder() != null && doc.getFolder().getOwner() != null
+                    ? doc.getFolder().getOwner().getName() : "-";
+            return new GcPreviewItem(doc.getId(), doc.getTitle(), ownerName, doc.getDeletedAt(),
+                    versions.size(), fileCount);
+        }).toList();
+    }
+
     public int getRetentionDays() {
         return retentionDays;
     }
+
+    public record GcPreviewItem(
+            Long documentId,
+            String title,
+            String ownerName,
+            LocalDateTime deletedAt,
+            int versionCount,
+            int fileCount
+    ) {}
 }

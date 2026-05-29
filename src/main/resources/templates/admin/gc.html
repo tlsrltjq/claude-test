@@ -109,6 +109,53 @@
 
       </div>
 
+      <!-- GC 대상 미리보기 -->
+      <div class="members-card mt-3">
+        <div class="d-flex align-items-center justify-content-between px-3 py-2"
+             style="border-bottom:1px solid #f0f1f3">
+          <span class="fw-semibold" style="font-size:.9rem">
+            <i class="bi bi-list-check me-1 text-danger"></i>삭제 예정 파일 목록
+          </span>
+          <span class="badge rounded-pill"
+                th:classappend="${#lists.isEmpty(gcCandidates)} ? 'bg-secondary' : 'bg-danger'"
+                th:text="${#lists.size(gcCandidates)} + '건'"></span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(gcCandidates)}" class="text-center text-muted py-4">
+          <i class="bi bi-check-circle-fill text-success d-block mb-1" style="font-size:1.6rem"></i>
+          <span style="font-size:.88rem">GC 대상 없음 — 보존 기간 내 삭제 문서 없음</span>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(gcCandidates)}" class="table-responsive">
+          <table class="table members-table mb-0">
+            <thead>
+            <tr>
+              <th>문서 제목</th>
+              <th style="width:130px">직원</th>
+              <th style="width:120px">삭제일</th>
+              <th style="width:55px">버전</th>
+              <th style="width:80px">파일 수</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${gcCandidates}">
+              <td class="fw-semibold" style="color:var(--tx1);font-size:.85rem"
+                  th:text="${item.title}"></td>
+              <td style="font-size:.82rem;color:#495057" th:text="${item.ownerName}"></td>
+              <td class="text-muted" style="font-size:.78rem;white-space:nowrap"
+                  th:text="${#temporals.format(item.deletedAt, 'yy.MM.dd HH:mm')}"></td>
+              <td>
+                <span class="badge bg-secondary rounded-pill" th:text="${item.versionCount}"></span>
+              </td>
+              <td>
+                <span class="badge bg-danger rounded-pill" th:text="${item.fileCount}"></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div><!-- /.page-wrap -->
   </main>
 

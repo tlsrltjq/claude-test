@@ -381,6 +381,7 @@ public class AdminController {
     @GetMapping("/gc")
     public String gcDashboard(Model model) {
         model.addAttribute("retentionDays", documentFileGcService.getRetentionDays());
+        model.addAttribute("gcCandidates", documentFileGcService.previewGc());
         return "admin/gc";
     }
 
