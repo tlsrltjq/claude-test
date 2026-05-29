@@ -3,10 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>다운로드 통계 — eActive Resource Hub</title>
+    <title>활동 통계 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+      /* 요약 카드 수치 행 */
+      .stat-summary-card { background:var(--card-bg); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:1.25rem; }
+      .stat-summary-row  { display:flex; align-items:center; gap:0; padding:.75rem 1rem; }
+      .stat-summary-row + .stat-summary-row { border-top:1px solid #f0f1f3; }
+      .stat-summary-label { width:90px; font-size:.8rem; font-weight:600; color:var(--tx2); flex-shrink:0; }
+      .stat-summary-nums  { display:flex; gap:0; flex:1; }
+      .stat-num-item { flex:1; text-align:center; }
+      .stat-num-item + .stat-num-item { border-left:1px solid #f0f1f3; }
+      .stat-num-value { font-size:1.25rem; font-weight:700; line-height:1.1; }
+      .stat-num-label { font-size:.7rem; color:var(--tx2); margin-top:.1rem; }
+      /* 탭 */
+      .stat-tabs { border-bottom:1px solid #f0f1f3; padding:.4rem .75rem 0; }
+      .stat-tabs .nav-link { font-size:.82rem; padding:.35rem .75rem; border-radius:6px 6px 0 0; color:var(--tx2); border:none; background:none; }
+      .stat-tabs .nav-link.active { color:var(--accent); background:#f0f4ff; font-weight:600; }
+      /* 이력 테이블 스크롤 영역 */
+      .stat-history-body { max-height:420px; overflow-y:auto; }
+    </style>
 </head>
 <body>
 
@@ -21,140 +39,111 @@
       <div class="page-hd">
         <div>
           <h1 class="page-hd-title"><i class="bi bi-bar-chart-line me-2"></i>활동 통계</h1>
-          <p class="page-hd-sub">문서 다운로드·업로드 현황 및 TOP 문서·최근 이력을 확인합니다.</p>
+          <p class="page-hd-sub">문서 다운로드·업로드 현황, TOP 랭킹, 최근 이력</p>
         </div>
       </div>
 
-      <!-- 다운로드 통계 카드 -->
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <i class="bi bi-download text-primary"></i>
-        <span class="fw-semibold" style="font-size:.85rem; color:#374151;">다운로드</span>
-      </div>
-      <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon blue"><i class="bi bi-download"></i></div>
-            <div>
-              <div class="stat-value text-primary" th:text="${downloadStats.totalCount}">0</div>
-              <div class="stat-label">전체</div>
+      <!-- ── 요약 수치 카드 ── -->
+      <div class="stat-summary-card">
+        <!-- 다운로드 행 -->
+        <div class="stat-summary-row">
+          <div class="stat-summary-label">
+            <i class="bi bi-download me-1" style="color:#2563eb"></i>다운로드
+          </div>
+          <div class="stat-summary-nums">
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#2563eb" th:text="${downloadStats.totalCount}">0</div>
+              <div class="stat-num-label">전체</div>
+            </div>
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#059669" th:text="${downloadStats.todayCount}">0</div>
+              <div class="stat-num-label">오늘</div>
+            </div>
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#0369a1" th:text="${downloadStats.weekCount}">0</div>
+              <div class="stat-num-label">최근 7일</div>
+            </div>
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#6d28d9" th:text="${downloadStats.monthCount}">0</div>
+              <div class="stat-num-label">이번 달</div>
             </div>
           </div>
         </div>
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon green"><i class="bi bi-calendar-check"></i></div>
-            <div>
-              <div class="stat-value text-success" th:text="${downloadStats.todayCount}">0</div>
-              <div class="stat-label">오늘</div>
-            </div>
+        <!-- 업로드 행 -->
+        <div class="stat-summary-row">
+          <div class="stat-summary-label">
+            <i class="bi bi-upload me-1" style="color:#16a34a"></i>업로드
           </div>
-        </div>
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon sky"><i class="bi bi-calendar-week"></i></div>
-            <div>
-              <div class="stat-value" style="color:#0369a1;" th:text="${downloadStats.weekCount}">0</div>
-              <div class="stat-label">최근 7일</div>
+          <div class="stat-summary-nums">
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#16a34a" th:text="${uploadStats.totalCount}">0</div>
+              <div class="stat-num-label">전체</div>
             </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon purple"><i class="bi bi-calendar-month"></i></div>
-            <div>
-              <div class="stat-value" style="color:#6d28d9;" th:text="${downloadStats.monthCount}">0</div>
-              <div class="stat-label">이번 달</div>
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#059669" th:text="${uploadStats.todayCount}">0</div>
+              <div class="stat-num-label">오늘</div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 업로드 통계 카드 -->
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <i class="bi bi-upload text-success"></i>
-        <span class="fw-semibold" style="font-size:.85rem; color:#374151;">업로드</span>
-      </div>
-      <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon green"><i class="bi bi-upload"></i></div>
-            <div>
-              <div class="stat-value text-success" th:text="${uploadStats.totalCount}">0</div>
-              <div class="stat-label">전체</div>
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#0369a1" th:text="${uploadStats.weekCount}">0</div>
+              <div class="stat-num-label">최근 7일</div>
             </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon green"><i class="bi bi-calendar-check"></i></div>
-            <div>
-              <div class="stat-value text-success" th:text="${uploadStats.todayCount}">0</div>
-              <div class="stat-label">오늘</div>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon sky"><i class="bi bi-calendar-week"></i></div>
-            <div>
-              <div class="stat-value" style="color:#0369a1;" th:text="${uploadStats.weekCount}">0</div>
-              <div class="stat-label">최근 7일</div>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="stat-card">
-            <div class="stat-icon purple"><i class="bi bi-calendar-month"></i></div>
-            <div>
-              <div class="stat-value" style="color:#6d28d9;" th:text="${uploadStats.monthCount}">0</div>
-              <div class="stat-label">이번 달</div>
+            <div class="stat-num-item">
+              <div class="stat-num-value" style="color:#6d28d9" th:text="${uploadStats.monthCount}">0</div>
+              <div class="stat-num-label">이번 달</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 2열 레이아웃 -->
+      <!-- ── 2열 레이아웃 ── -->
       <div class="row g-4">
 
-        <!-- 왼쪽: TOP 10 -->
-        <div class="col-lg-5">
-          <div class="table-card h-100">
-            <div class="card-header-custom d-flex align-items-center gap-2">
-              <i class="bi bi-trophy text-warning"></i>
-              TOP 10 다운로드 문서
+        <!-- 좌: TOP 10 다운로드 문서 -->
+        <div class="col-12 col-lg-5">
+          <div class="members-card h-100">
+            <div class="d-flex align-items-center justify-content-between px-3 py-2"
+                 style="border-bottom:1px solid #f0f1f3">
+              <span class="fw-semibold" style="font-size:.9rem">
+                <i class="bi bi-trophy me-1" style="color:#d97706"></i>TOP 10 다운로드 문서
+              </span>
             </div>
-            <div th:if="${#lists.isEmpty(topDocuments)}" class="empty-state">
-              <i class="bi bi-file-earmark-x"></i>
-              <p>데이터가 없습니다.</p>
+
+            <!-- 빈 상태 -->
+            <div th:if="${#lists.isEmpty(topDocuments)}" class="text-center text-muted py-5">
+              <i class="bi bi-file-earmark-x d-block mb-2" style="font-size:2rem;opacity:.35"></i>
+              <span style="font-size:.88rem">데이터가 없습니다.</span>
             </div>
+
+            <!-- 랭킹 테이블 -->
             <div th:if="${!#lists.isEmpty(topDocuments)}" class="table-responsive">
-              <table class="table table-hover mb-0">
+              <table class="table members-table mb-0">
                 <thead>
                 <tr>
-                  <th class="text-center" style="width:40px;">#</th>
+                  <th style="width:36px">#</th>
                   <th>문서</th>
-                  <th>소유자</th>
-                  <th class="text-end">횟수</th>
+                  <th style="width:80px">직원</th>
+                  <th style="width:46px" class="text-end">횟수</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="doc, stat : ${topDocuments}">
-                  <td class="text-center">
+                  <td>
                     <span class="rank-badge"
                           th:classappend="${stat.index == 0 ? ' top1' : (stat.index == 1 ? ' top2' : (stat.index == 2 ? ' top3' : ''))}"
                           th:text="${stat.index + 1}"></span>
                   </td>
                   <td>
-                    <div class="fw-semibold text-truncate" style="max-width:160px;"
+                    <div class="fw-semibold text-truncate" style="max-width:160px;font-size:.83rem;color:var(--tx1)"
                          th:text="${doc.documentTitle}"></div>
-                    <small class="text-muted text-truncate d-block" style="max-width:160px;"
-                           th:text="${doc.originalFileName}"></small>
+                    <div class="text-truncate text-muted" style="max-width:160px;font-size:.72rem"
+                         th:if="${doc.originalFileName != null}"
+                         th:text="${doc.originalFileName}"></div>
                   </td>
                   <td>
-                    <div class="small fw-medium" th:text="${doc.ownerName}"></div>
-                    <small class="text-muted" th:text="${doc.teamName}"></small>
+                    <div class="fw-semibold" style="font-size:.78rem;color:var(--tx1)" th:text="${doc.ownerName}"></div>
+                    <div class="text-muted" style="font-size:.7rem" th:if="${doc.teamName != null}" th:text="${doc.teamName}"></div>
                   </td>
-                  <td class="text-end fw-bold" style="color:#1d4ed8;"
+                  <td class="text-end fw-bold" style="color:#2563eb;font-size:.88rem"
                       th:text="${doc.downloadCount}"></td>
                 </tr>
                 </tbody>
@@ -163,102 +152,108 @@
           </div>
         </div>
 
-        <!-- 오른쪽: 최근 다운로드 이력 -->
-        <div class="col-lg-7">
-          <div class="table-card h-100">
-            <div class="card-header-custom d-flex align-items-center gap-2">
-              <i class="bi bi-clock-history text-secondary"></i>
-              최근 다운로드 이력
-              <span class="badge bg-light text-secondary border ms-1" style="font-size:.7rem;">최대 30건</span>
-            </div>
-            <div th:if="${#lists.isEmpty(recentDownloads)}" class="empty-state">
-              <i class="bi bi-inbox"></i>
-              <p>다운로드 이력이 없습니다.</p>
-            </div>
-            <div th:if="${!#lists.isEmpty(recentDownloads)}" class="scroll-body table-responsive">
-              <table class="table table-hover mb-0">
-                <thead class="sticky-top" style="top:0;">
-                <tr>
-                  <th class="text-nowrap">일시</th>
-                  <th>다운로더</th>
-                  <th>버전 ID</th>
-                  <th>사유</th>
-                  <th>IP</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="log : ${recentDownloads}">
-                  <td class="text-nowrap text-muted"
-                      th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
-                  <td class="fw-medium" th:text="${log.user.name}"></td>
-                  <td class="text-muted small" th:text="${log.targetId}"></td>
-                  <td class="text-truncate" style="max-width:160px;"
-                      th:text="${log.reason}"></td>
-                  <td class="font-mono text-muted" th:text="${log.ipAddress}"></td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
+        <!-- 우: 이력 탭 (다운로드 / 업로드) -->
+        <div class="col-12 col-lg-7">
+          <div class="members-card h-100">
+
+            <!-- 탭 헤더 -->
+            <ul class="nav stat-tabs" id="historyTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dl-tab" data-bs-toggle="tab" data-bs-target="#dl-pane"
+                        type="button" role="tab">
+                  <i class="bi bi-download me-1"></i>다운로드 이력
+                  <span class="badge rounded-pill ms-1"
+                        style="background:#e7f0ff;color:#1d4ed8;font-size:.65rem"
+                        th:text="${#lists.size(recentDownloads)}">0</span>
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ul-tab" data-bs-toggle="tab" data-bs-target="#ul-pane"
+                        type="button" role="tab">
+                  <i class="bi bi-upload me-1"></i>업로드 이력
+                  <span class="badge rounded-pill ms-1"
+                        style="background:#dcfce7;color:#15803d;font-size:.65rem"
+                        th:text="${#lists.size(recentUploads)}">0</span>
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+
+              <!-- 다운로드 이력 -->
+              <div class="tab-pane fade show active" id="dl-pane" role="tabpanel">
+                <div th:if="${#lists.isEmpty(recentDownloads)}" class="text-center text-muted py-5">
+                  <i class="bi bi-inbox d-block mb-2" style="font-size:2rem;opacity:.35"></i>
+                  <span style="font-size:.88rem">다운로드 이력이 없습니다.</span>
+                </div>
+                <div th:if="${!#lists.isEmpty(recentDownloads)}"
+                     class="stat-history-body table-responsive">
+                  <table class="table members-table mb-0">
+                    <thead>
+                    <tr>
+                      <th style="width:90px">일시</th>
+                      <th style="width:90px">직원</th>
+                      <th>사유</th>
+                      <th style="width:110px">IP</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${recentDownloads}">
+                      <td class="text-muted" style="font-size:.78rem;white-space:nowrap"
+                          th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
+                      <td class="fw-semibold" style="font-size:.83rem;color:var(--tx1)"
+                          th:text="${log.user.name}"></td>
+                      <td class="text-muted" style="font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                          th:text="${log.reason != null ? log.reason : '-'}"></td>
+                      <td class="text-muted" style="font-size:.72rem;font-family:monospace"
+                          th:text="${log.ipAddress}"></td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 업로드 이력 -->
+              <div class="tab-pane fade" id="ul-pane" role="tabpanel">
+                <div th:if="${#lists.isEmpty(recentUploads)}" class="text-center text-muted py-5">
+                  <i class="bi bi-inbox d-block mb-2" style="font-size:2rem;opacity:.35"></i>
+                  <span style="font-size:.88rem">업로드 이력이 없습니다.</span>
+                </div>
+                <div th:if="${!#lists.isEmpty(recentUploads)}"
+                     class="stat-history-body table-responsive">
+                  <table class="table members-table mb-0">
+                    <thead>
+                    <tr>
+                      <th style="width:90px">일시</th>
+                      <th style="width:90px">직원</th>
+                      <th>IP</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${recentUploads}">
+                      <td class="text-muted" style="font-size:.78rem;white-space:nowrap"
+                          th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
+                      <td class="fw-semibold" style="font-size:.83rem;color:var(--tx1)"
+                          th:text="${log.user.name}"></td>
+                      <td class="text-muted" style="font-size:.72rem;font-family:monospace"
+                          th:text="${log.ipAddress}"></td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div><!-- /.tab-content -->
           </div>
         </div>
 
-      </div>
-
-      <!-- 최근 업로드 이력 -->
-      <div class="table-card mt-4">
-        <div class="card-header-custom d-flex align-items-center gap-2">
-          <i class="bi bi-cloud-upload text-success"></i>
-          최근 업로드 이력
-          <span class="badge bg-light text-secondary border ms-1" style="font-size:.7rem;">최대 20건</span>
-        </div>
-        <div th:if="${#lists.isEmpty(recentUploads)}" class="empty-state">
-          <i class="bi bi-inbox"></i>
-          <p>업로드 이력이 없습니다.</p>
-        </div>
-        <div th:if="${!#lists.isEmpty(recentUploads)}" class="scroll-body table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="sticky-top" style="top:0;">
-            <tr>
-              <th class="text-nowrap">일시</th>
-              <th>업로더</th>
-              <th>대상 ID</th>
-              <th>IP</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="log : ${recentUploads}">
-              <td class="text-nowrap text-muted"
-                  th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
-              <td class="fw-medium" th:text="${log.user.name}"></td>
-              <td class="text-muted small" th:text="${log.targetId}"></td>
-              <td class="font-mono text-muted" th:text="${log.ipAddress}"></td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </div><!-- /.row -->
 
     </div><!-- /.page-wrap -->
   </main>
 
 </div><!-- /.app-shell -->
 
-<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
-  <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
-    <span class="visually-hidden">처리 중...</span>
-  </div>
-</div>
-<script>
-(function(){
-    document.querySelectorAll('form').forEach(function(f){
-        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
-            f.addEventListener('submit',function(){
-                document.getElementById('loadingOverlay').style.display='flex';
-            });
-        }
-    });
-})();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
