@@ -994,6 +994,7 @@ nav.topnav { background: var(--accent); }
 .personnel-table tbody td { padding: .6rem .75rem; vertical-align: middle; border-color: #f0f1f3; }
 .personnel-table tbody tr:hover { background: #f0f6ff; }
 .badge-deployed { background: #dbeafe; color: #1d4ed8; font-size: .72rem; padding: .25em .65em; border-radius: 6px; font-weight: 700; white-space: nowrap; }
+.badge-planned-deploy { background: #fef3c7; color: #92400e; font-size: .72rem; padding: .25em .65em; border-radius: 6px; font-weight: 700; white-space: nowrap; }
 .badge-idle { background: #f3f4f6; color: #9ca3af; font-size: .72rem; padding: .25em .65em; border-radius: 6px; font-weight: 700; white-space: nowrap; }
 .user-circle-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: .8rem; flex-shrink: 0; }
 

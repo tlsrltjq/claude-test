@@ -89,10 +89,13 @@ public class ProjectAssignmentController {
                 .sorted(Comparator.comparing(i -> i.project().getName()))
                 .collect(Collectors.toList());
 
-        // Mode 2: 전체 인력 현황 (투입중/미투입)
+        // Mode 2: 전체 인력 현황 (투입중/투입예정/미투입)
         List<User> assignableUsers = assignmentService.findAssignableUsers();
+        Map<Long, ProjectAssignment> plannedAssignMap = assignmentService.getNextAssignmentsByUserId();
         List<PersonnelStatusItem> personnelStatusList = assignableUsers.stream()
-                .map(u -> new PersonnelStatusItem(u, activeAssignMap.get(u.getId())))
+                .map(u -> new PersonnelStatusItem(u,
+                        activeAssignMap.get(u.getId()),
+                        plannedAssignMap.get(u.getId())))
                 .collect(Collectors.toList());
         long deployedCount = personnelStatusList.stream()
                 .filter(i -> i.activeAssignment() != null).count();

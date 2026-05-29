@@ -289,14 +289,21 @@
                       th:text="${item.user.position != null ? item.user.position.displayName : '—'}">직급</td>
                   <td>
                     <span th:if="${item.activeAssignment != null}" class="badge-deployed">투입중</span>
-                    <span th:unless="${item.activeAssignment != null}" class="badge-idle">미투입</span>
+                    <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}" class="badge-planned-deploy">투입 예정</span>
+                    <span th:if="${item.activeAssignment == null and item.plannedAssignment == null}" class="badge-idle">미투입</span>
                   </td>
                   <td>
-                    <a th:if="${item.activeAssignment != null}"
-                       th:href="@{/sales/projects/{id}(id=${item.activeAssignment.project.id})}"
-                       th:text="${item.activeAssignment.project.name}"
-                       class="fw-600 text-decoration-none">프로젝트</a>
-                    <span th:unless="${item.activeAssignment != null}" class="text-muted">—</span>
+                    <span th:if="${item.activeAssignment != null}">
+                      <a th:href="@{/sales/projects/{id}(id=${item.activeAssignment.project.id})}"
+                         th:text="${item.activeAssignment.project.name}"
+                         class="fw-600 text-decoration-none">프로젝트</a>
+                    </span>
+                    <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}">
+                      <a th:href="@{/sales/projects/{id}(id=${item.plannedAssignment.project.id})}"
+                         th:text="${item.plannedAssignment.project.name}"
+                         class="text-decoration-none" style="color:#92400e;">프로젝트</a>
+                    </span>
+                    <span th:if="${item.activeAssignment == null and item.plannedAssignment == null}" class="text-muted">—</span>
                   </td>
                   <td style="font-size:.8rem;">
                     <span th:if="${item.activeAssignment != null}"
@@ -305,7 +312,12 @@
                       <span th:text="${#temporals.format(item.activeAssignment.endDate, 'MM.dd')}"></span>
                       <span class="ms-1" th:text="${'(' + days + '일)'}"></span>
                     </span>
-                    <span th:unless="${item.activeAssignment != null}" class="text-muted">—</span>
+                    <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}"
+                          class="text-muted">
+                      <span th:text="${#temporals.format(item.plannedAssignment.startDate, 'MM.dd')}"></span>
+                      <span class="ms-1 text-muted" style="font-size:.72rem;">시작</span>
+                    </span>
+                    <span th:if="${item.activeAssignment == null and item.plannedAssignment == null}" class="text-muted">—</span>
                   </td>
                 </tr>
               </tbody>
