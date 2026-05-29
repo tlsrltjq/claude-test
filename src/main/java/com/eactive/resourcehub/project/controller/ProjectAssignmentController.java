@@ -49,6 +49,8 @@ public class ProjectAssignmentController {
                 assignmentService.getMonthlyAssignments(ym, q, project, status);
         List<Project> monthlyProjects = projectService.getMonthlyProjects(ym);
 
+        LocalDate today = LocalDate.now();
+
         // 프로젝트 리스트용: 필터 무관 전체 배정을 프로젝트별로 묶어 대표자 산출
         List<ProjectAssignment> allMonthly =
                 assignmentService.getMonthlyAssignments(ym, null, null, null);
@@ -66,22 +68,56 @@ public class ProjectAssignmentController {
                 })
                 .collect(Collectors.toList());
 
-        model.addAttribute("ym",               ym);
-        model.addAttribute("prev",             ym.minusMonths(1));
-        model.addAttribute("next",             ym.plusMonths(1));
-        model.addAttribute("today",            LocalDate.now());
-        model.addAttribute("weeks",            CalendarGridBuilder.buildWeeks(ym));
-        model.addAttribute("weekBars",         CalendarGridBuilder.buildProjectWeekBars(monthlyProjects, ym));
-        model.addAttribute("dayMap",           CalendarGridBuilder.buildDayMap(assignments, ym));
-        model.addAttribute("allAssignments",   assignments);
-        model.addAttribute("monthlyProjects",  monthlyProjects);
-        model.addAttribute("projectListItems", projectListItems);
-        model.addAttribute("allStatuses",      AssignmentStatus.values());
-        model.addAttribute("assignableUsers",  assignmentService.findAssignableUsers());
-        model.addAttribute("currentUser",      details.getUser());
-        model.addAttribute("q",                q != null ? q : "");
-        model.addAttribute("project",          project != null ? project : "");
-        model.addAttribute("filterStatus",     status);
+        // Mode 1: 오늘 기준 진행중인 프로젝트 목록
+        Map<Long, ProjectAssignment> activeAssignMap = assignmentService.getActiveAssignmentsByUserId();
+        Map<Long, List<User>> projMembersMap = activeAssignMap.values().stream()
+                .collect(Collectors.groupingBy(
+                        pa -> pa.getProject().getId(),
+                        Collectors.mapping(ProjectAssignment::getUser, Collectors.toList())));
+        List<ProjectListItem> activeProjectItems = activeAssignMap.values().stream()
+                .collect(Collectors.toMap(pa -> pa.getProject().getId(),
+                        ProjectAssignment::getProject, (a, b) -> a))
+                .entrySet().stream()
+                .map(e -> {
+                    List<User> members = projMembersMap.getOrDefault(e.getKey(), List.of());
+                    User lead = members.stream()
+                            .filter(u -> u.getPosition() != null)
+                            .min(Comparator.comparingInt(u -> u.getPosition().ordinal()))
+                            .orElse(null);
+                    return new ProjectListItem(e.getValue(), lead, members.size());
+                })
+                .sorted(Comparator.comparing(i -> i.project().getName()))
+                .collect(Collectors.toList());
+
+        // Mode 2: 전체 인력 현황 (투입중/미투입)
+        List<User> assignableUsers = assignmentService.findAssignableUsers();
+        List<PersonnelStatusItem> personnelStatusList = assignableUsers.stream()
+                .map(u -> new PersonnelStatusItem(u, activeAssignMap.get(u.getId())))
+                .collect(Collectors.toList());
+        long deployedCount = personnelStatusList.stream()
+                .filter(i -> i.activeAssignment() != null).count();
+
+        model.addAttribute("ym",                 ym);
+        model.addAttribute("prev",               ym.minusMonths(1));
+        model.addAttribute("next",               ym.plusMonths(1));
+        model.addAttribute("today",              today);
+        model.addAttribute("weeks",              CalendarGridBuilder.buildWeeks(ym));
+        model.addAttribute("weekBars",           CalendarGridBuilder.buildProjectWeekBars(monthlyProjects, ym));
+        model.addAttribute("dayMap",             CalendarGridBuilder.buildDayMap(assignments, ym));
+        model.addAttribute("allAssignments",     assignments);
+        model.addAttribute("monthlyProjects",    monthlyProjects);
+        model.addAttribute("projectListItems",   projectListItems);
+        model.addAttribute("activeProjectItems", activeProjectItems);
+        model.addAttribute("allStatuses",        AssignmentStatus.values());
+        model.addAttribute("assignableUsers",    assignableUsers);
+        model.addAttribute("currentUser",        details.getUser());
+        model.addAttribute("q",                  q != null ? q : "");
+        model.addAttribute("project",            project != null ? project : "");
+        model.addAttribute("filterStatus",       status);
+        model.addAttribute("personnelStatusList",personnelStatusList);
+        model.addAttribute("deployedCount",      deployedCount);
+        model.addAttribute("idleCount",          (long) personnelStatusList.size() - deployedCount);
+        model.addAttribute("totalPersonnel",     (long) personnelStatusList.size());
         return "sales/calendar";
     }
 

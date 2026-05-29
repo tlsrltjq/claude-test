@@ -938,7 +938,7 @@ nav.topnav { background: var(--accent); }
 .cal-table th { background: #f1f5f9; color: #475569; font-size: .72rem; font-weight: 700; text-align: center; padding: .6rem 0; border: none; border-bottom: 2px solid #cbd5e1; letter-spacing: .06em; text-transform: uppercase; }
 .cal-table th.cal-sun { color: #dc2626; }
 .cal-table th.cal-sat { color: #2563eb; }
-.cal-cell { vertical-align: top; border: 1px solid #e9ecef; padding: .3rem .45rem; height: 46px; min-width: 0; }
+.cal-cell { vertical-align: top; border: 1px solid #e9ecef; padding: .3rem .45rem; height: 56px; min-width: 0; }
 .cal-empty { background: #fafafa; }
 .cal-today { background: #eff6ff; }
 .cal-cell.cal-sun .cal-num { color: #dc2626; }
@@ -969,6 +969,33 @@ nav.topnav { background: var(--accent); }
 .bar-color-9 { background: #fdf4ff; color: #86198f; }
 .list-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin-bottom: 1rem; }
 .list-card .card-head { padding: .7rem 1rem; border-bottom: 1px solid #f0f1f3; font-size: .8rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: .4rem; }
+
+/* View mode tabs */
+.view-tabs { display: flex; gap: .3rem; background: #f1f5f9; border-radius: 8px; padding: .3rem; width: fit-content; }
+.tab-btn { background: transparent; border: none; border-radius: 6px; padding: .32rem .9rem; font-size: .82rem; font-weight: 600; color: var(--tx2); cursor: pointer; transition: all .15s; }
+.tab-btn.active { background: #fff; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.tab-btn:hover:not(.active) { background: rgba(255,255,255,.5); color: var(--tx1); }
+
+/* Calendar controls row (month nav + action button) */
+.cal-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; flex-wrap: wrap; gap: .5rem; }
+
+/* Personnel stats */
+.personnel-stats { display: flex; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.pstat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: .65rem 1.25rem; text-align: center; min-width: 110px; }
+.pstat-card .pstat-num { font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
+.pstat-card .pstat-label { font-size: .72rem; color: var(--tx2); font-weight: 600; margin-top: .2rem; }
+.pstat-total .pstat-num { color: var(--tx1); }
+.pstat-deployed .pstat-num { color: #1d4ed8; }
+.pstat-idle .pstat-num { color: #9ca3af; }
+
+/* Personnel table */
+.personnel-table { font-size: .82rem; margin: 0; }
+.personnel-table thead th { background: #f1f5f9; color: #475569; font-weight: 700; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; padding: .65rem .75rem; border: none; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
+.personnel-table tbody td { padding: .6rem .75rem; vertical-align: middle; border-color: #f0f1f3; }
+.personnel-table tbody tr:hover { background: #f0f6ff; }
+.badge-deployed { background: #dbeafe; color: #1d4ed8; font-size: .72rem; padding: .25em .65em; border-radius: 6px; font-weight: 700; white-space: nowrap; }
+.badge-idle { background: #f3f4f6; color: #9ca3af; font-size: .72rem; padding: .25em .65em; border-radius: 6px; font-weight: 700; white-space: nowrap; }
+.user-circle-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: .8rem; flex-shrink: 0; }
 
 /* ═══════════════════════════════════════════════════════════════
    SALES — MEMBERS / PROFILES / CAREER CALC
