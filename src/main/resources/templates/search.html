@@ -58,7 +58,6 @@
                           <option value="">전체</option>
                           <option value="personal" th:selected="${folderKind == 'personal'}">개인</option>
                           <option value="public"   th:selected="${folderKind == 'public'}">공용</option>
-                          <option value="shared"   th:selected="${folderKind == 'shared'}">공유</option>
                       </select>
                   </div>
                   <div class="col-6 col-md-2">
@@ -116,8 +115,6 @@
                                 class="badge badge-folder-public" style="font-size:.68rem">공용</span>
                           <span th:if="${doc.folder.type.name() == 'PERSONAL'}"
                                 class="badge badge-folder-personal" style="font-size:.68rem">개인</span>
-                          <span th:if="${doc.folder.type.name() == 'SHARED'}"
-                                class="badge badge-folder-shared" style="font-size:.68rem">공유</span>
                           <!-- 문서 종류 뱃지 -->
                           <span class="badge bg-secondary" style="font-size:.68rem"
                                 th:text="${doc.documentType.displayName}"></span>
