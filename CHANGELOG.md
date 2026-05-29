@@ -5,6 +5,8 @@
 
 ---
 
+2026-05-29 | calendar | feat: 투입 캘린더 2모드 리디자인 — 캘린더 뷰(현재 진행중 프로젝트 목록·잔여일 배지) + 인력 현황 뷰(투입중/미투입 테이블·통계 카드), 모드 탭 localStorage 유지
+
 ## UI 디자인 개선 — 색상 통일·버그 수정·리디자인 계획
 
 2026-05-28 | refactor | refactor: 리팩토링 1단계 — PasswordValidator 공통 유틸, DocumentPreviewResolver @Component, DocumentUploadService private helper 분리
