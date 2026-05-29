@@ -25,9 +25,9 @@ public class SettingsService {
     }
 
     @Transactional
-    public void updateProfile(Long userId, String name, String phone, LocalDate birthDate, String address) {
+    public void updateProfile(Long userId, String name, String phone, LocalDate birthDate, String address, LocalDate joinDate) {
         User user = userRepository.findById(userId).orElseThrow();
-        user.updateProfile(name, phone, birthDate, address);
+        user.updateProfile(name, phone, birthDate, address, joinDate);
     }
 
     @Transactional

@@ -54,6 +54,16 @@ public class ProjectAssignmentService {
         return assignmentRepository.findByUserId(userId);
     }
 
+    /** 대시보드 개인 현황: 해당 사용자의 ACTIVE + PLANNED 배정, 시작일 오름차순 */
+    @Transactional(readOnly = true)
+    public List<ProjectAssignment> findActiveAndPlannedForUser(Long userId) {
+        return assignmentRepository.findByUserId(userId).stream()
+                .filter(pa -> pa.getStatus() == AssignmentStatus.ACTIVE
+                           || pa.getStatus() == AssignmentStatus.PLANNED)
+                .sorted(java.util.Comparator.comparing(ProjectAssignment::getStartDate))
+                .toList();
+    }
+
     /** 인력표용: userId → 오늘 기준 첫 번째 ACTIVE 배정 (없으면 null) */
     @Transactional(readOnly = true)
     public Map<Long, ProjectAssignment> getActiveAssignmentsByUserId() {

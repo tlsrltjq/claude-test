@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>가입 허용 이메일 — eActive Resource Hub</title>
+    <title>허용 이메일 관리 — eActive Resource Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
@@ -20,7 +20,7 @@
       <!-- 페이지 헤더 -->
       <div class="page-hd">
         <div>
-          <h1 class="page-hd-title"><i class="bi bi-envelope-check me-2"></i>가입 허용 이메일 관리</h1>
+          <h1 class="page-hd-title"><i class="bi bi-envelope-check-fill me-2"></i>허용 이메일 관리</h1>
           <p class="page-hd-sub">여기에 등록된 이메일만 회원가입이 가능합니다.</p>
         </div>
       </div>
@@ -34,77 +34,128 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
 
-      <!-- 이메일 등록 폼 -->
-      <div class="card mb-4">
-        <div class="card-body p-4">
-          <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-1 text-primary"></i>이메일 등록</h6>
-          <form th:action="@{/admin/allowed-emails}" method="post" class="row g-2 align-items-end">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <div class="col-sm-5">
-              <label class="form-label small fw-semibold">이메일 <span class="text-danger">*</span></label>
-              <input type="email" name="email" class="form-control form-control-sm"
-                     placeholder="example@company.com" required autofocus>
-            </div>
-            <div class="col-sm-5">
-              <label class="form-label small fw-semibold">메모 <span class="text-muted">(선택)</span></label>
-              <input type="text" name="note" class="form-control form-control-sm"
-                     placeholder="부서명, 사번 등">
-            </div>
-            <div class="col-sm-2">
-              <button type="submit" class="btn btn-primary btn-sm w-100">
-                <i class="bi bi-plus me-1"></i>등록
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+      <div class="row g-4">
 
-      <!-- 등록된 이메일 목록 -->
-      <div class="card">
-        <div class="card-body p-0">
-          <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
-            <span class="fw-semibold small">
-              <i class="bi bi-list-check me-1"></i>
-              등록된 이메일
-              <span class="badge bg-primary rounded-pill ms-1" th:text="${#lists.size(allowedEmails)}">0</span>
-            </span>
+        <!-- 왼쪽: 등록 영역 -->
+        <div class="col-lg-5">
+
+          <!-- 단건 등록 -->
+          <div class="settings-card mb-3">
+            <div class="tab-content-area" style="padding:1.25rem 1.5rem;">
+              <div class="section-hd mb-3"><i class="bi bi-plus-circle-fill me-1 text-primary"></i>이메일 등록</div>
+              <form th:action="@{/admin/allowed-emails}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">이메일 <span class="text-danger">*</span></label>
+                  <input type="email" name="email" class="form-control"
+                         placeholder="example@company.com" required autofocus autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-plus me-1"></i>등록
+                </button>
+              </form>
+            </div>
           </div>
-          <div th:if="${#lists.isEmpty(allowedEmails)}" class="text-center text-muted py-5">
-            <i class="bi bi-inbox" style="font-size:2rem;"></i>
-            <p class="mt-2 mb-0 small">등록된 이메일이 없습니다.</p>
+
+          <!-- 일괄 등록 (텍스트) -->
+          <div class="settings-card mb-3">
+            <div class="tab-content-area" style="padding:1.25rem 1.5rem;">
+              <div class="section-hd mb-1"><i class="bi bi-list-ul me-1 text-teal"></i>일괄 등록 — 직접 입력</div>
+              <p class="text-muted small mb-3">쉼표, 공백, 줄바꿈으로 구분해 여러 이메일을 한 번에 입력하세요.</p>
+              <form th:action="@{/admin/allowed-emails/bulk}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="mb-3">
+                  <textarea name="emails" class="form-control" rows="5"
+                            placeholder="hong@company.com&#10;kim@company.com, lee@company.com&#10;park@company.com"></textarea>
+                </div>
+                <button type="submit" class="btn btn-outline-primary w-100">
+                  <i class="bi bi-upload me-1"></i>일괄 등록
+                </button>
+              </form>
+            </div>
           </div>
-          <table th:unless="${#lists.isEmpty(allowedEmails)}" class="table table-hover table-sm mb-0">
-            <thead class="table-light">
-              <tr>
-                <th class="ps-3" style="width:40%">이메일</th>
-                <th style="width:35%">메모</th>
-                <th style="width:18%">등록일</th>
-                <th style="width:7%"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="ae : ${allowedEmails}">
-                <td class="ps-3">
-                  <span class="fw-semibold" th:text="${ae.email}"></span>
-                </td>
-                <td class="text-muted small" th:text="${ae.note != null ? ae.note : '-'}"></td>
-                <td class="text-muted small"
-                    th:text="${#temporals.format(ae.createdAt, 'yyyy-MM-dd')}"></td>
-                <td class="text-end pe-3">
-                  <form th:action="@{'/admin/allowed-emails/' + ${ae.id} + '/delete'}"
-                        method="post"
-                        onsubmit="return confirm('이 이메일 등록을 삭제하시겠습니까?')">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2">
-                      <i class="bi bi-trash3"></i>
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
+          <!-- 일괄 등록 (엑셀) -->
+          <div class="settings-card">
+            <div class="tab-content-area" style="padding:1.25rem 1.5rem;">
+              <div class="section-hd mb-1"><i class="bi bi-file-earmark-excel-fill me-1 text-success"></i>일괄 등록 — 엑셀 파일</div>
+              <p class="text-muted small mb-3">첫 번째 열에 이메일 주소가 있는 .xlsx / .xls 파일을 업로드하세요.</p>
+              <form th:action="@{/admin/allowed-emails/bulk-excel}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="mb-3">
+                  <input type="file" name="file" class="form-control"
+                         accept=".xlsx,.xls" required>
+                </div>
+                <button type="submit" class="btn btn-outline-success w-100">
+                  <i class="bi bi-file-earmark-arrow-up me-1"></i>엑셀 업로드
+                </button>
+              </form>
+            </div>
+          </div>
+
         </div>
-      </div>
+
+        <!-- 오른쪽: 등록된 목록 -->
+        <div class="col-lg-7">
+          <div class="settings-card">
+            <div class="tab-content-area p-0">
+
+              <div class="d-flex align-items-center justify-content-between px-4 py-3"
+                   style="border-bottom:1px solid var(--border);">
+                <span class="fw-semibold">
+                  <i class="bi bi-list-check me-1"></i>
+                  등록된 이메일
+                  <span class="badge bg-primary rounded-pill ms-1"
+                        th:text="${#lists.size(allowedEmails)}">0</span>
+                </span>
+                <div class="input-group input-group-sm" style="width:200px;">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input type="text" id="searchInput" class="form-control"
+                         placeholder="검색..." oninput="filterList(this.value)">
+                </div>
+              </div>
+
+              <div th:if="${#lists.isEmpty(allowedEmails)}" class="text-center text-muted py-5">
+                <i class="bi bi-inbox" style="font-size:2rem;opacity:.4;"></i>
+                <p class="mt-2 mb-0 small">등록된 이메일이 없습니다.</p>
+              </div>
+
+              <div th:unless="${#lists.isEmpty(allowedEmails)}" style="max-height:620px;overflow-y:auto;">
+                <table class="table table-hover table-sm mb-0" id="emailTable">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th class="ps-4" style="width:55%">이메일</th>
+                      <th style="width:30%">등록일</th>
+                      <th style="width:15%"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="ae : ${allowedEmails}">
+                      <td class="ps-4">
+                        <span class="fw-semibold small" th:text="${ae.email}"></span>
+                      </td>
+                      <td class="text-muted small align-middle"
+                          th:text="${#temporals.format(ae.createdAt, 'yyyy.MM.dd')}"></td>
+                      <td class="text-end pe-3 align-middle">
+                        <form th:action="@{'/admin/allowed-emails/' + ${ae.id} + '/delete'}"
+                              method="post"
+                              onsubmit="return confirm('이 이메일을 허용 목록에서 제거하시겠습니까?')">
+                          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                          <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2">
+                            <i class="bi bi-trash3"></i>
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.row -->
 
     </div><!-- /.page-wrap -->
   </main>
@@ -116,17 +167,25 @@
     <span class="visually-hidden">처리 중...</span>
   </div>
 </div>
-<script>
-(function(){
-    document.querySelectorAll('form').forEach(function(f){
-        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
-            f.addEventListener('submit',function(){
-                document.getElementById('loadingOverlay').style.display='flex';
-            });
-        }
-    });
-})();
-</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('form').forEach(function(f) {
+    if ((f.getAttribute('method') || 'get').toLowerCase() !== 'get') {
+        f.addEventListener('submit', function() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        });
+    }
+});
+
+function filterList(q) {
+    var rows = document.querySelectorAll('#emailTable tbody tr');
+    var lower = q.toLowerCase();
+    rows.forEach(function(row) {
+        var email = row.querySelector('td span') ? row.querySelector('td span').textContent.toLowerCase() : '';
+        row.style.display = email.includes(lower) ? '' : 'none';
+    });
+}
+</script>
 </body>
 </html>

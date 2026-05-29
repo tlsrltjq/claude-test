@@ -113,6 +113,10 @@
                       <span class="info-label">주소</span>
                       <span class="info-val" th:text="${user.address != null and !#strings.isEmpty(user.address) ? user.address : '-'}">-</span>
                   </div>
+                  <div class="info-row">
+                      <span class="info-label">입사일</span>
+                      <span class="info-val" th:text="${user.joinDate != null ? #temporals.format(user.joinDate, 'yyyy년 MM월 dd일') : '-'}">-</span>
+                  </div>
 
                   <div class="mt-4 d-flex gap-2">
                       <a th:href="@{/settings(tab='profile')}" class="btn btn-primary btn-sm">
@@ -147,6 +151,11 @@
                           <label class="form-label">생년월일</label>
                           <input type="date" name="birthDate" class="form-control"
                                  th:value="${user.birthDate != null ? #temporals.format(user.birthDate, 'yyyy-MM-dd') : ''}">
+                      </div>
+                      <div class="mb-3">
+                          <label class="form-label">입사일 <span class="text-muted" style="font-size:.82rem">(선택)</span></label>
+                          <input type="date" name="joinDate" class="form-control"
+                                 th:value="${user.joinDate != null ? #temporals.format(user.joinDate, 'yyyy-MM-dd') : ''}">
                       </div>
                       <div class="mb-3">
                           <label class="form-label">주소</label>

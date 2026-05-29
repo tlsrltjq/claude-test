@@ -59,6 +59,9 @@ public class User extends BaseEntity {
     @Column(length = 255)
     private String address;
 
+    @Column(name = "join_date")
+    private LocalDate joinDate;
+
     public static User create(String loginId, String encodedPassword, String name,
                                String email, Team team, Position position,
                                LocalDate birthDate, String phone) {
@@ -110,10 +113,11 @@ public class User extends BaseEntity {
         this.password = encodedPassword;
     }
 
-    public void updateProfile(String name, String phone, LocalDate birthDate, String address) {
+    public void updateProfile(String name, String phone, LocalDate birthDate, String address, LocalDate joinDate) {
         if (name != null && !name.isBlank()) this.name = name;
         if (phone != null) this.phone = phone;
         if (birthDate != null) this.birthDate = birthDate;
         if (address != null) this.address = address;
+        if (joinDate != null) this.joinDate = joinDate;
     }
 }

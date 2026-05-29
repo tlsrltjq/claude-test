@@ -19,9 +19,9 @@
 | 투입 관리 | 캘린더(`/sales/calendar`), 프로젝트 CRUD·멤버 관리, 배정 삭제, 대시보드 통계, 프로젝트 바(bar) 렌더링, 하단 프로젝트 리스트 |
 | 관리자 | 직원·팀·문서 검토·통계·재직증명서·파일 GC·이메일 허용 목록 |
 
-기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V223 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
+기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V226 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-29):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. 이번 세션 완료 항목: 전사인력조회 페이징(30명)·정렬 시각화·직원문서목록 카드/리스트 뷰, 인력표 등급 카드→인라인 통계(초기화 옆)·투입 정보 한 줄화·프리셋 선택 복원·미설정 등급 지원, 기술등급 산출 직원 선택 autocomplete 드롭다운 교체.
+**현재 상태 (2026-05-29):** Flyway V226. BUILD SUCCESSFUL. security-lint 15/15 PASS. 이번 세션 완료 항목: join_date(입사일) 필드 추가(회원가입·설정·재직증명서 연동), 대시보드 전면 개선(내 프로젝트 현황·영업 KPI 재배치·관리자 메뉴 4종), 계정 삭제 FK 전면 수정(project_assignments SET NULL + 이름 스냅샷·누락 FK 6개 수정), 허용 이메일 일괄 등록(텍스트·엑셀) + 화면 개선.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 

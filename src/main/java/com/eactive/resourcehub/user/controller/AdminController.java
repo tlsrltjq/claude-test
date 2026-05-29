@@ -366,14 +366,37 @@ public class AdminController {
 
     @PostMapping("/allowed-emails")
     public String addAllowedEmail(@RequestParam String email,
-                                  @RequestParam(required = false) String note,
                                   @AuthenticationPrincipal CustomUserDetails actor,
                                   RedirectAttributes ra) {
         try {
-            emailAllowlistService.add(email, note, actor.getUser().getId());
+            emailAllowlistService.add(email, null, actor.getUser().getId());
             ra.addFlashAttribute("successMessage", "이메일을 등록했습니다: " + email);
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/allowed-emails";
+    }
+
+    @PostMapping("/allowed-emails/bulk")
+    public String addAllowedEmailsBulkText(@RequestParam(required = false) String emails,
+                                           @AuthenticationPrincipal CustomUserDetails actor,
+                                           RedirectAttributes ra) {
+        EmailAllowlistService.BulkResult result = emailAllowlistService.addBulk(emails, actor.getUser().getId());
+        ra.addFlashAttribute("successMessage",
+                result.added() + "개 등록 완료" + (result.skipped() > 0 ? " (" + result.skipped() + "개 건너뜀)" : ""));
+        return "redirect:/admin/allowed-emails";
+    }
+
+    @PostMapping("/allowed-emails/bulk-excel")
+    public String addAllowedEmailsBulkExcel(@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+                                             @AuthenticationPrincipal CustomUserDetails actor,
+                                             RedirectAttributes ra) {
+        try {
+            EmailAllowlistService.BulkResult result = emailAllowlistService.addBulkFromExcel(file, actor.getUser().getId());
+            ra.addFlashAttribute("successMessage",
+                    result.added() + "개 등록 완료" + (result.skipped() > 0 ? " (" + result.skipped() + "개 건너뜀)" : ""));
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "엑셀 파일 처리 중 오류: " + e.getMessage());
         }
         return "redirect:/admin/allowed-emails";
     }

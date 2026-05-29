@@ -62,7 +62,7 @@ public class CertificateService {
                         m.put("team", e.team() != null ? e.team() : "");
                         m.put("position", e.position() != null ? e.position() : "");
                         m.put("address", e.address() != null ? e.address() : "");
-                        m.put("joinDate", "");
+                        m.put("joinDate", e.joinDate() != null ? e.joinDate() : "");
                         return m;
                     })
                     .toList();
@@ -152,5 +152,5 @@ public class CertificateService {
     public record CertificateResult(List<String> success, List<String> failed) {}
 
     /** 직원 정보 DTO — 재직증명서 발급 시 사용 */
-    public record EmployeeInfo(String name, String team, String position, String address) {}
+    public record EmployeeInfo(String name, String team, String position, String address, String joinDate) {}
 }

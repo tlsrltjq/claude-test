@@ -130,13 +130,16 @@ public class CertificateController {
                 .toList();
     }
 
+    private static final DateTimeFormatter JOIN_DATE_FMT = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
+
     private CertificateService.EmployeeInfo toEmployeeInfo(User user, String fallbackName) {
         if (user == null) {
-            return new CertificateService.EmployeeInfo(fallbackName, null, null, null);
+            return new CertificateService.EmployeeInfo(fallbackName, null, null, null, null);
         }
         String team = user.getTeam() != null ? user.getTeam().getName() : null;
         String position = user.getPosition() != null ? user.getPosition().getDisplayName() : null;
+        String joinDate = user.getJoinDate() != null ? user.getJoinDate().format(JOIN_DATE_FMT) : null;
         return new CertificateService.EmployeeInfo(
-                user.getName(), team, position, user.getAddress());
+                user.getName(), team, position, user.getAddress(), joinDate);
     }
 }

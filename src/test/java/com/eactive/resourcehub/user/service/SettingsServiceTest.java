@@ -49,7 +49,7 @@ class SettingsServiceTest {
 
         assertDoesNotThrow(() ->
                 service.updateProfile(1L, "이순신", "010-9999-9999",
-                        LocalDate.of(1991, 5, 15), "서울시 강남구"));
+                        LocalDate.of(1991, 5, 15), "서울시 강남구", null));
 
         assertEquals("이순신", user.getName());
         assertEquals("010-9999-9999", user.getPhone());
@@ -60,7 +60,7 @@ class SettingsServiceTest {
     void 이름_null이면_기존_이름_유지() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        service.updateProfile(1L, null, null, null, null);
+        service.updateProfile(1L, null, null, null, null, null);
 
         assertEquals("홍길동", user.getName());
     }

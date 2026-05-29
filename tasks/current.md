@@ -68,16 +68,13 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-29: UX 개선 다수 완료. BUILD SUCCESSFUL. security-lint 15/15 PASS.
+2026-05-29: 기능 개선 다수 완료. Flyway V226. BUILD SUCCESSFUL.
 
 완료 항목:
-- 전사인력조회(/sales/members): 아바타 제거, 행 축소, 서버사이드 페이징(30명), 정렬 시각화
-- 직원문서목록(/sales/members/N/documents): 카드/리스트 뷰 토글 (localStorage: memberDocView)
-- 인력표(/sales/profiles): 등급 카드 제거 → 초기화 버튼 옆 인라인 통계, 투입 정보 한 줄화(~MM/dd만), 프리셋 선택 localStorage 복원, ZIP 옆 구분선+프리셋 이동, 저장 패널 한 줄, 미설정 등급 필터/통계 추가
-- 기술등급 산출(/sales/career-calculator): 직원 선택 스크롤 리스트 → autocomplete 드롭다운 (키보드 탐색, DOM 빌드, 자동 복원)
-- 경력계산기 결과 화면: 배너 내 career stats(총 경력·총 일수·인정 일수), 비교 카드 side-by-side, 상세 테이블 상태 컬럼 제거
-- 관리자 직원관리(/admin/employees): 아바타 제거, 행 압축, 페이징 30명, 서버사이드 정렬(이름·직급·권한·상태), 토글 버튼 폭 통일
-- 관리자 팀관리(/admin/teams): 2컬럼 레이아웃(sticky 추가 폼 좌 + 컴팩트 테이블 우), 팀아이콘 제거
-- 관리자 문서검토(/admin/documents-review): 파일유형 아이콘, 팀 배지 직원명 하단, 미리보기+검토 버튼, 날짜 yy.MM.dd, 상태 컬럼 제거
+- join_date(입사일) 필드: V225 마이그레이션, User 엔티티, 회원가입(선택)·설정 편집·재직증명서 {{입사일}} 연동
+- 대시보드(/dashboard): 내 프로젝트 현황 카드(모든 권한), 영업 메뉴 버튼 우선→KPI 아래, KPI 4종 아이콘+컬러 재디자인, 종료임박 프로젝트명 우선 레이아웃, 관리자 메뉴 4종(재직증명서·허용이메일 추가)
+- 계정 삭제 FK 전면 수정(V226): project_assignments → SET NULL + user_name 스냅샷(이름 보존), 누락 FK 6개(email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL)
+- ProjectAssignment.getDisplayName(): user null 시 userName 스냅샷 fallback, 관련 템플릿(dashboard·project-detail) 적용
+- 허용 이메일(/admin/allowed-emails): 단건·텍스트 일괄(쉼표·줄바꿈)·엑셀(.xlsx/.xls) 일괄 등록, 메모 제거, 2컬럼 레이아웃·목록 내 검색 필터
 
 **다음 작업 없음 — 사용자 지시 대기**

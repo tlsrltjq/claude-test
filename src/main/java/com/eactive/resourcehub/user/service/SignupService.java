@@ -28,6 +28,7 @@ import java.util.Random;
 public class SignupService {
 
     private static final DateTimeFormatter BIRTH_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final DateTimeFormatter JOIN_FMT  = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
@@ -70,11 +71,14 @@ public class SignupService {
                 ? teamRepository.findById(request.getTeamId()).orElse(null)
                 : null;
         String encodedPassword = passwordEncoder.encode(request.getPassword());
+        LocalDate joinDate = parseJoinDate(request.getJoinDateStr());
         User user = User.create(email, encodedPassword, request.getName(), email, team,
                 request.getPosition(), birthDate, request.getPhone());
         user.verifyEmail();
-        if (request.getAddress() != null && !request.getAddress().isBlank()) {
-            user.updateProfile(null, null, null, request.getAddress());
+        if (request.getAddress() != null && !request.getAddress().isBlank() || joinDate != null) {
+            user.updateProfile(null, null, null,
+                    (request.getAddress() != null && !request.getAddress().isBlank()) ? request.getAddress() : null,
+                    joinDate);
         }
         userRepository.save(user);
         if (!folderRepository.existsByOwnerIdAndType(user.getId(), FolderType.PERSONAL)) {
@@ -97,6 +101,19 @@ public class SignupService {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
         PasswordValidator.validate(request.getPassword());
+    }
+
+    private LocalDate parseJoinDate(String joinDateStr) {
+        if (joinDateStr == null || joinDateStr.isBlank()) return null;
+        String digits = joinDateStr.replace(".", "");
+        if (!digits.matches("\\d{8}")) return null;
+        try {
+            LocalDate date = LocalDate.parse(digits, JOIN_FMT);
+            if (date.isBefore(LocalDate.of(1900, 1, 1)) || date.isAfter(LocalDate.now())) return null;
+            return date;
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
     private LocalDate parseBirthDate(String birthDateStr) {

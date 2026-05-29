@@ -21,8 +21,11 @@ public class ProjectAssignment extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
+
+    @Column(name = "user_name", length = 100)
+    private String userName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
@@ -47,12 +50,19 @@ public class ProjectAssignment extends BaseEntity {
         ProjectAssignment pa = new ProjectAssignment();
         pa.project   = project;
         pa.user      = user;
+        pa.userName  = user.getName();
         pa.role      = role;
         pa.startDate = startDate;
         pa.endDate   = endDate;
         pa.status    = LocalDate.now().isBefore(startDate)
                        ? AssignmentStatus.PLANNED : AssignmentStatus.ACTIVE;
         return pa;
+    }
+
+    /** 표시용 이름: 계정 삭제 후에도 스냅샷 이름으로 표시 */
+    public String getDisplayName() {
+        if (user != null) return user.getName();
+        return userName != null ? userName : "(삭제된 계정)";
     }
 
     /** 멤버 개인 기간·역할 수정 (ProjectService 전용). */

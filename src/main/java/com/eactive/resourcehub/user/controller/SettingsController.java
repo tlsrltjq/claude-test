@@ -39,8 +39,9 @@ public class SettingsController {
                                 @RequestParam(required = false) String phone,
                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDate,
                                 @RequestParam(required = false) String address,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate joinDate,
                                 RedirectAttributes redirectAttributes) {
-        settingsService.updateProfile(userDetails.getUser().getId(), name, phone, birthDate, address);
+        settingsService.updateProfile(userDetails.getUser().getId(), name, phone, birthDate, address, joinDate);
         redirectAttributes.addFlashAttribute("successMessage", "개인정보가 저장되었습니다.");
         return "redirect:/settings?tab=profile";
     }

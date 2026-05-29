@@ -99,65 +99,49 @@
         </a>
       </div>
 
+      <!-- ── 내 프로젝트 현황 (모든 권한) ── -->
+      <div class="section-hd"><i class="bi bi-kanban-fill me-1 text-primary"></i>내 프로젝트 현황</div>
+      <div class="dash-project-card mb-4">
+        <div th:if="${myAssignments != null and !#lists.isEmpty(myAssignments)}">
+          <div th:each="pa : ${myAssignments}" class="dash-pa-row">
+            <div class="dash-pa-status">
+              <span th:if="${pa.status.name() == 'ACTIVE'}"
+                    class="badge rounded-pill" style="background:#16a34a;font-size:.7rem;">투입 중</span>
+              <span th:if="${pa.status.name() == 'PLANNED'}"
+                    class="badge rounded-pill bg-primary" style="font-size:.7rem;">투입 예정</span>
+            </div>
+            <div class="dash-pa-project" th:text="${pa.project.name}">프로젝트명</div>
+            <div class="dash-pa-role" th:if="${pa.role != null and !#strings.isEmpty(pa.role)}"
+                 th:text="${pa.role}">역할</div>
+            <div class="dash-pa-period">
+              <i class="bi bi-calendar3 me-1"></i>
+              <span th:text="${#temporals.format(pa.startDate,'yyyy.MM.dd')}"></span>
+              <span class="mx-1">~</span>
+              <span th:text="${#temporals.format(pa.endDate,'yyyy.MM.dd')}"></span>
+            </div>
+            <div class="dash-pa-remaining"
+                 th:if="${pa.status.name() == 'ACTIVE'}"
+                 th:classappend="${pa.remainingDays() <= 14} ? 'text-warning fw-semibold' : 'text-muted'">
+              <span th:text="${pa.remainingDays() + '일 남음'}"></span>
+            </div>
+            <div class="dash-pa-remaining text-muted"
+                 th:if="${pa.status.name() == 'PLANNED'}">
+              <span th:text="${'D-' + T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), pa.startDate)}"></span>
+            </div>
+          </div>
+        </div>
+        <div th:if="${myAssignments == null or #lists.isEmpty(myAssignments)}" class="dash-pa-empty">
+          <i class="bi bi-inbox me-1 text-muted"></i>
+          <span class="text-muted">현재 투입된 프로젝트가 없습니다.</span>
+        </div>
+      </div>
+
       <!-- ── 영업·인력 (SALES, ADMIN) ── -->
       <div th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}">
 
         <div class="section-hd mt-2"><i class="bi bi-bar-chart-line-fill me-1 text-primary"></i>영업·인력</div>
 
-        <!-- 투입 현황 KPI -->
-        <div th:if="${deployStats != null}" class="kpi-row mb-3">
-          <a th:href="@{/sales/calendar(status='ACTIVE')}" class="kpi-card" style="border-left-color:#16a34a;">
-            <div class="kpi-value" style="color:#16a34a;" th:text="${deployStats.currentlyDeployed}">0</div>
-            <div class="kpi-info">
-              <div class="kpi-label">현재 투입 중</div>
-              <div class="kpi-link" style="color:#16a34a;">캘린더 보기 →</div>
-            </div>
-          </a>
-          <a th:href="@{/sales/calendar(status='PLANNED')}" class="kpi-card">
-            <div class="kpi-value" th:text="${deployStats.startingThisMonth}">0</div>
-            <div class="kpi-info">
-              <div class="kpi-label">이번달 투입 예정</div>
-              <div class="kpi-link">캘린더 보기 →</div>
-            </div>
-          </a>
-          <a th:href="@{/sales/calendar}" class="kpi-card" style="border-left-color:#d97706;">
-            <div class="kpi-value" style="color:#d97706;" th:text="${deployStats.endingThisMonth}">0</div>
-            <div class="kpi-info">
-              <div class="kpi-label">이번달 종료 예정</div>
-              <div class="kpi-link" style="color:#d97706;">확인하기 →</div>
-            </div>
-          </a>
-        </div>
-
-        <!-- 종료 임박 -->
-        <div class="ending-soon-card mb-3">
-          <div class="esc-header">
-            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-            종료 14일 이내
-            <span class="ms-auto fw-normal text-muted"
-                  th:text="${#lists.isEmpty(endingSoon) ? '' : (#lists.size(endingSoon) + '건')}"></span>
-          </div>
-          <div th:each="pa, paStat : ${endingSoon}" th:if="${paStat.index < 5}">
-            <div class="esc-row">
-              <span class="esc-name" th:text="${pa.user.name}">이름</span>
-              <span class="esc-project" th:text="${pa.project.name}">프로젝트</span>
-              <span class="esc-days"
-                    th:classappend="${pa.remainingDays() <= 7} ? 'urgent' : 'warning'"
-                    th:text="${pa.remainingDays() + '일'}">D</span>
-            </div>
-          </div>
-          <div th:if="${#lists.isEmpty(endingSoon)}" class="esc-empty">
-            <i class="bi bi-check-circle me-1 text-success"></i>종료 임박 배정 없음
-          </div>
-          <div class="esc-footer">
-            <span th:if="${#lists.size(endingSoon) > 5}" class="text-muted me-2"
-                  style="font-size:.72rem;"
-                  th:text="${'외 ' + (#lists.size(endingSoon) - 5) + '건'}"></span>
-            <a th:href="@{/sales/calendar}">캘린더에서 전체 보기 <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </div>
-
-        <!-- 영업 메뉴 -->
+        <!-- 영업 메뉴 먼저 -->
         <div class="menu-grid mb-4">
           <a th:href="@{/sales/members}" class="menu-item mi-indigo">
             <div class="icon-wrap"><i class="bi bi-person-lines-fill"></i></div>
@@ -180,6 +164,75 @@
             <span class="desc">기술등급 자동 산출</span>
           </a>
         </div>
+
+        <!-- 투입 현황 KPI -->
+        <div th:if="${deployStats != null}" class="mb-3">
+          <div class="dash-kpi-row">
+            <a th:href="@{/sales/calendar(status='ACTIVE')}" class="dash-kpi-card dash-kpi-green">
+              <div class="dash-kpi-icon"><i class="bi bi-people-fill"></i></div>
+              <div class="dash-kpi-body">
+                <div class="dash-kpi-num" th:text="${deployStats.currentlyDeployed}">0</div>
+                <div class="dash-kpi-label">현재 투입 중</div>
+              </div>
+            </a>
+            <a th:href="@{/sales/calendar(status='PLANNED')}" class="dash-kpi-card dash-kpi-blue">
+              <div class="dash-kpi-icon"><i class="bi bi-calendar-plus-fill"></i></div>
+              <div class="dash-kpi-body">
+                <div class="dash-kpi-num" th:text="${deployStats.startingThisMonth}">0</div>
+                <div class="dash-kpi-label">이번 달 신규 투입</div>
+              </div>
+            </a>
+            <a th:href="@{/sales/calendar}" class="dash-kpi-card dash-kpi-amber">
+              <div class="dash-kpi-icon"><i class="bi bi-calendar-x-fill"></i></div>
+              <div class="dash-kpi-body">
+                <div class="dash-kpi-num" th:text="${deployStats.endingThisMonth}">0</div>
+                <div class="dash-kpi-label">이번 달 종료 예정</div>
+              </div>
+            </a>
+            <div class="dash-kpi-card dash-kpi-muted" style="cursor:default;">
+              <div class="dash-kpi-icon"><i class="bi bi-person-dash-fill"></i></div>
+              <div class="dash-kpi-body">
+                <div class="dash-kpi-num" th:text="${deployStats.notDeployed}">0</div>
+                <div class="dash-kpi-label">미투입 인원</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 종료 임박 -->
+        <div class="ending-soon-card mb-4">
+          <div class="esc-header">
+            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+            종료 14일 이내
+            <span class="ms-auto fw-normal text-muted small"
+                  th:text="${#lists.isEmpty(endingSoon) ? '' : (#lists.size(endingSoon) + '건')}"></span>
+          </div>
+          <div th:each="pa, paStat : ${endingSoon}" th:if="${paStat.index < 5}">
+            <div class="esc-row">
+              <div class="esc-info">
+                <span class="esc-project fw-semibold" th:text="${pa.project.name}">프로젝트</span>
+                <span class="esc-name text-muted ms-2" th:text="${pa.displayName}">이름</span>
+              </div>
+              <div class="esc-meta">
+                <span class="text-muted small me-2"
+                      th:text="${#temporals.format(pa.endDate,'MM.dd')} + ' 종료'"></span>
+                <span class="esc-days"
+                      th:classappend="${pa.remainingDays() <= 7} ? 'urgent' : 'warning'"
+                      th:text="${'D-' + pa.remainingDays()}">D-7</span>
+              </div>
+            </div>
+          </div>
+          <div th:if="${#lists.isEmpty(endingSoon)}" class="esc-empty">
+            <i class="bi bi-check-circle me-1 text-success"></i>종료 임박 배정 없음
+          </div>
+          <div class="esc-footer">
+            <span th:if="${#lists.size(endingSoon) > 5}" class="text-muted me-2"
+                  style="font-size:.72rem;"
+                  th:text="${'외 ' + (#lists.size(endingSoon) - 5) + '건'}"></span>
+            <a th:href="@{/sales/calendar}">캘린더에서 전체 보기 <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+
       </div>
 
       <!-- ── 관리자 (ADMIN) ── -->
@@ -195,6 +248,16 @@
             <div class="icon-wrap"><i class="bi bi-graph-up-arrow"></i></div>
             <span class="label">통계</span>
             <span class="desc">업로드·활동 현황</span>
+          </a>
+          <a th:href="@{/admin/certificate}" class="menu-item mi-teal">
+            <div class="icon-wrap"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <span class="label">재직증명서</span>
+            <span class="desc">발급 및 파일 관리</span>
+          </a>
+          <a th:href="@{/admin/allowed-emails}" class="menu-item mi-gray">
+            <div class="icon-wrap"><i class="bi bi-envelope-check-fill"></i></div>
+            <span class="label">허용 이메일</span>
+            <span class="desc">가입 허용 도메인 관리</span>
           </a>
         </div>
       </div>

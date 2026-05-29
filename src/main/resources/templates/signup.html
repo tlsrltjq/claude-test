@@ -54,6 +54,15 @@
               </div>
           </div>
 
+          <!-- 입사일 -->
+          <div class="mb-3">
+              <label for="joinDateDisplay" class="form-label">입사일 <span class="text-muted" style="font-size:.82rem">(선택)</span></label>
+              <input type="text" id="joinDateDisplay"
+                     class="form-control"
+                     placeholder="2020.03.02" maxlength="10" inputmode="numeric">
+              <input type="hidden" id="joinDateStr" th:field="*{joinDateStr}">
+          </div>
+
           <!-- 연락처 -->
           <div class="mb-3">
               <label for="phone" class="form-label">연락처 <span style="color:#dc3545">*</span></label>
@@ -240,6 +249,22 @@ document.getElementById('pwToggle').addEventListener('click', function () {
     });
 })();
 
+/* 입사일 자동 점(.) */
+(function () {
+    var display = document.getElementById('joinDateDisplay');
+    var hidden  = document.getElementById('joinDateStr');
+    if (!display || !hidden) return;
+    display.addEventListener('input', function () {
+        var digits = this.value.replace(/\D/g, '').slice(0, 8);
+        var v = '';
+        if (digits.length <= 4)      v = digits;
+        else if (digits.length <= 6) v = digits.slice(0,4) + '.' + digits.slice(4);
+        else                         v = digits.slice(0,4) + '.' + digits.slice(4,6) + '.' + digits.slice(6);
+        this.value = v;
+        hidden.value = digits;
+    });
+})();
+
 /* 폼 제출 */
 document.getElementById('signupForm').addEventListener('submit', function (e) {
     /* 생년월일 hidden 동기화 */
@@ -247,6 +272,12 @@ document.getElementById('signupForm').addEventListener('submit', function (e) {
     var hidden  = document.getElementById('birthDateStr');
     if (display && hidden) {
         hidden.value = display.value.replace(/\./g, '');
+    }
+    /* 입사일 hidden 동기화 */
+    var jDisplay = document.getElementById('joinDateDisplay');
+    var jHidden  = document.getElementById('joinDateStr');
+    if (jDisplay && jHidden) {
+        jHidden.value = jDisplay.value.replace(/\./g, '');
     }
     /* 주소 조합 */
     var road   = document.getElementById('addrRoad')   ? document.getElementById('addrRoad').value.trim()   : '';

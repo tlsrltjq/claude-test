@@ -123,12 +123,12 @@
                 <td>
                   <div class="d-flex align-items-center gap-2">
                     <div class="avatar-circle" style="background:#dbeafe;color:#1d4ed8;font-size:.75rem;font-weight:700;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
-                      <span th:text="${#strings.substring(pa.user.name, 0, 1)}">홍</span>
+                      <span th:text="${#strings.substring(pa.displayName, 0, 1)}">홍</span>
                     </div>
                     <div>
-                      <div class="fw-600" th:text="${pa.user.name}">홍길동</div>
+                      <div class="fw-600" th:text="${pa.displayName}">홍길동</div>
                       <div style="font-size:.73rem;color:#adb5bd;"
-                           th:text="${pa.user.team != null ? pa.user.team.name : '미배정'}">팀명</div>
+                           th:text="${pa.user != null and pa.user.team != null ? pa.user.team.name : '—'}">팀명</div>
                     </div>
                   </div>
                 </td>
@@ -277,7 +277,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header py-2 px-3">
-          <h6 class="modal-title fw-700" th:text="|${pa.user.name} 투입 정보 수정|">수정</h6>
+          <h6 class="modal-title fw-700" th:text="|${pa.displayName} 투입 정보 수정|">수정</h6>
           <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
         </div>
         <form th:action="@{/sales/projects/{pid}/members/{aid}/update(pid=${project.id},aid=${pa.id})}" method="post">
