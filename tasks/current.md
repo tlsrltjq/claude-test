@@ -68,15 +68,16 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-28: 리팩토링 전체 완료 (1~5단계). BUILD SUCCESSFUL. security-lint 15/15 PASS.
-- 1단계: PasswordValidator, DocumentPreviewResolver, DocumentUploadService helper 분리
-- 2단계: ResourceNotFoundException, GlobalExceptionHandler 개선 (IllegalStateException→500 버그 수정)
-- 3단계: MyFolderService N+1 제거 (findLatestVersionsByDocumentIds 배치 쿼리)
-- 4단계: DTO 검증 애너테이션 (@NotBlank/@NotNull), MethodArgumentNotValidException 핸들러
-- 5단계: PasswordValidatorTest(7), DocumentPreviewResolverTest(10) 단위 테스트
+2026-05-29: UX 개선 다수 완료. BUILD SUCCESSFUL. security-lint 15/15 PASS.
 
-**다음 작업 없음 — 리팩토링 전 단계 완료**
+완료 항목:
+- 투입 캘린더: 전체 프로젝트 리스트(ACTIVE+PLANNED+ENDED 접기), 인력현황 툴바 1줄 통합, AJAX 월 이동 슬라이드
+- 프로젝트·배정 상태 자동 전환 스케줄러 (매일 자정, ProjectStatusScheduler)
+- 내 폴더·공용 폴더: 카드/리스트 뷰 토글 (localStorage 유지), 검색바 flex 정렬 수정
+- 내 폴더 '승인됨' 배지 제거
+- 문서 상세 페이지 info-row 여백·정렬 개선, 버전 목록 스타일 정리
+- 검색 폴더 유형에서 '공유' 제거
+- 대시보드 '활동 기록' 버튼 제거 (전 역할)
+- 사이드바 접힘 상태 로그아웃 텍스트 노출 버그 수정
 
-**[메모] Phase 4 미완료 사항**: MVC PRG 패턴 컨트롤러에 @Valid 미추가.
-현재 DTO에 @NotBlank/@NotNull 애너테이션만 있고 컨트롤러에 @Valid가 없어 Bean Validation이 트리거되지 않음.
-서비스 레이어의 validate() 메서드로 검증 중. 향후 REST API 엔드포인트 추가 시 @Valid + BindingResult 패턴 적용 권장.
+**다음 작업 없음 — 사용자 지시 대기**
