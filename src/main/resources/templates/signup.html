@@ -209,15 +209,6 @@ document.getElementById('pwToggle').addEventListener('click', function () {
     }
 });
 
-/* 비밀번호 필드 복원 (서버 검증 실패 시) */
-(function () {
-    var pw  = sessionStorage.getItem('_sup_pw');
-    var pwc = sessionStorage.getItem('_sup_pwc');
-    sessionStorage.removeItem('_sup_pw');
-    sessionStorage.removeItem('_sup_pwc');
-    if (pw)  { var a = document.getElementById('password');        if (a)  a.value = pw;  }
-    if (pwc) { var b = document.getElementById('passwordConfirm'); if (b)  b.value = pwc; }
-})();
 
 /* 전화번호 자동 하이픈 */
 (function () {
@@ -291,10 +282,6 @@ document.getElementById('signupForm').addEventListener('submit', function (e) {
         return;
     }
     this.classList.add('was-validated');
-    var pwEl  = document.getElementById('password');
-    var pwcEl = document.getElementById('passwordConfirm');
-    if (pwEl && pwEl.value)   sessionStorage.setItem('_sup_pw',  pwEl.value);
-    if (pwcEl && pwcEl.value) sessionStorage.setItem('_sup_pwc', pwcEl.value);
     var btn = this.querySelector('button[type="submit"]');
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 처리 중...'; }
 });

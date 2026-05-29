@@ -17,16 +17,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Random;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SignupService {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final DateTimeFormatter BIRTH_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter JOIN_FMT  = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -59,6 +60,7 @@ public class SignupService {
 
     /**
      * 2단계: 이메일 인증 완료 후 DB에 유저 저장. status = ACTIVE (즉시 로그인 가능).
+     * password는 SignupController에서 BCrypt 해시된 상태로 전달됨 — 재인코딩 금지.
      */
     @Transactional
     public void completeSignup(SignupRequest request) {
@@ -70,7 +72,7 @@ public class SignupService {
         Team team = (request.getTeamId() != null)
                 ? teamRepository.findById(request.getTeamId()).orElse(null)
                 : null;
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        String encodedPassword = request.getPassword(); // 컨트롤러에서 이미 BCrypt 처리됨
         LocalDate joinDate = parseJoinDate(request.getJoinDateStr());
         User user = User.create(email, encodedPassword, request.getName(), email, team,
                 request.getPosition(), birthDate, request.getPhone());
@@ -85,6 +87,19 @@ public class SignupService {
             folderRepository.save(Folder.create(user, user.getName() + " 개인 폴더"));
         }
         log.info("회원가입 완료 (즉시 활성화) — email={}", email);
+    }
+
+    /** 인증 코드 재발송 (비밀번호 재검증 없이 코드만 새로 생성·발송). */
+    @Transactional(readOnly = true)
+    public String resendVerificationCode(String email) {
+        String code = generateCode();
+        try {
+            emailSender.sendVerificationCode(email.trim().toLowerCase(), code);
+        } catch (Exception e) {
+            log.warn("이메일 재발송 실패 — email={}, error={}", email, e.getMessage());
+        }
+        log.info("인증 코드 재발송 — email={}", email);
+        return code;
     }
 
     private void validateSignupRequest(SignupRequest request, String email) {
@@ -133,6 +148,6 @@ public class SignupService {
     }
 
     private String generateCode() {
-        return String.format("%06d", new Random().nextInt(1_000_000));
+        return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
     }
 }

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,12 +27,14 @@ import java.time.ZoneId;
 @RequiredArgsConstructor
 public class SignupController {
 
-    private static final String SESSION_REQUEST = "PENDING_SIGNUP_REQUEST";
-    private static final String SESSION_CODE    = "PENDING_SIGNUP_CODE";
-    private static final String SESSION_EXPIRY  = "PENDING_SIGNUP_EXPIRY";
+    private static final String SESSION_REQUEST   = "PENDING_SIGNUP_REQUEST";
+    private static final String SESSION_CODE      = "PENDING_SIGNUP_CODE";
+    private static final String SESSION_EXPIRY    = "PENDING_SIGNUP_EXPIRY";
+    private static final String SESSION_HASHED_PW = "PENDING_SIGNUP_HASHED_PW";
 
     private final SignupService signupService;
     private final TeamService teamService;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping
     public String signupForm(Model model) {
@@ -65,7 +68,12 @@ public class SignupController {
         }
         try {
             String code = signupService.initiateSignup(signupRequest);
+            // 평문 비밀번호를 세션에 저장하지 않음 — 즉시 BCrypt 해시 후 분리 보관
+            String hashedPw = passwordEncoder.encode(signupRequest.getPassword());
+            signupRequest.setPassword(null);
+            signupRequest.setPasswordConfirm(null);
             session.setAttribute(SESSION_REQUEST, signupRequest);
+            session.setAttribute(SESSION_HASHED_PW, hashedPw);
             session.setAttribute(SESSION_CODE, code);
             session.setAttribute(SESSION_EXPIRY, LocalDateTime.now().plusMinutes(10));
             return "redirect:/signup/verify";
@@ -111,8 +119,9 @@ public class SignupController {
         SignupRequest pending = (SignupRequest) session.getAttribute(SESSION_REQUEST);
         String savedCode     = (String) session.getAttribute(SESSION_CODE);
         LocalDateTime expiry = (LocalDateTime) session.getAttribute(SESSION_EXPIRY);
+        String hashedPw      = (String) session.getAttribute(SESSION_HASHED_PW);
 
-        if (pending == null || savedCode == null || expiry == null) {
+        if (pending == null || savedCode == null || expiry == null || hashedPw == null) {
             return "redirect:/signup";
         }
 
@@ -132,6 +141,7 @@ public class SignupController {
         }
 
         try {
+            pending.setPassword(hashedPw); // 해시된 비밀번호 복원 후 저장
             signupService.completeSignup(pending);
             clearPendingSession(session);
             return "redirect:/login?signup";
@@ -143,25 +153,20 @@ public class SignupController {
         }
     }
 
-    /** 인증 코드 재발송 */
+    /** 인증 코드 재발송 (비밀번호 재검증 없이 코드만 재생성) */
     @PostMapping("/resend")
     public String resend(HttpSession session, Model model) {
         SignupRequest pending = (SignupRequest) session.getAttribute(SESSION_REQUEST);
         if (pending == null) {
             return "redirect:/signup";
         }
-        try {
-            String code = signupService.initiateSignup(pending);
-            session.setAttribute(SESSION_CODE, code);
-            LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
-            session.setAttribute(SESSION_EXPIRY, expiry);
-            model.addAttribute("pendingEmail", pending.getEmail());
-            model.addAttribute("expireAt", expiry.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-            model.addAttribute("infoMessage", "인증 코드를 재발송했습니다.");
-        } catch (IllegalArgumentException e) {
-            clearPendingSession(session);
-            return "redirect:/signup";
-        }
+        String code = signupService.resendVerificationCode(pending.getEmail());
+        session.setAttribute(SESSION_CODE, code);
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+        session.setAttribute(SESSION_EXPIRY, expiry);
+        model.addAttribute("pendingEmail", pending.getEmail());
+        model.addAttribute("expireAt", expiry.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        model.addAttribute("infoMessage", "인증 코드를 재발송했습니다.");
         return "signup-verify";
     }
 
@@ -169,5 +174,6 @@ public class SignupController {
         session.removeAttribute(SESSION_REQUEST);
         session.removeAttribute(SESSION_CODE);
         session.removeAttribute(SESSION_EXPIRY);
+        session.removeAttribute(SESSION_HASHED_PW);
     }
 }
