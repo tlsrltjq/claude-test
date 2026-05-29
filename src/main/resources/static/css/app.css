@@ -615,14 +615,16 @@ nav.topnav { background: var(--accent); }
 .members-table thead th {
   background: #f1f5f9; color: #475569; font-weight: 700;
   font-size: .72rem; letter-spacing: .05em; text-transform: uppercase;
-  white-space: nowrap; padding: .65rem .85rem; border: none;
+  white-space: nowrap; padding: .5rem .85rem; border: none;
   border-bottom: 2px solid #cbd5e1;
 }
-.members-table thead th a { color: #64748b; text-decoration: none; transition: color .12s; }
-.members-table thead th a:hover { color: var(--accent); }
-.members-table tbody td { vertical-align: middle; padding: .75rem .85rem; border-color: #f0f1f3; transition: background .12s; }
+.sort-btn { background: none; border: none; padding: 0; cursor: pointer; display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #94a3b8; transition: color .12s; }
+.sort-btn:hover { color: var(--accent); }
+.sort-btn.active { color: var(--accent); }
+.sort-btn.active i { color: var(--accent); }
+.members-table tbody td { vertical-align: middle; padding: .42rem .85rem; border-color: #f0f1f3; transition: background .12s; }
 .members-table tbody tr:hover { background: #f0f6ff; }
-.member-name  { font-weight: 600; color: var(--tx1); font-size: .88rem; }
+.member-name  { font-weight: 600; color: var(--tx1); font-size: .85rem; }
 .member-email { font-size: .75rem; color: var(--tx3); }
 
 .profiles-table { font-size: .8rem; margin: 0; }

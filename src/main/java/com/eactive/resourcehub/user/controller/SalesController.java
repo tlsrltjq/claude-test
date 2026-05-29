@@ -19,18 +19,31 @@ public class SalesController {
     private final SalesMemberService salesMemberService;
     private final TeamService teamService;
 
+    private static final int PAGE_SIZE = 30;
+
     @GetMapping("/members")
     public String members(@RequestParam(required = false) String q,
                           @RequestParam(required = false) Long teamId,
-                          @RequestParam(defaultValue = "position") String sort,
+                          @RequestParam(defaultValue = "name") String sort,
                           @RequestParam(defaultValue = "asc") String direction,
+                          @RequestParam(defaultValue = "1") int page,
                           Model model) {
-        model.addAttribute("members", salesMemberService.findActiveMembers(q, teamId, sort, direction));
-        model.addAttribute("teams", teamService.findAll());
-        model.addAttribute("q", q);
-        model.addAttribute("teamId", teamId);
-        model.addAttribute("sort", sort);
-        model.addAttribute("direction", direction);
+        var all = salesMemberService.findActiveMembers(q, teamId, sort, direction);
+        int totalCount  = all.size();
+        int totalPages  = Math.max(1, (int) Math.ceil((double) totalCount / PAGE_SIZE));
+        int safePage    = Math.max(1, Math.min(page, totalPages));
+        int from        = (safePage - 1) * PAGE_SIZE;
+        int to          = Math.min(from + PAGE_SIZE, totalCount);
+
+        model.addAttribute("members",    all.subList(from, to));
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("teams",      teamService.findAll());
+        model.addAttribute("q",          q);
+        model.addAttribute("teamId",     teamId);
+        model.addAttribute("sort",       sort);
+        model.addAttribute("direction",  direction);
+        model.addAttribute("page",       safePage);
+        model.addAttribute("totalPages", totalPages);
         return "sales/members";
     }
 
