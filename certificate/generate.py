@@ -1,37 +1,47 @@
 #!/usr/bin/env python3
-"""재직증명서 자동 발급 스크립트
+"""재직증명서 자동 발급 스크립트 — 공유 양식 기반
 
-사용법:
-  python generate.py --name 홍길동          # 단건 발급
-  python generate.py --csv employees.csv   # CSV 일괄 발급
-  python generate.py --all                 # 전체 직원 발급
-  python generate.py --create 홍길동        # 기본 템플릿 생성
+양식: template/재직증명서_양식.docx (플레이스홀더 방식)
+  {{성명}}    — 직원 이름
+  {{소속}}    — 팀명 (없으면 "-")
+  {{직위}}    — 직위 (없으면 "-")
+  {{주소}}    — 주소 (없으면 "-")
+  {{입사일}}  — 입사일 (없으면 "-")
+  {{발급일자}} — 오늘 날짜 (자동)
+
+사용법 (CLI):
+  python generate.py --create              # 기본 공유 양식 생성
+  python generate.py --name 홍길동          # 이름만으로 단건 발급 (정보 없음)
 """
 
 import argparse
-import csv
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from docx import Document
-from docx.shared import Pt, Cm
+from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 BASE_DIR = Path(__file__).parent
-EMPLOYEES_DIR = BASE_DIR / "employees"
+TEMPLATE_PATH = BASE_DIR / "template" / "재직증명서_양식.docx"
 OUTPUT_DIR = BASE_DIR / "output"
 
-# 치환 가능한 플레이스홀더 목록
-# 추후 {{소속}}, {{직위}}, {{입사일}} 등을 여기에 추가
-PLACEHOLDERS = {
-    "{{발급일자}}": lambda: datetime.today().strftime("%Y년 %m월 %d일"),
-}
+# 하위 호환 — 기존 employees/ 디렉토리 (더 이상 사용하지 않음)
+EMPLOYEES_DIR = BASE_DIR / "employees"
 
 
-def _build_replacements() -> dict:
-    return {k: v() for k, v in PLACEHOLDERS.items()}
+def _build_replacements(employee: dict) -> dict:
+    today = datetime.today().strftime("%Y년 %m월 %d일")
+    return {
+        "{{성명}}":    employee.get("name", ""),
+        "{{소속}}":    employee.get("team", "-") or "-",
+        "{{직위}}":    employee.get("position", "-") or "-",
+        "{{주소}}":    employee.get("address", "-") or "-",
+        "{{입사일}}":  employee.get("joinDate", "-") or "-",
+        "{{발급일자}}": today,
+    }
 
 
 def _replace_in_doc(doc: Document, replacements: dict) -> None:
@@ -75,20 +85,27 @@ def _convert_to_pdf(docx_path: Path) -> Path:
     return docx_path.parent / (docx_path.stem + ".pdf")
 
 
-def generate_one(name: str) -> bool:
-    """단건 발급. 성공 시 True, 미등록 직원이면 False."""
-    template = EMPLOYEES_DIR / f"{name}.docx"
-    if not template.exists():
-        print(f"[SKIP] 등록되지 않은 직원: {name}")
+def generate_one(employee: dict) -> bool:
+    """단건 발급. employee = {name, team, position, address, joinDate}.
+    공유 양식이 없으면 자동 생성 후 발급.
+    성공 시 True, 실패 시 False.
+    """
+    name = (employee.get("name") or "").strip()
+    if not name:
+        print("[SKIP] 이름 없음")
         return False
+
+    if not TEMPLATE_PATH.exists():
+        print("[INFO] 공유 양식 없음 — 자동 생성")
+        create_base_template()
 
     today_str = datetime.today().strftime("%Y%m%d")
     stem = f"재직증명서_{name}_{today_str}"
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     docx_out = OUTPUT_DIR / f"{stem}.docx"
 
-    doc = Document(template)
-    _replace_in_doc(doc, _build_replacements())
+    doc = Document(TEMPLATE_PATH)
+    _replace_in_doc(doc, _build_replacements(employee))
     doc.save(docx_out)
     print(f"[OK]   DOCX: {docx_out.name}")
 
@@ -101,58 +118,30 @@ def generate_one(name: str) -> bool:
     return True
 
 
-def _run_batch(names: list) -> tuple:
+def generate_from_employees(employees: list) -> tuple:
+    """Flask API에서 직원 정보 목록을 받아 처리하는 진입점."""
     success, failed = [], []
-    for name in names:
-        (success if generate_one(name) else failed).append(name)
-    print(f"\n── 완료: 성공 {len(success)}건 / 미등록 {len(failed)}건 ──")
-    if failed:
-        print("  미등록:", ", ".join(failed))
+    for emp in employees:
+        name = (emp.get("name") or "").strip()
+        if not name:
+            continue
+        (success if generate_one(emp) else failed).append(name)
+    print(f"\n── 완료: 성공 {len(success)}건 / 실패 {len(failed)}건 ──")
     return success, failed
 
 
-def generate_from_csv(csv_path: str) -> tuple:
-    names = []
-    with open(csv_path, newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            name = row.get("이름", "").strip()
-            if name:
-                names.append(name)
-    if not names:
-        print("[INFO] CSV에서 이름을 찾을 수 없습니다. '이름' 컬럼을 확인하세요.")
-        return [], []
-    return _run_batch(names)
+def create_base_template() -> Path:
+    """공유 재직증명서 양식을 template/재직증명서_양식.docx 로 생성한다.
 
-
-def generate_from_names(names: list) -> tuple:
-    """Flask API에서 직접 이름 목록을 받아 처리하는 진입점."""
-    return _run_batch(names)
-
-
-def generate_all() -> tuple:
-    names = [p.stem for p in EMPLOYEES_DIR.glob("*.docx")]
-    if not names:
-        print("[INFO] employees/ 폴더에 템플릿이 없습니다.")
-        return [], []
-    return _run_batch(sorted(names))
-
-
-def create_template(name: str) -> Path:
-    """기본 재직증명서 템플릿을 employees/{name}.docx 로 생성한다.
-
-    {{발급일자}} 플레이스홀더만 있는 최소 구조로 생성.
-    추후 부서·직위 등 필드는 이 파일을 직접 편집해 {{필드명}} 형식으로 추가.
+    플레이스홀더: {{성명}}, {{소속}}, {{직위}}, {{주소}}, {{입사일}}, {{발급일자}}
+    이 파일을 직접 편집해 양식을 꾸밀 수 있다.
     """
-    EMPLOYEES_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = EMPLOYEES_DIR / f"{name}.docx"
-    if out_path.exists():
-        print(f"[SKIP] 이미 존재합니다: {out_path}")
-        return out_path
+    TEMPLATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if TEMPLATE_PATH.exists():
+        print(f"[SKIP] 이미 존재합니다: {TEMPLATE_PATH}")
+        return TEMPLATE_PATH
 
     doc = Document()
-
-    # 기본 폰트
     style = doc.styles["Normal"]
     style.font.name = "맑은 고딕"
     style.font.size = Pt(11)
@@ -166,71 +155,57 @@ def create_template(name: str) -> Path:
             run.font.size = Pt(size)
         return p
 
-    def add_line(text):
-        return doc.add_paragraph(text)
-
-    # 제목
     add_centered("재  직  증  명  서", bold=True, size=22)
     doc.add_paragraph()
     doc.add_paragraph()
 
-    # 인적 사항 표
-    table = doc.add_table(rows=4, cols=2)
+    table = doc.add_table(rows=5, cols=2)
     table.style = "Table Grid"
-    labels = ["성    명", "소    속", "직    위", "입 사 일"]
-    # 이름은 고정, 나머지는 추후 플레이스홀더로 채울 자리
-    values = [name, "", "", ""]
-    for i, (label, value) in enumerate(zip(labels, values)):
+    rows_data = [
+        ("성    명", "{{성명}}"),
+        ("소    속", "{{소속}}"),
+        ("직    위", "{{직위}}"),
+        ("주    소", "{{주소}}"),
+        ("입 사 일", "{{입사일}}"),
+    ]
+    for i, (label, placeholder) in enumerate(rows_data):
         table.cell(i, 0).text = label
-        table.cell(i, 1).text = value
+        table.cell(i, 1).text = placeholder
     doc.add_paragraph()
     doc.add_paragraph()
 
-    # 본문
     body = doc.add_paragraph()
     body.alignment = WD_ALIGN_PARAGRAPH.CENTER
     body.add_run("위 사람은 당사에 재직 중임을 증명합니다.")
     doc.add_paragraph()
     doc.add_paragraph()
 
-    # 발급일자 (플레이스홀더)
     date_p = doc.add_paragraph()
     date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     date_p.add_run("{{발급일자}}")
     doc.add_paragraph()
     doc.add_paragraph()
 
-    # 서명란
     add_centered("(주) 이액티브  대표이사  (인)", bold=True)
 
-    doc.save(out_path)
-    print(f"[OK] 템플릿 생성: {out_path}")
-    print("     ※ 소속·직위·입사일 등은 이 파일을 직접 편집해 {{필드명}} 형식으로 추가하세요.")
-    return out_path
+    doc.save(TEMPLATE_PATH)
+    print(f"[OK] 공유 양식 생성: {TEMPLATE_PATH}")
+    print("     ※ 이 파일을 직접 편집해 양식을 꾸미세요. 플레이스홀더는 유지하세요.")
+    return TEMPLATE_PATH
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="재직증명서 자동 발급",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__,
-    )
+    parser = argparse.ArgumentParser(description="재직증명서 자동 발급 (공유 양식 기반)")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--name",   metavar="이름",   help="단건 발급")
-    group.add_argument("--csv",    metavar="파일경로", help="CSV 일괄 발급 (이름 컬럼 필요)")
-    group.add_argument("--all",    action="store_true", help="전체 직원 발급")
-    group.add_argument("--create", metavar="이름",   help="기본 템플릿 생성")
+    group.add_argument("--create", action="store_true", help="공유 양식 생성")
+    group.add_argument("--name", metavar="이름", help="이름으로 단건 발급 (정보 없이)")
     args = parser.parse_args()
 
-    if args.name:
-        ok = generate_one(args.name)
+    if args.create:
+        create_base_template()
+    elif args.name:
+        ok = generate_one({"name": args.name})
         sys.exit(0 if ok else 1)
-    elif args.csv:
-        generate_from_csv(args.csv)
-    elif args.all:
-        generate_all()
-    elif args.create:
-        create_template(args.create)
 
 
 if __name__ == "__main__":

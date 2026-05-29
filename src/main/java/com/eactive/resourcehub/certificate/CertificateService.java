@@ -52,44 +52,29 @@ public class CertificateService {
         }
     }
 
-    /** 단건 또는 다건 발급 — 템플릿 없으면 자동 생성 후 발급 */
-    public CertificateResult generate(List<String> names) {
-        List<String> existing = getTemplates();
-        for (String name : names) {
-            if (!existing.contains(name)) {
-                try {
-                    createTemplate(name);
-                    log.info("재직증명서 기본 템플릿 자동 생성: {}", name);
-                } catch (Exception e) {
-                    log.warn("템플릿 자동 생성 실패 — name={}: {}", name, e.getMessage());
-                }
-            }
-        }
+    /** 직원 정보 목록으로 재직증명서 일괄 발급 (공유 양식 기반) */
+    public CertificateResult generate(List<EmployeeInfo> employees) {
         try {
-            String body = mapper.writeValueAsString(
-                    names.size() == 1
-                            ? java.util.Map.of("name", names.get(0))
-                            : java.util.Map.of("names", names)
-            );
+            List<java.util.Map<String, String>> empMaps = employees.stream()
+                    .map(e -> {
+                        java.util.Map<String, String> m = new java.util.HashMap<>();
+                        m.put("name", e.name());
+                        m.put("team", e.team() != null ? e.team() : "");
+                        m.put("position", e.position() != null ? e.position() : "");
+                        m.put("address", e.address() != null ? e.address() : "");
+                        m.put("joinDate", "");
+                        return m;
+                    })
+                    .toList();
+            String body = employees.size() == 1
+                    ? mapper.writeValueAsString(java.util.Map.of("employee", empMaps.get(0)))
+                    : mapper.writeValueAsString(java.util.Map.of("employees", empMaps));
             JsonNode node = post("/generate", body);
             return new CertificateResult(toList(node.path("success")), toList(node.path("failed")));
         } catch (Exception e) {
             log.error("재직증명서 발급 실패: {}", e.getMessage());
+            List<String> names = employees.stream().map(EmployeeInfo::name).toList();
             return new CertificateResult(List.of(), names);
-        }
-    }
-
-    /** 전체 발급 — DB에서 받은 전체 이름 목록 기준 */
-    public CertificateResult generateAll(List<String> allNames) {
-        return generate(allNames);
-    }
-
-    /** 기본 템플릿 생성 */
-    public void createTemplate(String name) throws IOException {
-        try {
-            post("/create", mapper.writeValueAsString(java.util.Map.of("name", name)));
-        } catch (Exception e) {
-            throw new IOException("템플릿 생성 실패: " + e.getMessage(), e);
         }
     }
 
@@ -165,4 +150,7 @@ public class CertificateService {
     }
 
     public record CertificateResult(List<String> success, List<String> failed) {}
+
+    /** 직원 정보 DTO — 재직증명서 발급 시 사용 */
+    public record EmployeeInfo(String name, String team, String position, String address) {}
 }

@@ -1,8 +1,8 @@
 package com.eactive.resourcehub.certificate;
 
-import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
 import com.eactive.resourcehub.project.service.ProjectService;
+import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.service.EmployeeManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
@@ -48,14 +48,16 @@ public class CertificateController {
             @RequestParam(required = false) String name,
             Model model) {
 
-        List<String> allUserNames = getActiveUserNames();
-        CertificateService.CertificateResult result;
-
-        if (name != null && !name.isBlank()) {
-            result = certificateService.generate(List.of(name.trim()));
-        } else {
+        if (name == null || name.isBlank()) {
             return "redirect:/admin/certificate";
         }
+
+        List<String> allUserNames = getActiveUserNames();
+        User user = employeeService.findAllActive().stream()
+                .filter(u -> name.trim().equals(u.getName()))
+                .findFirst().orElse(null);
+        CertificateService.EmployeeInfo empInfo = toEmployeeInfo(user, name.trim());
+        CertificateService.CertificateResult result = certificateService.generate(List.of(empInfo));
 
         certificateService.cleanupFiles(50);
         populateModel(model, allUserNames, result, buildNewFilesSet(result));
@@ -64,17 +66,17 @@ public class CertificateController {
 
     @PostMapping("/generate-project")
     public String generateProject(@RequestParam Long projectId, Model model) {
-        List<String> names = projectService.getMembersForProject(projectId).stream()
+        List<CertificateService.EmployeeInfo> employees = projectService.getMembersForProject(projectId).stream()
                 .map(ProjectAssignment::getUser)
-                .map(u -> u.getName() != null ? u.getName() : "")
-                .filter(n -> !n.isBlank())
+                .filter(u -> u.getName() != null && !u.getName().isBlank())
                 .distinct()
-                .sorted()
+                .sorted(Comparator.comparing(User::getName))
+                .map(u -> toEmployeeInfo(u, u.getName()))
                 .toList();
 
-        CertificateService.CertificateResult result = names.isEmpty()
+        CertificateService.CertificateResult result = employees.isEmpty()
                 ? new CertificateService.CertificateResult(List.of(), List.of())
-                : certificateService.generate(names);
+                : certificateService.generate(employees);
 
         certificateService.cleanupFiles(50);
         populateModel(model, getActiveUserNames(), result, buildNewFilesSet(result));
@@ -126,5 +128,15 @@ public class CertificateController {
                 .sorted(Comparator.naturalOrder())
                 .distinct()
                 .toList();
+    }
+
+    private CertificateService.EmployeeInfo toEmployeeInfo(User user, String fallbackName) {
+        if (user == null) {
+            return new CertificateService.EmployeeInfo(fallbackName, null, null, null);
+        }
+        String team = user.getTeam() != null ? user.getTeam().getName() : null;
+        String position = user.getPosition() != null ? user.getPosition().getDisplayName() : null;
+        return new CertificateService.EmployeeInfo(
+                user.getName(), team, position, user.getAddress());
     }
 }

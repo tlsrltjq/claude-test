@@ -9,7 +9,7 @@ import generate as gen
 app = Flask(__name__)
 
 OUTPUT_DIR = gen.OUTPUT_DIR
-EMPLOYEES_DIR = gen.EMPLOYEES_DIR
+TEMPLATE_PATH = gen.TEMPLATE_PATH
 
 
 @app.route("/health")
@@ -19,42 +19,41 @@ def health():
 
 @app.route("/generate", methods=["POST"])
 def do_generate():
+    """직원 정보를 받아 재직증명서를 발급한다.
+
+    단건: {"employee": {"name": "홍길동", "team": "개발팀", "position": "사원", "address": "...", "joinDate": "..."}}
+    다건: {"employees": [{...}, {...}]}
+    """
     data = request.get_json(force=True, silent=True) or {}
 
-    if "name" in data:
-        name = data["name"].strip()
-        ok = gen.generate_one(name)
+    if "employee" in data:
+        emp = data["employee"]
+        name = (emp.get("name") or "").strip()
+        ok = gen.generate_one(emp)
         return jsonify({
             "success": [name] if ok else [],
             "failed":  [] if ok else [name],
         })
 
-    if "names" in data:
-        names = [n.strip() for n in data["names"] if n.strip()]
-        success, failed = gen.generate_from_names(names)
+    if "employees" in data:
+        employees = [e for e in data["employees"] if (e.get("name") or "").strip()]
+        success, failed = gen.generate_from_employees(employees)
         return jsonify({"success": success, "failed": failed})
 
-    if data.get("all"):
-        success, failed = gen.generate_all()
-        return jsonify({"success": success, "failed": failed})
-
-    return jsonify({"error": "name, names, 또는 all 파라미터 필요"}), 400
+    return jsonify({"error": "employee 또는 employees 파라미터 필요"}), 400
 
 
 @app.route("/create", methods=["POST"])
 def do_create():
-    data = request.get_json(force=True, silent=True) or {}
-    name = data.get("name", "").strip()
-    if not name:
-        return jsonify({"error": "이름 필요"}), 400
-    path = gen.create_template(name)
+    """공유 양식이 없으면 기본 양식을 생성한다."""
+    path = gen.create_base_template()
     return jsonify({"status": "ok", "path": str(path)})
 
 
-@app.route("/templates")
-def list_templates():
-    names = sorted(p.stem for p in EMPLOYEES_DIR.glob("*.docx")) if EMPLOYEES_DIR.exists() else []
-    return jsonify({"templates": names})
+@app.route("/template/status")
+def template_status():
+    """공유 양식 존재 여부를 반환한다."""
+    return jsonify({"exists": TEMPLATE_PATH.exists(), "path": str(TEMPLATE_PATH)})
 
 
 @app.route("/files")
