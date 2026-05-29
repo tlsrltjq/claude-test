@@ -1,0 +1,41 @@
+# E2E 통합 테스트용 프로파일
+# Flyway seed 마이그레이션이 하드코딩된 FK ID를 사용하므로 비활성화.
+# ddl-auto: create + AdminInitializer 로 스키마·관리자 계정 구성.
+spring:
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+resourcehub:
+  storage:
+    type: local
+    s3:
+      endpoint: http://localhost:9000
+      access-key: test
+      secret-key: test
+      bucket: test-bucket
+      region: auto
+  upload:
+    base-dir: /tmp/test-uploads
+    allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx,zip,xlsx,xls
+  admin:
+    email: admin@test.com
+    password: Test1234!
+  seed:
+    test-password: ""
+    test-email: ""
+  gc:
+    retention-days: 7
