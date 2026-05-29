@@ -29,7 +29,9 @@ public class AdminTeamController {
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("teams", teamService.findAll());
+        var teams = teamService.findAll();
+        model.addAttribute("teams", teams);
+        model.addAttribute("memberCounts", teamService.countMembersPerTeam());
         model.addAttribute("teamRequest", new TeamRequest());
         return "admin/teams";
     }
@@ -43,6 +45,7 @@ public class AdminTeamController {
                          RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("teams", teamService.findAll());
+            model.addAttribute("memberCounts", teamService.countMembersPerTeam());
             return "admin/teams";
         }
         try {
@@ -96,11 +99,12 @@ public class AdminTeamController {
 
     @PostMapping("/{teamId}/delete")
     public String delete(@PathVariable Long teamId,
+                         @RequestParam(required = false) Long targetTeamId,
                          @AuthenticationPrincipal CustomUserDetails actor,
                          HttpServletRequest request,
                          RedirectAttributes ra) {
         try {
-            teamService.delete(teamId, actor.getUser().getId(), request);
+            teamService.deleteWithReassignment(teamId, targetTeamId, actor.getUser().getId(), request);
             ra.addFlashAttribute("successMessage", "팀을 삭제했습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

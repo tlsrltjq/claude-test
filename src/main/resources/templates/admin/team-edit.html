@@ -21,7 +21,7 @@
       <div class="page-hd">
         <div>
           <h1 class="page-hd-title"><i class="bi bi-pencil-square me-2"></i>팀 수정</h1>
-          <p class="page-hd-sub">팀 이름과 설명을 변경합니다.</p>
+          <p class="page-hd-sub">팀 이름을 변경합니다.</p>
         </div>
         <div class="page-hd-actions">
           <a th:href="@{/admin/teams}" class="btn btn-outline-secondary btn-sm">
@@ -43,11 +43,6 @@
                      th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
                      placeholder="팀 이름을 입력하세요" required>
               <div class="invalid-feedback" th:errors="*{name}"></div>
-            </div>
-            <div class="mb-4">
-              <label class="form-label">설명 <span class="text-muted fw-normal">(선택)</span></label>
-              <input type="text" th:field="*{description}" class="form-control"
-                     placeholder="팀 설명을 입력하세요">
             </div>
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary">

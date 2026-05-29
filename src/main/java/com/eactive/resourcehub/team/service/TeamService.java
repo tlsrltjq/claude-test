@@ -6,6 +6,7 @@ import com.eactive.resourcehub.common.service.AuditService;
 import com.eactive.resourcehub.team.dto.TeamRequest;
 import com.eactive.resourcehub.team.entity.Team;
 import com.eactive.resourcehub.team.repository.TeamRepository;
+import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -79,17 +82,41 @@ public class TeamService {
         return team;
     }
 
+    /** 팀별 소속 인원 수 맵 반환 (teamId → count) */
+    @Transactional(readOnly = true)
+    public Map<Long, Long> countMembersPerTeam() {
+        return teamRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        Team::getId,
+                        t -> (long) userRepository.findByTeamId(t.getId()).size()
+                ));
+    }
+
+    /**
+     * 팀 삭제. 소속 인원이 있으면 targetTeamId 팀으로 이동하거나(null이면 팀 해제).
+     */
     @Transactional
-    public void delete(Long id, Long actorUserId, HttpServletRequest httpRequest) {
-        Team team = findById(id);
-        long memberCount = userRepository.findByTeamId(id).size();
-        if (memberCount > 0) {
-            throw new IllegalArgumentException(
-                    "소속 직원이 있는 팀은 삭제할 수 없습니다. (소속 인원: " + memberCount + "명)");
+    public void deleteWithReassignment(Long teamId, Long targetTeamId,
+                                       Long actorUserId, HttpServletRequest httpRequest) {
+        Team team = findById(teamId);
+        List<User> members = userRepository.findByTeamId(teamId);
+
+        Team targetTeam = (targetTeamId != null) ? findById(targetTeamId) : null;
+        for (User u : members) {
+            u.changeTeam(targetTeam);
         }
+
+        String teamName = team.getName();
+        String detail = "팀 삭제: " + teamName;
+        if (!members.isEmpty()) {
+            detail += targetTeam != null
+                    ? " (소속 " + members.size() + "명 → " + targetTeam.getName() + ")"
+                    : " (소속 " + members.size() + "명 팀 해제)";
+        }
+
         teamRepository.delete(team);
-        log.info("팀 삭제 — teamId={}, name={}", id, team.getName());
+        log.info("팀 삭제 — teamId={}, name={}, 멤버 {}명 재배정", teamId, teamName, members.size());
         auditService.log(actorUserId, AuditActionType.DELETE,
-                AuditTargetType.TEAM, id, "팀 삭제: " + team.getName(), httpRequest);
+                AuditTargetType.TEAM, teamId, detail, httpRequest);
     }
 }

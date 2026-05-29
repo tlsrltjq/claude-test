@@ -7,6 +7,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+      .team-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.4rem 1.5rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+        transition: box-shadow .15s;
+      }
+      .team-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+      .team-card-name { font-size: 1.1rem; font-weight: 700; color: var(--tx1); }
+      .team-card-count { font-size: .8rem; color: var(--tx2); }
+      .team-card-count strong { color: var(--accent); font-size: 1.05rem; }
+      .team-card-actions { display: flex; gap: .4rem; margin-top: .3rem; }
+    </style>
 </head>
 <body>
 
@@ -35,6 +52,15 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
 
+      <!-- 팀 데이터 (삭제 모달용) -->
+      <div id="teamsData" style="display:none">
+        <span th:each="t : ${teams}"
+              class="team-datum"
+              th:data-id="${t.id}"
+              th:data-name="${t.name}"
+              th:data-count="${memberCounts[t.id]}"></span>
+      </div>
+
       <div class="row g-4 align-items-start">
 
         <!-- ── 좌: 팀 추가 폼 ── -->
@@ -47,17 +73,13 @@
               <form th:action="@{/admin/teams}" th:object="${teamRequest}" method="post">
                 <div class="mb-3">
                   <label class="field-label">팀 이름 <span class="text-danger">*</span></label>
-                  <input type="text" th:field="*{name}" class="form-control form-control-sm"
+                  <input type="text" th:field="*{name}" class="form-control"
                          th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
-                         placeholder="팀 이름을 입력하세요" required>
+                         placeholder="팀 이름을 입력하세요" required
+                         style="font-size:.95rem;height:2.6rem">
                   <div class="invalid-feedback" th:errors="*{name}"></div>
                 </div>
-                <div class="mb-3">
-                  <label class="field-label">설명 <span class="text-muted fw-normal">(선택)</span></label>
-                  <input type="text" th:field="*{description}" class="form-control form-control-sm"
-                         placeholder="팀 설명을 입력하세요">
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">
                   <i class="bi bi-plus-lg me-1"></i>팀 추가
                 </button>
               </form>
@@ -65,7 +87,7 @@
           </div>
         </div>
 
-        <!-- ── 우: 팀 목록 ── -->
+        <!-- ── 우: 팀 카드 그리드 ── -->
         <div class="col-12 col-lg-8">
 
           <!-- 빈 상태 -->
@@ -74,45 +96,31 @@
             <p>등록된 팀이 없습니다.<br><small class="text-muted">왼쪽 폼으로 첫 번째 팀을 추가해보세요.</small></p>
           </div>
 
-          <!-- 목록 테이블 -->
-          <div th:if="${!#lists.isEmpty(teams)}" class="members-card">
-            <div class="table-responsive">
-              <table class="table members-table mb-0">
-                <thead>
-                <tr>
-                  <th>팀 이름</th>
-                  <th>설명</th>
-                  <th style="width:90px">생성일</th>
-                  <th style="width:110px"></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="t : ${teams}">
-                  <td class="fw-semibold" style="color:var(--tx1)" th:text="${t.name}"></td>
-                  <td class="text-muted" style="font-size:.82rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                      th:text="${t.description != null and !#strings.isEmpty(t.description) ? t.description : '-'}"></td>
-                  <td class="text-muted" style="font-size:.8rem"
-                      th:text="${#temporals.format(t.createdAt, 'yy.MM.dd')}"></td>
-                  <td>
-                    <div class="d-flex gap-1">
-                      <a th:href="@{/admin/teams/{id}/edit(id=${t.id})}"
-                         class="btn btn-sm btn-outline-primary"
-                         style="font-size:.75rem;border-radius:6px;padding:.2rem .55rem">
-                        <i class="bi bi-pencil me-1"></i>수정
-                      </a>
-                      <form th:action="@{/admin/teams/{id}/delete(id=${t.id})}" method="post"
-                            class="d-inline" onsubmit="return confirm('팀을 삭제하시겠습니까?')">
-                        <button type="submit"
-                                class="btn btn-sm btn-outline-danger"
-                                style="font-size:.75rem;border-radius:6px;padding:.2rem .55rem">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
+          <!-- 카드 그리드 -->
+          <div th:if="${!#lists.isEmpty(teams)}" class="row row-cols-1 row-cols-sm-2 g-3">
+            <div class="col" th:each="t : ${teams}">
+              <div class="team-card">
+                <div class="team-card-name" th:text="${t.name}"></div>
+                <div class="team-card-count">
+                  소속 <strong th:text="${memberCounts[t.id]}">0</strong>명
+                </div>
+                <div class="team-card-actions">
+                  <a th:href="@{/admin/teams/{id}/edit(id=${t.id})}"
+                     class="btn btn-outline-primary btn-sm flex-fill fw-semibold"
+                     style="font-size:.82rem">
+                    <i class="bi bi-pencil me-1"></i>이름 수정
+                  </a>
+                  <button type="button"
+                          class="btn btn-outline-danger btn-sm flex-fill fw-semibold"
+                          style="font-size:.82rem"
+                          th:data-team-id="${t.id}"
+                          th:data-team-name="${t.name}"
+                          th:data-member-count="${memberCounts[t.id]}"
+                          onclick="openDeleteModal(this)">
+                    <i class="bi bi-trash me-1"></i>삭제
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -124,20 +132,150 @@
 
 </div><!-- /.app-shell -->
 
+<!-- ── 삭제 모달 ── -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="deleteModalLabel">팀 삭제</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="deleteForm" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" name="targetTeamId" id="targetTeamIdInput">
+        <div class="modal-body pt-2">
+          <p class="mb-1">
+            <strong id="modalTeamName" class="text-danger"></strong> 팀을 삭제합니다.
+          </p>
+
+          <!-- 소속 인원이 있을 때만 표시 -->
+          <div id="reassignSection" style="display:none" class="mt-3">
+            <div class="alert alert-warning py-2 mb-3" style="font-size:.85rem">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i>
+              이 팀에 소속된 <strong id="modalMemberCount"></strong>명의 직원이 있습니다.
+            </div>
+            <p class="fw-semibold mb-2" style="font-size:.87rem">직원 처리 방법 선택</p>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio" name="reassignType"
+                     id="radioNone" value="none" checked onchange="onReassignChange(this.value)">
+              <label class="form-check-label" for="radioNone" style="font-size:.87rem">
+                팀 해제 <span class="text-muted">(미설정으로 변경)</span>
+              </label>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio" name="reassignType"
+                     id="radioTeam" value="team" onchange="onReassignChange(this.value)">
+              <label class="form-check-label" for="radioTeam" style="font-size:.87rem">
+                다른 팀으로 이동
+              </label>
+            </div>
+            <select id="targetTeamSelect" class="form-select form-select-sm ms-4 mt-1"
+                    style="width:calc(100% - 1.5rem);display:none"
+                    onchange="document.getElementById('targetTeamIdInput').value = this.value">
+              <option value="">팀 선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">취소</button>
+          <button type="submit" class="btn btn-danger btn-sm fw-semibold px-4" id="deleteSubmitBtn">
+            <i class="bi bi-trash me-1"></i>삭제
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
   <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
     <span class="visually-hidden">처리 중...</span>
   </div>
 </div>
+
 <script>
-(function(){
-    document.querySelectorAll('form').forEach(function(f){
-        if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
-            f.addEventListener('submit',function(){
-                document.getElementById('loadingOverlay').style.display='flex';
-            });
+(function () {
+  // 모든 팀 데이터 로드 (모달 드롭다운용)
+  var allTeams = Array.from(document.querySelectorAll('.team-datum')).map(function (el) {
+    return { id: el.getAttribute('data-id'), name: el.getAttribute('data-name') };
+  });
+
+  var currentDeleteTeamId = null;
+
+  window.openDeleteModal = function (btn) {
+    currentDeleteTeamId = btn.getAttribute('data-team-id');
+    var teamName    = btn.getAttribute('data-team-name');
+    var memberCount = parseInt(btn.getAttribute('data-member-count'), 10);
+
+    document.getElementById('modalTeamName').textContent = teamName;
+    document.getElementById('deleteForm').action = '/admin/teams/' + currentDeleteTeamId + '/delete';
+    document.getElementById('targetTeamIdInput').value = '';
+    document.getElementById('targetTeamSelect').value  = '';
+
+    // 라디오 초기화
+    document.getElementById('radioNone').checked = true;
+    document.getElementById('targetTeamSelect').style.display = 'none';
+
+    // 소속 인원 여부
+    var reassignSection = document.getElementById('reassignSection');
+    if (memberCount > 0) {
+      document.getElementById('modalMemberCount').textContent = memberCount;
+      reassignSection.style.display = '';
+      // 타 팀 목록 채우기 (현재 삭제 팀 제외)
+      var sel = document.getElementById('targetTeamSelect');
+      sel.innerHTML = '<option value="">팀 선택</option>';
+      allTeams.forEach(function (t) {
+        if (t.id !== currentDeleteTeamId) {
+          var opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.name;
+          sel.appendChild(opt);
         }
-    });
+      });
+    } else {
+      reassignSection.style.display = 'none';
+    }
+
+    var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+  };
+
+  window.onReassignChange = function (value) {
+    var sel = document.getElementById('targetTeamSelect');
+    if (value === 'team') {
+      sel.style.display = '';
+      document.getElementById('targetTeamIdInput').value = sel.value;
+    } else {
+      sel.style.display = 'none';
+      document.getElementById('targetTeamIdInput').value = '';
+    }
+  };
+
+  // 폼 제출 시 "다른 팀으로 이동" 선택했는데 팀 미선택이면 막기
+  document.getElementById('deleteForm').addEventListener('submit', function (e) {
+    var radioTeam = document.getElementById('radioTeam');
+    if (radioTeam && radioTeam.checked) {
+      var sel = document.getElementById('targetTeamSelect');
+      if (!sel.value) {
+        e.preventDefault();
+        sel.focus();
+        sel.classList.add('is-invalid');
+        return;
+      }
+      document.getElementById('targetTeamIdInput').value = sel.value;
+    }
+    document.getElementById('loadingOverlay').style.display = 'flex';
+  });
+
+  // 일반 폼 submit 오버레이
+  document.querySelectorAll('form').forEach(function (f) {
+    if (f.id === 'deleteForm') return;
+    if ((f.getAttribute('method') || 'get').toLowerCase() !== 'get') {
+      f.addEventListener('submit', function () {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+      });
+    }
+  });
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

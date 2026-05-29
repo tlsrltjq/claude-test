@@ -114,32 +114,32 @@ class TeamServiceTest {
                 () -> service.update(99L, req, 1L, request));
     }
 
-    // ── delete ───────────────────────────────────────────────────
+    // ── deleteWithReassignment ───────────────────────────────────
 
     @Test
     void 소속_직원_없는_팀_삭제_성공() {
         when(userRepository.findByTeamId(1L)).thenReturn(List.of());
-        assertDoesNotThrow(() -> service.delete(1L, 1L, request));
+        assertDoesNotThrow(() -> service.deleteWithReassignment(1L, null, 1L, request));
         verify(teamRepository).delete(team);
     }
 
     @Test
-    void 소속_직원_있는_팀_삭제_시_예외() {
+    void 소속_직원_있는_팀_삭제_시_팀해제() {
         User member = User.create("emp@eactive.co.kr", "pw", "직원",
                 "emp@eactive.co.kr", team, Position.STAFF,
                 LocalDate.of(1990, 1, 1), "010-0000-0000");
         when(userRepository.findByTeamId(1L)).thenReturn(List.of(member));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> service.delete(1L, 1L, request));
-        verify(teamRepository, never()).delete(any());
+        assertDoesNotThrow(() -> service.deleteWithReassignment(1L, null, 1L, request));
+        assertNull(member.getTeam());
+        verify(teamRepository).delete(team);
     }
 
     @Test
     void 존재하지_않는_팀_삭제_시_예외() {
         when(teamRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class,
-                () -> service.delete(99L, 1L, request));
+                () -> service.deleteWithReassignment(99L, null, 1L, request));
     }
 
     // ── toggleProjectTeam ────────────────────────────────────────
