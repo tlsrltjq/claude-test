@@ -5,6 +5,7 @@
 
 ---
 
+2026-05-29 | test | test: 테스트 스위트 302개 구축 — SearchService·DocumentUpload·RouteSecurityTest 단위테스트, Testcontainers DocumentRepositoryIntegrationTest 11개, build.gradle Testcontainers 의존성 추가 / fix: 문서검색 500 에러(PostgreSQL null LocalDateTime sentinel 패턴 적용)
 2026-05-29 | perf+feat | feat: 회원가입 개인정보 동의서 7섹션 모달·5체크박스 전체동의·내용보기 스크롤·폼 검증 / perf: ZIP·Excel 스트리밍·DeployStats COUNT·검색 DB 위임·PDF 썸네일 tempfile·V227 audit_logs 인덱스 / fix: 캘린더 CANCELLED cascade·memberCounts·dayMap·사이드바 순서
 2026-05-29 | fix | fix: 대시보드 LazyInitializationException 수정 — findByUserId에 JOIN FETCH pa.project 추가, 사원 500·영업 빈화면 해결
 2026-05-29 | feature | feat: 파일 크기 임계값 10MB→20MB(즉시승인) / 100MB 이하 허용, zip·xlsx·xls 확장자 추가
