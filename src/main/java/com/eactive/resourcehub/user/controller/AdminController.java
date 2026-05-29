@@ -15,6 +15,7 @@ import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.entity.UserStatus;
+import com.eactive.resourcehub.project.service.ProjectStatusScheduler;
 import com.eactive.resourcehub.user.service.EmailAllowlistService;
 import com.eactive.resourcehub.user.service.EmployeeManagementService;
 import com.eactive.resourcehub.user.service.UserRoleService;
@@ -47,6 +48,7 @@ public class AdminController {
     private final DocumentExpiryService documentExpiryService;
     private final DocumentFileGcService documentFileGcService;
     private final SessionRegistry sessionRegistry;
+    private final ProjectStatusScheduler projectStatusScheduler;
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
@@ -426,6 +428,13 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("gcResult",
                 count == 0 ? "정리 대상 없음" : count + "건 처리 완료");
         return "redirect:/admin/gc";
+    }
+
+    @PostMapping("/project-status/sync")
+    public String syncProjectStatus(RedirectAttributes ra) {
+        projectStatusScheduler.syncStatuses();
+        ra.addFlashAttribute("successMessage", "프로젝트 상태 동기화가 완료되었습니다.");
+        return "redirect:/admin";
     }
 
 }

@@ -160,6 +160,19 @@
           <i class="bi bi-chevron-right menu-list-arrow"></i>
         </a>
 
+        <form th:action="@{/admin/project-status/sync}" method="post" style="margin:0">
+          <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+          <button type="submit" class="menu-list-item w-100 text-start border-0 bg-transparent p-0"
+                  style="cursor:pointer;">
+            <div class="menu-list-icon"><i class="bi bi-arrow-repeat"></i></div>
+            <div class="menu-list-info">
+              <div class="menu-list-title">프로젝트 상태 동기화</div>
+              <div class="menu-list-desc">날짜 기반 상태 즉시 업데이트</div>
+            </div>
+            <i class="bi bi-play-fill menu-list-arrow text-success"></i>
+          </button>
+        </form>
+
       </div><!-- /.menu-list -->
 
     </div><!-- /.page-wrap -->

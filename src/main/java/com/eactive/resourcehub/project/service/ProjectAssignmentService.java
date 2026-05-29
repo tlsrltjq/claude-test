@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,46 @@ public class ProjectAssignmentService {
         return new DeployStats(startingThisMonth, endingThisMonth, currentlyDeployed, notDeployed);
     }
 
+    /** 대시보드 투입 현황: ACTIVE·PLANNED 배정을 프로젝트별로 그룹화 */
+    @Transactional(readOnly = true)
+    public List<ProjectGroupSummary> getProjectGroupSummaries() {
+        LocalDate today = LocalDate.now();
+        List<ProjectAssignment> all = assignmentRepository.findActiveAndPlanned();
+
+        Map<Long, List<ProjectAssignment>> byProject = all.stream()
+            .collect(Collectors.groupingBy(pa -> pa.getProject().getId()));
+
+        return byProject.values().stream()
+            .map(list -> {
+                ProjectAssignment first = list.get(0);
+                AssignmentStatus dominant = list.stream()
+                    .anyMatch(pa -> pa.getStatus() == AssignmentStatus.ACTIVE)
+                    ? AssignmentStatus.ACTIVE : AssignmentStatus.PLANNED;
+
+                List<String> allNames = list.stream()
+                    .map(ProjectAssignment::getDisplayName)
+                    .distinct()
+                    .sorted()
+                    .toList();
+                List<String> shown = allNames.stream().limit(10).toList();
+
+                LocalDate latestEnd = list.stream()
+                    .map(ProjectAssignment::getEndDate)
+                    .max(Comparator.naturalOrder())
+                    .orElse(null);
+                boolean endingSoon = dominant == AssignmentStatus.ACTIVE
+                    && latestEnd != null && !latestEnd.isAfter(today.plusDays(14));
+
+                return new ProjectGroupSummary(
+                    first.getProject().getName(), dominant, latestEnd,
+                    shown, allNames.size(), endingSoon);
+            })
+            .sorted(Comparator
+                .comparing((ProjectGroupSummary g) -> g.status() == AssignmentStatus.ACTIVE ? 0 : 1)
+                .thenComparing(g -> g.endDate() != null ? g.endDate() : LocalDate.MAX))
+            .toList();
+    }
+
     /** 종료 임박 배정 목록 (대시보드 경고용) */
     @Transactional(readOnly = true)
     public List<ProjectAssignment> findEndingSoon(int withinDays) {
@@ -174,5 +215,28 @@ public class ProjectAssignmentService {
         }
         if (statusFilter != null && pa.getStatus() != statusFilter) return false;
         return true;
+    }
+
+    // ── DTO ───────────────────────────────────────────────────────
+
+    /** 대시보드 투입 프로젝트 현황 — 프로젝트 단위 요약 */
+    public record ProjectGroupSummary(
+        String projectName,
+        AssignmentStatus status,
+        LocalDate endDate,
+        List<String> memberNames,
+        int totalCount,
+        boolean endingSoon
+    ) {
+        public String memberSummary() {
+            if (memberNames.isEmpty()) return "-";
+            String head = String.join(", ", memberNames);
+            int extra = totalCount - memberNames.size();
+            return extra > 0 ? head + " 외 " + extra + "명" : head;
+        }
+        public long remainingDays() {
+            if (endDate == null) return 0;
+            return Math.max(0, ChronoUnit.DAYS.between(LocalDate.now(), endDate));
+        }
     }
 }

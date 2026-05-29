@@ -99,10 +99,10 @@
         </a>
       </div>
 
-      <!-- ── 내 프로젝트 현황 (모든 권한) ── -->
-      <div class="section-hd"><i class="bi bi-kanban-fill me-1 text-primary"></i>내 프로젝트 현황</div>
-      <div class="dash-project-card mb-4">
-        <div th:if="${myAssignments != null and !#lists.isEmpty(myAssignments)}">
+      <!-- ── 내 프로젝트 현황 (투입 일정이 있는 경우만 표시) ── -->
+      <th:block th:if="${myAssignments != null and !#lists.isEmpty(myAssignments)}">
+        <div class="section-hd"><i class="bi bi-kanban-fill me-1 text-primary"></i>내 프로젝트 현황</div>
+        <div class="dash-project-card mb-4">
           <div th:each="pa : ${myAssignments}" class="dash-pa-row">
             <div class="dash-pa-status">
               <span th:if="${pa.status.name() == 'ACTIVE'}"
@@ -130,11 +130,7 @@
             </div>
           </div>
         </div>
-        <div th:if="${myAssignments == null or #lists.isEmpty(myAssignments)}" class="dash-pa-empty">
-          <i class="bi bi-inbox me-1 text-muted"></i>
-          <span class="text-muted">현재 투입된 프로젝트가 없습니다.</span>
-        </div>
-      </div>
+      </th:block>
 
       <!-- ── 영업·인력 (SALES, ADMIN) ── -->
       <div th:if="${user.role.name() == 'SALES' or user.role.name() == 'ADMIN'}">
@@ -199,36 +195,42 @@
           </div>
         </div>
 
-        <!-- 종료 임박 -->
+        <!-- 투입 프로젝트 현황 -->
         <div class="ending-soon-card mb-4">
           <div class="esc-header">
-            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-            종료 14일 이내
+            <i class="bi bi-kanban text-primary"></i>
+            투입 프로젝트 현황
             <span class="ms-auto fw-normal text-muted small"
-                  th:text="${#lists.isEmpty(endingSoon) ? '' : (#lists.size(endingSoon) + '건')}"></span>
+                  th:if="${!#lists.isEmpty(projectGroups)}"
+                  th:text="${#lists.size(projectGroups) + '개'}"></span>
           </div>
-          <div th:each="pa, paStat : ${endingSoon}" th:if="${paStat.index < 5}">
-            <div class="esc-row">
-              <div class="esc-info">
-                <span class="esc-project fw-semibold" th:text="${pa.project.name}">프로젝트</span>
-                <span class="esc-name text-muted ms-2" th:text="${pa.displayName}">이름</span>
+          <div style="max-height:310px;overflow-y:auto;">
+            <div th:each="pg : ${projectGroups}" class="esc-row"
+                 style="flex-direction:column;align-items:flex-start;gap:3px;padding:9px 14px;">
+              <div class="d-flex align-items-center gap-2 w-100">
+                <span th:if="${pg.status.name() == 'ACTIVE'}"
+                      class="badge rounded-pill" style="background:#16a34a;font-size:.68rem;flex-shrink:0;">진행 중</span>
+                <span th:if="${pg.status.name() == 'PLANNED'}"
+                      class="badge rounded-pill bg-primary" style="font-size:.68rem;flex-shrink:0;">투입 예정</span>
+                <span th:if="${pg.endingSoon}"
+                      class="badge rounded-pill bg-warning text-dark" style="font-size:.68rem;flex-shrink:0;">종료 임박</span>
+                <span class="esc-project fw-semibold" th:text="${pg.projectName}">프로젝트명</span>
+                <span class="ms-auto text-muted small" style="white-space:nowrap;"
+                      th:if="${pg.endDate != null}"
+                      th:text="${#temporals.format(pg.endDate,'MM.dd') + ' 종료'}"></span>
+                <span th:if="${pg.endingSoon}"
+                      class="esc-days"
+                      th:classappend="${pg.remainingDays() <= 7} ? 'urgent' : 'warning'"
+                      th:text="${'D-' + pg.remainingDays()}">D-7</span>
               </div>
-              <div class="esc-meta">
-                <span class="text-muted small me-2"
-                      th:text="${#temporals.format(pa.endDate,'MM.dd')} + ' 종료'"></span>
-                <span class="esc-days"
-                      th:classappend="${pa.remainingDays() <= 7} ? 'urgent' : 'warning'"
-                      th:text="${'D-' + pa.remainingDays()}">D-7</span>
-              </div>
+              <div class="text-muted" style="font-size:.77rem;padding-left:1px;"
+                   th:text="${pg.memberSummary()}">홍길동, 이순신 외 3명</div>
             </div>
           </div>
-          <div th:if="${#lists.isEmpty(endingSoon)}" class="esc-empty">
-            <i class="bi bi-check-circle me-1 text-success"></i>종료 임박 배정 없음
+          <div th:if="${#lists.isEmpty(projectGroups)}" class="esc-empty">
+            <i class="bi bi-check-circle me-1 text-success"></i>현재 투입 프로젝트 없음
           </div>
           <div class="esc-footer">
-            <span th:if="${#lists.size(endingSoon) > 5}" class="text-muted me-2"
-                  style="font-size:.72rem;"
-                  th:text="${'외 ' + (#lists.size(endingSoon) - 5) + '건'}"></span>
             <a th:href="@{/sales/calendar}">캘린더에서 전체 보기 <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>

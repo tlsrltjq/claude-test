@@ -98,6 +98,13 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
            "ORDER BY pa.startDate ASC")
     List<ProjectAssignment> findPlannedFrom(@Param("today") LocalDate today);
 
+    /** 대시보드 투입 현황: ACTIVE·PLANNED 상태의 모든 배정 (프로젝트·사용자 페치) */
+    @Query("SELECT pa FROM ProjectAssignment pa " +
+           "JOIN FETCH pa.project " +
+           "JOIN FETCH pa.user " +
+           "WHERE pa.status IN ('ACTIVE', 'PLANNED')")
+    List<ProjectAssignment> findActiveAndPlanned();
+
     /** 자동 상태 전환: ACTIVE → ENDED (endDate 경과) */
     @Modifying
     @Query("UPDATE ProjectAssignment pa SET pa.status = 'ENDED' " +

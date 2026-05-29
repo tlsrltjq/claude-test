@@ -27,9 +27,9 @@ public class DashboardController {
         careerSaveService.findProfile(user.getId())
                 .ifPresent(ep -> model.addAttribute("profile", ep));
 
-        model.addAttribute("myAssignments", projectAssignmentService.findActiveAndPlannedForUser(user.getId()));
-        model.addAttribute("deployStats",   projectAssignmentService.getDeployStats());
-        model.addAttribute("endingSoon",    projectAssignmentService.findEndingSoon(14));
+        model.addAttribute("myAssignments",  projectAssignmentService.findActiveAndPlannedForUser(user.getId()));
+        model.addAttribute("deployStats",    projectAssignmentService.getDeployStats());
+        model.addAttribute("projectGroups",  projectAssignmentService.getProjectGroupSummaries());
 
         return "dashboard";
     }

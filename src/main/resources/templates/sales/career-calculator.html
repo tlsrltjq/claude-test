@@ -289,7 +289,7 @@
                           <div class="banner-stats-row">
                               <div class="banner-stat-item">
                                   <span class="banner-stat-label">총 경력</span>
-                                  <span class="banner-stat-value" th:text="${result.educationResult.displayText()}"></span>
+                                  <span id="bannerStatDisplay" class="banner-stat-value" th:text="${result.educationResult.displayText()}"></span>
                               </div>
                               <div class="banner-stat-item">
                                   <span class="banner-stat-label">총 일수</span>
@@ -297,7 +297,7 @@
                               </div>
                               <div class="banner-stat-item">
                                   <span class="banner-stat-label">인정 일수</span>
-                                  <span class="banner-stat-value" th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA') + '일'}"></span>
+                                  <span id="bannerStatDays" class="banner-stat-value" th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA') + '일'}"></span>
                               </div>
                           </div>
 
@@ -321,10 +321,30 @@
                           </form>
                       </div>
 
+                      <!-- 숨김 데이터: JS 기준 전환용 -->
+                      <span id="eduDays" style="display:none" th:text="${result.educationResult.totalDays()}"></span>
+                      <span id="eduDisplay" style="display:none" th:text="${result.educationResult.displayText()}"></span>
+                      <span th:if="${result.certResult != null}" id="certDays" style="display:none" th:text="${result.certResult.totalDays()}"></span>
+                      <span th:if="${result.certResult != null}" id="certDisplay" style="display:none" th:text="${result.certResult.displayText()}"></span>
+
+                      <!-- 기준 선택 버튼 (자격증 있을 때만) -->
+                      <div th:if="${result.certResult != null}" class="mb-3"
+                           id="basisBtnGroup"
+                           th:data-cert-label="${result.certResult.basisLabel()}">
+                          <div class="btn-group w-100" role="group">
+                              <button type="button" id="btnBasisEdu" class="btn btn-outline-primary btn-sm"
+                                      onclick="selectBasis('edu')"
+                                      th:text="${result.educationResult.basisLabel() + ' 기준'}"></button>
+                              <button type="button" id="btnBasisCert" class="btn btn-outline-primary btn-sm"
+                                      onclick="selectBasis('cert')"
+                                      th:text="${result.certResult.basisLabel() + ' 기준'}"></button>
+                          </div>
+                      </div>
+
                       <!-- 기준별 비교 카드 -->
                       <div class="row g-2 mb-3">
                           <div class="col" th:with="er=${result.educationResult}">
-                              <div th:class="'compare-card' + (${result.proposedBasis != null and result.proposedBasis == er.basisLabel()} ? ' compare-card-selected' : '')">
+                              <div id="compareCardEdu" th:class="'compare-card' + (${result.proposedBasis != null and result.proposedBasis == er.basisLabel()} ? ' compare-card-selected' : '')">
                                   <div class="compare-card-label" th:text="${er.basisLabel() + ' 기준'}"></div>
                                   <div class="compare-card-days" th:text="${#numbers.formatInteger(er.totalDays(), 1, 'COMMA') + '일'}"></div>
                                   <div class="compare-card-period" th:text="${er.displayText()}"></div>
@@ -338,7 +358,7 @@
                               </div>
                           </div>
                           <div class="col" th:if="${result.certResult != null}" th:with="cr=${result.certResult}">
-                              <div th:class="'compare-card' + (${result.proposedBasis != null and result.proposedBasis == cr.basisLabel()} ? ' compare-card-selected' : '')">
+                              <div id="compareCardCert" th:class="'compare-card' + (${result.proposedBasis != null and result.proposedBasis == cr.basisLabel()} ? ' compare-card-selected' : '')">
                                   <div class="compare-card-label" th:text="${cr.basisLabel() + ' 기준'}"></div>
                                   <div class="compare-card-days" th:text="${#numbers.formatInteger(cr.totalDays(), 1, 'COMMA') + '일'}"></div>
                                   <div class="compare-card-period" th:text="${cr.displayText()}"></div>
@@ -432,6 +452,30 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ── 기준 선택 (학력 / 자격증) ─────────────────────────────────────────────────
+function selectBasis(key) {
+    const eduCard  = document.getElementById('compareCardEdu');
+    const certCard = document.getElementById('compareCardCert');
+    const btnEdu   = document.getElementById('btnBasisEdu');
+    const btnCert  = document.getElementById('btnBasisCert');
+    if (!eduCard || !certCard) return;
+    if (key === 'edu') {
+        eduCard.classList.add('compare-card-selected');
+        certCard.classList.remove('compare-card-selected');
+        btnEdu.classList.add('active');
+        btnCert.classList.remove('active');
+        document.getElementById('bannerStatDisplay').textContent = document.getElementById('eduDisplay').textContent;
+        document.getElementById('bannerStatDays').textContent = Number(document.getElementById('eduDays').textContent).toLocaleString() + '일';
+    } else {
+        certCard.classList.add('compare-card-selected');
+        eduCard.classList.remove('compare-card-selected');
+        btnCert.classList.add('active');
+        btnEdu.classList.remove('active');
+        document.getElementById('bannerStatDisplay').textContent = document.getElementById('certDisplay').textContent;
+        document.getElementById('bannerStatDays').textContent = Number(document.getElementById('certDays').textContent).toLocaleString() + '일';
+    }
+}
+
 // ── 직원 선택 (autocomplete) ──────────────────────────────────────────────────
 let selectedUserId = null;
 let allMembers = [];
@@ -651,6 +695,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     toggleCertDate();
     refreshRows();
+    // 기준 선택 버튼 초기화 (자격증 있을 때만)
+    const basisGroup = document.getElementById('basisBtnGroup');
+    if (basisGroup) {
+        const eduCard  = document.getElementById('compareCardEdu');
+        const certCard = document.getElementById('compareCardCert');
+        const initKey  = (eduCard  && eduCard.classList.contains('compare-card-selected'))  ? 'edu'  :
+                         (certCard && certCard.classList.contains('compare-card-selected')) ? 'cert' : 'edu';
+        selectBasis(initKey);
+    }
 });
 </script>
 </body>
