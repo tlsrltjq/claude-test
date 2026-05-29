@@ -40,7 +40,15 @@
           <!-- ═══ 왼쪽: 입력 영역 ═══ -->
           <div class="col-12 col-lg-6">
 
-              <!-- ① 직원 선택 -->
+              <!-- 직원 데이터 (숨김, JS 데이터 소스) -->
+              <div id="memberData" style="display:none">
+                  <div th:each="m : ${members}"
+                       th:data-id="${m.id}"
+                       th:data-name="${m.name}"
+                       th:data-team="${m.team != null ? m.team.name : ''}"></div>
+              </div>
+
+              <!-- ① 직원 선택 (autocomplete) -->
               <div class="calc-card">
                   <div class="calc-card-header">
                       <span><i class="bi bi-person-check-fill"></i>직원 선택
@@ -59,23 +67,17 @@
                       </span>
                   </div>
                   <div class="calc-card-body">
-                      <div class="input-group input-group-sm mb-2">
-                          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                          <input type="text" id="memberSearch" class="form-control border-start-0"
-                                 placeholder="이름 또는 팀으로 검색"
-                                 oninput="filterMembers(this.value)"
-                                 onkeydown="if(event.key==='Enter'){event.preventDefault();filterMembers(this.value);}">
-                      </div>
-                      <div class="member-list" id="memberList">
-                          <div th:each="m : ${members}"
-                               class="member-item"
-                               th:classappend="${m.id == targetUserId} ? ' selected'"
-                               th:data-id="${m.id}" th:data-name="${m.name}"
-                               th:data-team="${m.team != null ? m.team.name : ''}"
-                               onclick="selectMember(this)">
-                              <span class="name" th:text="${m.name}"></span>
-                              <span class="team" th:text="${m.team != null ? m.team.name : '-'}"></span>
+                      <div class="member-autocomplete">
+                          <div class="input-group input-group-sm">
+                              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                              <input type="text" id="memberSearch" class="form-control border-start-0"
+                                     placeholder="이름 또는 팀으로 검색" autocomplete="off"
+                                     oninput="filterMembers(this.value)"
+                                     onfocus="openDropdown()"
+                                     onblur="setTimeout(closeDropdown,160)"
+                                     onkeydown="handleMemberKey(event)">
                           </div>
+                          <ul class="member-dropdown" id="memberDropdown"></ul>
                       </div>
                   </div>
               </div>
@@ -448,21 +450,105 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ── 직원 선택 ─────────────────────────────────────────────────────────────────
-let selectedUserId = /*[[${targetUserId}]]*/ null;
+// ── 직원 선택 (autocomplete) ──────────────────────────────────────────────────
+let selectedUserId = null;
+let allMembers = [];
+let acIdx = -1;
 
-function selectMember(el) {
-    document.querySelectorAll('.member-item').forEach(i => i.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedUserId = el.dataset.id;
-    document.getElementById('targetUserIdField').value = selectedUserId;
+function initMembers() {
+    allMembers = Array.from(document.querySelectorAll('#memberData > div')).map(el => ({
+        id: el.dataset.id, name: el.dataset.name, team: el.dataset.team || ''
+    }));
+}
+
+function openDropdown() {
+    filterMembers(document.getElementById('memberSearch').value);
+}
+
+function closeDropdown() {
+    document.getElementById('memberDropdown').style.display = 'none';
+    acIdx = -1;
+}
+
+function filterMembers(q) {
+    q = (q || '').toLowerCase().trim();
+    const filtered = q
+        ? allMembers.filter(m => m.name.toLowerCase().includes(q) || m.team.toLowerCase().includes(q))
+        : allMembers;
+    buildDropdown(filtered.slice(0, 60));
+}
+
+function buildDropdown(list) {
+    const ul = document.getElementById('memberDropdown');
+    ul.innerHTML = '';
+    acIdx = -1;
+    if (list.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'member-dropdown-empty';
+        li.textContent = '검색 결과 없음';
+        ul.appendChild(li);
+    } else {
+        list.forEach(m => {
+            const li = document.createElement('li');
+            const nameEl = document.createElement('span');
+            nameEl.textContent = m.name;
+            const teamEl = document.createElement('span');
+            teamEl.className = 'ac-team';
+            teamEl.textContent = m.team;
+            li.appendChild(nameEl);
+            li.appendChild(teamEl);
+            li.addEventListener('mousedown', () => selectMemberById(m.id, m.name, m.team));
+            ul.appendChild(li);
+        });
+    }
+    ul.style.display = 'block';
+}
+
+function handleMemberKey(e) {
+    const ul = document.getElementById('memberDropdown');
+    const items = Array.from(ul.querySelectorAll('li:not(.member-dropdown-empty)'));
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        acIdx = Math.min(acIdx + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('ac-active', i === acIdx));
+        if (items[acIdx]) items[acIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        acIdx = Math.max(acIdx - 1, 0);
+        items.forEach((el, i) => el.classList.toggle('ac-active', i === acIdx));
+        if (items[acIdx]) items[acIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (acIdx >= 0 && items[acIdx]) items[acIdx].dispatchEvent(new Event('mousedown'));
+    } else if (e.key === 'Escape') {
+        closeDropdown();
+    }
+}
+
+function selectMemberById(id, name, team) {
+    selectedUserId = id;
+    document.getElementById('targetUserIdField').value = id;
+    document.getElementById('memberSearch').value = name;
+    closeDropdown();
+
     const badge = document.getElementById('selectedBadge');
-    const team = el.dataset.team;
-    badge.innerHTML = `<span class="selected-badge">
-        <i class="bi bi-person-fill"></i>${el.dataset.name}${team ? ' <span class="fw-normal opacity-75">· ' + team + '</span>' : ''}
-    </span>`;
+    const nameEl = document.createElement('span');
+    nameEl.className = 'selected-badge';
+    const icon = document.createElement('i');
+    icon.className = 'bi bi-person-fill';
+    const nameText = document.createTextNode(name);
+    nameEl.appendChild(icon);
+    nameEl.appendChild(nameText);
+    if (team) {
+        const teamEl = document.createElement('span');
+        teamEl.className = 'fw-normal opacity-75';
+        teamEl.textContent = ' · ' + team;
+        nameEl.appendChild(teamEl);
+    }
+    badge.innerHTML = '';
+    badge.appendChild(nameEl);
 
-    fetch('/sales/career-calculator/autofill?userId=' + selectedUserId)
+    fetch('/sales/career-calculator/autofill?userId=' + id)
         .then(r => r.json())
         .then(data => {
             document.getElementById('degreeSelect').value = data.degree || '';
@@ -472,19 +558,14 @@ function selectMember(el) {
             toggleCertDate();
             document.getElementById('certDateInput').value = (hasCert && data.certDate) ? data.certDate : '';
             if (data.degree || data.gradDate || data.certType) {
-                badge.innerHTML += ' <span class="badge bg-success" style="font-size:.7rem;border-radius:6px">문서 자동입력</span>';
+                const autoBadge = document.createElement('span');
+                autoBadge.className = 'badge bg-success ms-1';
+                autoBadge.style.cssText = 'font-size:.7rem;border-radius:6px';
+                autoBadge.textContent = '문서 자동입력';
+                badge.appendChild(autoBadge);
             }
         })
         .catch(() => {});
-}
-
-function filterMembers(q) {
-    q = (q || '').toLowerCase().trim();
-    document.querySelectorAll('.member-item').forEach(el => {
-        const name = (el.dataset.name || '').toLowerCase();
-        const team = (el.dataset.team || '').toLowerCase();
-        el.classList.toggle('d-none', q ? !name.includes(q) && !team.includes(q) : false);
-    });
 }
 
 // ── 취득일자 토글 ──────────────────────────────────────────────────────────────
@@ -578,8 +659,14 @@ function refreshRows() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const selected = document.querySelector('.member-item.selected');
-    if (selected) selected.scrollIntoView({ block: 'nearest' });
+    initMembers();
+    // 이미 선택된 직원이 있으면 검색 input에 이름 채우기
+    const hiddenId = document.getElementById('targetUserIdField').value;
+    if (hiddenId) {
+        selectedUserId = hiddenId;
+        const found = allMembers.find(m => m.id == hiddenId);
+        if (found) document.getElementById('memberSearch').value = found.name;
+    }
     toggleCertDate();
     refreshRows();
 });
