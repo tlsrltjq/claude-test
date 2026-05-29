@@ -1,5 +1,8 @@
 package com.eactive.resourcehub.certificate;
 
+import com.eactive.resourcehub.project.entity.Project;
+import com.eactive.resourcehub.project.entity.ProjectAssignment;
+import com.eactive.resourcehub.project.service.ProjectService;
 import com.eactive.resourcehub.user.service.EmployeeManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
@@ -22,12 +25,14 @@ public class CertificateController {
 
     private final CertificateService certificateService;
     private final EmployeeManagementService employeeService;
+    private final ProjectService projectService;
 
     @GetMapping
     public String index(Model model) {
         boolean available = certificateService.isAvailable();
         model.addAttribute("available", available);
         model.addAttribute("users", getActiveUserNames());
+        model.addAttribute("projects", projectService.getAllNonCancelledProjects());
         if (available) {
             model.addAttribute("files", certificateService.getFiles());
         }
@@ -37,43 +42,36 @@ public class CertificateController {
     @PostMapping("/generate")
     public String generate(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) List<String> names,
-            @RequestParam(defaultValue = "false") boolean all,
             Model model) {
 
         List<String> allUserNames = getActiveUserNames();
-
         CertificateService.CertificateResult result;
-        if (all) {
-            result = certificateService.generateAll(allUserNames);
-        } else if (name != null && !name.isBlank()) {
+
+        if (name != null && !name.isBlank()) {
             result = certificateService.generate(List.of(name.trim()));
-        } else if (names != null && !names.isEmpty()) {
-            result = certificateService.generate(names);
         } else {
             return "redirect:/admin/certificate";
         }
 
-        model.addAttribute("available", true);
-        model.addAttribute("users", allUserNames);
-        model.addAttribute("files", certificateService.getFiles());
-        model.addAttribute("result", result);
+        populateModel(model, allUserNames, result);
         return "admin/certificate";
     }
 
-    @PostMapping("/create")
-    public String create(@RequestParam String name, Model model) {
-        String message;
-        try {
-            certificateService.createTemplate(name.trim());
-            message = "템플릿 생성 완료: " + name;
-        } catch (IOException e) {
-            message = "오류: " + e.getMessage();
-        }
-        model.addAttribute("available", true);
-        model.addAttribute("users", getActiveUserNames());
-        model.addAttribute("files", certificateService.getFiles());
-        model.addAttribute("createMessage", message);
+    @PostMapping("/generate-project")
+    public String generateProject(@RequestParam Long projectId, Model model) {
+        List<String> names = projectService.getMembersForProject(projectId).stream()
+                .map(ProjectAssignment::getUser)
+                .map(u -> u.getName() != null ? u.getName() : "")
+                .filter(n -> !n.isBlank())
+                .distinct()
+                .sorted()
+                .toList();
+
+        CertificateService.CertificateResult result = names.isEmpty()
+                ? new CertificateService.CertificateResult(List.of(), List.of())
+                : certificateService.generate(names);
+
+        populateModel(model, getActiveUserNames(), result);
         return "admin/certificate";
     }
 
@@ -92,6 +90,15 @@ public class CertificateController {
                         .filename(filename, StandardCharsets.UTF_8)
                         .build());
         return ResponseEntity.ok().headers(headers).body(data);
+    }
+
+    private void populateModel(Model model, List<String> userNames,
+                               CertificateService.CertificateResult result) {
+        model.addAttribute("available", true);
+        model.addAttribute("users", userNames);
+        model.addAttribute("projects", projectService.getAllNonCancelledProjects());
+        model.addAttribute("files", certificateService.getFiles());
+        model.addAttribute("result", result);
     }
 
     private List<String> getActiveUserNames() {

@@ -7,6 +7,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+      .cert-section + .cert-section { margin-top: 1rem; border-top: 1px solid #f0f1f3; padding-top: 1rem; }
+      .cert-section-title { font-size:.8rem; font-weight:600; color:var(--tx2); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.6rem; }
+      .cert-ac { position:relative; }
+      .cert-ac-dropdown { position:absolute; top:100%; left:0; right:0; z-index:200;
+        background:#fff; border:1px solid #dde0e5; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.1);
+        max-height:180px; overflow-y:auto; display:none; margin-top:2px; }
+      .cert-ac-dropdown li { list-style:none; padding:.45rem .75rem; font-size:.85rem;
+        cursor:pointer; color:var(--tx1); }
+      .cert-ac-dropdown li:hover, .cert-ac-dropdown li.ac-active { background:#f0f4ff; color:#1d4ed8; }
+      .cert-ac-dropdown-empty { padding:.5rem .75rem; font-size:.83rem; color:var(--tx2); }
+    </style>
 </head>
 <body>
 
@@ -21,12 +33,7 @@
       <div class="page-hd">
         <div>
           <h1 class="page-hd-title"><i class="bi bi-file-earmark-person me-2"></i>재직증명서 발급</h1>
-          <p class="page-hd-sub">직원을 선택해 DOCX · PDF 자동 생성</p>
-        </div>
-        <div class="page-hd-actions" th:if="${available}">
-          <span class="badge rounded-pill bg-secondary px-3 py-2" style="font-size:.85rem">
-            전체 <span th:text="${users.size()}">0</span>명
-          </span>
+          <p class="page-hd-sub">직원 검색 또는 프로젝트 선택으로 DOCX · PDF 자동 생성</p>
         </div>
       </div>
 
@@ -50,76 +57,78 @@
         <div>
           <span class="fw-semibold">발급 완료</span>
           <span class="ms-2">성공 <strong th:text="${result.success().size()}">0</strong>건</span>
+          <span th:if="${result.success().size() > 0}" class="ms-1 text-muted" style="font-size:.82rem"
+                th:text="'(' + ${#strings.listJoin(result.success(), ', ')} + ')'"></span>
           <span th:if="${!result.failed().isEmpty()}" class="ms-2 text-danger">
             / 미등록 <strong th:text="${result.failed().size()}">0</strong>건
             (<span th:text="${#strings.listJoin(result.failed(), ', ')}"></span>)
           </span>
+          <div th:if="${result.success().isEmpty() and result.failed().isEmpty()}"
+               class="text-muted" style="font-size:.83rem">프로젝트에 등록된 멤버가 없습니다.</div>
         </div>
         <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
       </div>
 
+      <!-- 직원 데이터 (autocomplete용) -->
+      <div id="userData" style="display:none"
+           th:each="u : ${users}" th:data-name="${u}"></div>
+
       <!-- 메인 레이아웃 -->
       <div th:if="${available}" class="row g-4 align-items-start">
 
-        <!-- ── 좌: 직원 선택 ── -->
+        <!-- ── 좌: 발급 패널 ── -->
         <div class="col-12 col-lg-5">
           <div class="calc-card" style="position:sticky;top:1rem">
             <div class="calc-card-header">
-              <span><i class="bi bi-person-check-fill"></i>직원 선택</span>
-              <span class="badge bg-primary rounded-pill" id="selBadge"
-                    style="font-size:.72rem;min-width:60px;text-align:center">0명 선택</span>
+              <span><i class="bi bi-file-earmark-arrow-down"></i>재직증명서 발급</span>
             </div>
             <div class="calc-card-body">
 
-              <div th:if="${users.isEmpty()}" class="text-center text-muted py-4" style="font-size:.88rem">
-                <i class="bi bi-inbox d-block mb-1" style="font-size:1.6rem;opacity:.35"></i>
-                등록된 직원이 없습니다.
+              <!-- 단건 발급 -->
+              <div class="cert-section">
+                <div class="cert-section-title">단건 발급</div>
+                <form th:action="@{/admin/certificate/generate}" method="post" id="singleForm">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <input type="hidden" id="selectedName" name="name">
+                  <div class="cert-ac mb-2">
+                    <input type="text" id="nameSearch" class="form-control form-control-sm"
+                           placeholder="직원 이름 검색"
+                           oninput="onNameInput(this.value)"
+                           onfocus="onNameFocus()"
+                           onblur="setTimeout(closeNameDrop,160)"
+                           onkeydown="onNameKey(event)"
+                           autocomplete="off">
+                    <ul class="cert-ac-dropdown" id="nameDrop"></ul>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold"
+                          id="singleBtn" disabled>
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i>
+                    <span id="singleLabel">이름을 선택하세요</span>
+                  </button>
+                </form>
               </div>
 
-              <form th:unless="${users.isEmpty()}"
-                    th:action="@{/admin/certificate/generate}" method="post" id="certForm">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-                <!-- 이름 검색 -->
-                <div class="input-group input-group-sm mb-2">
-                  <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search text-muted"></i>
-                  </span>
-                  <input type="text" id="empSearch" class="form-control border-start-0"
-                         placeholder="이름으로 검색" oninput="filterEmps(this.value)" autocomplete="off">
+              <!-- 프로젝트 일괄 발급 -->
+              <div class="cert-section">
+                <div class="cert-section-title">프로젝트 일괄 발급</div>
+                <div th:if="${#lists.isEmpty(projects)}" class="text-muted" style="font-size:.83rem">
+                  등록된 프로젝트가 없습니다.
                 </div>
-
-                <!-- 전체 선택 토글 -->
-                <div class="d-flex align-items-center justify-content-between mb-2 px-1">
-                  <label class="d-flex align-items-center gap-2 mb-0 user-select-none"
-                         style="cursor:pointer;font-size:.83rem">
-                    <input type="checkbox" id="selectAll" onchange="toggleAll(this.checked)">
-                    전체 선택
-                  </label>
-                  <span class="text-muted" id="filteredLabel" style="font-size:.78rem">총 0명</span>
-                </div>
-
-                <!-- 직원 체크리스트 -->
-                <div id="empList"
-                     style="max-height:300px;overflow-y:auto;border:1px solid #e9ecef;border-radius:8px">
-                  <label th:each="u : ${users}"
-                         class="emp-item d-flex align-items-center gap-2 px-3 mb-0"
-                         style="height:36px;cursor:pointer;font-size:.85rem;border-bottom:1px solid #f5f5f5">
-                    <input type="checkbox" name="names" th:value="${u}"
-                           class="emp-check" onchange="syncSelectAll();updateCount()">
-                    <span class="emp-name" th:text="${u}"></span>
-                  </label>
-                  <div id="emptySearch" class="text-center text-muted py-3"
-                       style="display:none;font-size:.83rem">검색 결과 없음</div>
-                </div>
-
-                <!-- 발급 버튼 -->
-                <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold mt-3"
-                        id="submitBtn" disabled>
-                  <i class="bi bi-file-earmark-arrow-down me-1"></i>
-                  <span id="submitLabel">직원을 선택하세요</span>
-                </button>
-              </form>
+                <form th:unless="${#lists.isEmpty(projects)}"
+                      th:action="@{/admin/certificate/generate-project}" method="post" id="projectForm">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <select name="projectId" class="form-select form-select-sm mb-2" required>
+                    <option value="">프로젝트 선택</option>
+                    <option th:each="p : ${projects}"
+                            th:value="${p.id}"
+                            th:text="${p.name}"></option>
+                  </select>
+                  <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-semibold"
+                          onclick="return confirm('선택한 프로젝트의 모든 멤버에게 재직증명서를 발급하시겠습니까?')">
+                    <i class="bi bi-people me-1"></i>프로젝트 전원 발급
+                  </button>
+                </form>
+              </div>
 
             </div>
           </div>
@@ -196,58 +205,88 @@
 
 <script>
 (function () {
-  var allItems = document.querySelectorAll('.emp-item');
-  var totalCount = allItems.length;
-  var filteredLabel = document.getElementById('filteredLabel');
-  if (filteredLabel) filteredLabel.textContent = '총 ' + totalCount + '명';
+  // ── 직원 이름 autocomplete ──────────────────────────────
+  var allNames = Array.from(document.querySelectorAll('#userData')).map(function (el) {
+    return el.getAttribute('data-name');
+  });
+  var dropEl = document.getElementById('nameDrop');
+  var acIdx  = -1;
 
-  window.filterEmps = function (q) {
-    q = q.trim().toLowerCase();
-    var visible = 0;
-    allItems.forEach(function (item) {
-      var name = item.querySelector('.emp-name').textContent.toLowerCase();
-      var show = !q || name.includes(q);
-      item.style.display = show ? '' : 'none';
-      if (show) visible++;
+  function buildDrop(list) {
+    dropEl.innerHTML = '';
+    if (list.length === 0) {
+      var empty = document.createElement('li');
+      empty.className = 'cert-ac-dropdown-empty';
+      empty.textContent = '검색 결과 없음';
+      dropEl.appendChild(empty);
+    } else {
+      list.forEach(function (name, i) {
+        var li = document.createElement('li');
+        li.textContent = name;
+        li.setAttribute('data-idx', i);
+        li.addEventListener('mousedown', function () { selectName(name); });
+        dropEl.appendChild(li);
+      });
+    }
+    dropEl.style.display = 'block';
+    acIdx = -1;
+  }
+
+  function closeDrop() { dropEl.style.display = 'none'; acIdx = -1; }
+  window.closeNameDrop = closeDrop;
+
+  function selectName(name) {
+    document.getElementById('nameSearch').value = name;
+    document.getElementById('selectedName').value = name;
+    document.getElementById('singleBtn').disabled = false;
+    document.getElementById('singleLabel').textContent = name + ' 재직증명서 발급';
+    closeDrop();
+  }
+
+  function clearName() {
+    document.getElementById('selectedName').value = '';
+    document.getElementById('singleBtn').disabled = true;
+    document.getElementById('singleLabel').textContent = '이름을 선택하세요';
+  }
+
+  window.onNameInput = function (q) {
+    clearName();
+    q = q.trim();
+    if (!q) { closeDrop(); return; }
+    var filtered = allNames.filter(function (n) { return n.includes(q); });
+    buildDrop(filtered);
+  };
+
+  window.onNameFocus = function () {
+    var q = document.getElementById('nameSearch').value.trim();
+    if (q) {
+      var filtered = allNames.filter(function (n) { return n.includes(q); });
+      if (filtered.length) buildDrop(filtered);
+    }
+  };
+
+  window.onNameKey = function (e) {
+    var items = dropEl.querySelectorAll('li[data-idx]');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      acIdx = Math.min(acIdx + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      acIdx = Math.max(acIdx - 1, 0);
+    } else if (e.key === 'Enter' && acIdx >= 0) {
+      e.preventDefault();
+      selectName(items[acIdx].textContent);
+      return;
+    } else if (e.key === 'Escape') {
+      closeDrop(); return;
+    } else { return; }
+    items.forEach(function (li, i) {
+      li.classList.toggle('ac-active', i === acIdx);
     });
-    if (filteredLabel) filteredLabel.textContent = '총 ' + visible + '명';
-    var empty = document.getElementById('emptySearch');
-    if (empty) empty.style.display = visible === 0 ? '' : 'none';
-    syncSelectAll();
   };
 
-  window.toggleAll = function (checked) {
-    allItems.forEach(function (item) {
-      if (item.style.display !== 'none') {
-        item.querySelector('.emp-check').checked = checked;
-      }
-    });
-    updateCount();
-  };
-
-  window.syncSelectAll = function () {
-    var visible = Array.from(allItems).filter(function (item) {
-      return item.style.display !== 'none';
-    });
-    var checks = visible.map(function (item) { return item.querySelector('.emp-check'); });
-    var sa = document.getElementById('selectAll');
-    if (!sa) return;
-    var allChecked = checks.length > 0 && checks.every(function (c) { return c.checked; });
-    var anyChecked = checks.some(function (c) { return c.checked; });
-    sa.checked = allChecked;
-    sa.indeterminate = !allChecked && anyChecked;
-  };
-
-  window.updateCount = function () {
-    var count = document.querySelectorAll('.emp-check:checked').length;
-    var badge = document.getElementById('selBadge');
-    if (badge) badge.textContent = count + '명 선택';
-    var btn = document.getElementById('submitBtn');
-    var label = document.getElementById('submitLabel');
-    if (btn) btn.disabled = count === 0;
-    if (label) label.textContent = count > 0 ? count + '명 재직증명서 발급' : '직원을 선택하세요';
-  };
-
+  // ── loading overlay ────────────────────────────────────
   document.querySelectorAll('form').forEach(function (f) {
     if ((f.getAttribute('method') || 'get').toLowerCase() !== 'get') {
       f.addEventListener('submit', function () {
