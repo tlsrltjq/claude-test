@@ -21,96 +21,101 @@
       <div class="page-hd">
         <div>
           <h1 class="page-hd-title"><i class="bi bi-diagram-3-fill me-2"></i>팀 관리</h1>
-          <p class="page-hd-sub">팀 생성·수정·삭제를 관리합니다</p>
+          <p class="page-hd-sub">총 <strong th:text="${#lists.size(teams)}">0</strong>개 팀</p>
         </div>
       </div>
 
       <!-- 플래시 메시지 -->
-      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-1"></i>
-        <span th:text="${successMessage}"></span>
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible py-2 mb-3 rounded-3" role="alert">
+        <i class="bi bi-check-circle-fill me-1"></i><span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
-      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-1"></i>
-        <span th:text="${errorMessage}"></span>
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible py-2 mb-3 rounded-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i><span th:text="${errorMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
 
-      <!-- 팀 카드 그리드 -->
-      <div th:if="${not #lists.isEmpty(teams)}"
-           class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-4">
-        <div class="col" th:each="t : ${teams}">
-          <div class="card team-card h-100">
-            <div class="card-body p-4">
-              <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="team-icon-circle">
-                  <i class="bi bi-diagram-3-fill"></i>
+      <div class="row g-4 align-items-start">
+
+        <!-- ── 좌: 팀 추가 폼 ── -->
+        <div class="col-12 col-lg-4">
+          <div class="calc-card" style="position:sticky;top:1rem">
+            <div class="calc-card-header">
+              <span><i class="bi bi-plus-circle-fill"></i>새 팀 추가</span>
+            </div>
+            <div class="calc-card-body">
+              <form th:action="@{/admin/teams}" th:object="${teamRequest}" method="post">
+                <div class="mb-3">
+                  <label class="field-label">팀 이름 <span class="text-danger">*</span></label>
+                  <input type="text" th:field="*{name}" class="form-control form-control-sm"
+                         th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                         placeholder="팀 이름을 입력하세요" required>
+                  <div class="invalid-feedback" th:errors="*{name}"></div>
                 </div>
-                <div class="flex-grow-1 min-w-0">
-                  <h6 class="fw-bold mb-0 text-truncate" th:text="${t.name}"></h6>
-                  <small class="text-muted">
-                    <i class="bi bi-calendar3 me-1"></i>
-                    <span th:text="${#temporals.format(t.createdAt, 'yyyy-MM-dd')}"></span>
-                  </small>
+                <div class="mb-3">
+                  <label class="field-label">설명 <span class="text-muted fw-normal">(선택)</span></label>
+                  <input type="text" th:field="*{description}" class="form-control form-control-sm"
+                         placeholder="팀 설명을 입력하세요">
                 </div>
-              </div>
-              <p class="text-muted small mb-3"
-                 th:text="${t.description != null and !#strings.isEmpty(t.description) ? t.description : '설명 없음'}"
-                 style="min-height:2.4em;"></p>
-              <div class="d-flex gap-2">
-                <a th:href="@{/admin/teams/{id}/edit(id=${t.id})}"
-                   class="btn btn-outline-primary btn-sm flex-fill">
-                  <i class="bi bi-pencil me-1"></i>수정
-                </a>
-                <form th:action="@{/admin/teams/{id}/delete(id=${t.id})}" method="post"
-                      class="flex-fill"
-                      onsubmit="return confirm('삭제하시겠습니까?')">
-                  <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                    <i class="bi bi-trash me-1"></i>삭제
-                  </button>
-                </form>
-              </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">
+                  <i class="bi bi-plus-lg me-1"></i>팀 추가
+                </button>
+              </form>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- 빈 상태 -->
-      <div th:if="${#lists.isEmpty(teams)}" class="empty-state mb-4">
-        <i class="bi bi-diagram-3 fs-1 d-block mb-3 opacity-40"></i>
-        <p class="mb-0 fw-semibold">등록된 팀이 없습니다.</p>
-        <small>아래 양식으로 첫 번째 팀을 추가해보세요.</small>
-      </div>
+        <!-- ── 우: 팀 목록 ── -->
+        <div class="col-12 col-lg-8">
 
-      <!-- 새 팀 추가 카드 -->
-      <div class="card add-card mb-5">
-        <div class="card-header py-3">
-          <i class="bi bi-plus-circle me-2"></i>새 팀 추가
-        </div>
-        <div class="card-body p-4">
-          <form th:action="@{/admin/teams}" th:object="${teamRequest}" method="post">
-            <div class="row g-3 align-items-start">
-              <div class="col-md-4">
-                <label class="form-label fw-semibold small text-muted">팀 이름 <span class="text-danger">*</span></label>
-                <input type="text" th:field="*{name}" class="form-control"
-                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
-                       placeholder="팀 이름을 입력하세요" required>
-                <div class="invalid-feedback" th:errors="*{name}"></div>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small text-muted">설명 (선택)</label>
-                <input type="text" th:field="*{description}" class="form-control"
-                       placeholder="팀 설명을 입력하세요">
-              </div>
-              <div class="col-md-2">
-                <label class="form-label fw-semibold small text-muted d-none d-md-block">&nbsp;</label>
-                <button type="submit" class="btn btn-primary w-100">
-                  <i class="bi bi-plus-lg me-1"></i>추가
-                </button>
-              </div>
+          <!-- 빈 상태 -->
+          <div th:if="${#lists.isEmpty(teams)}" class="empty-state">
+            <i class="bi bi-diagram-3"></i>
+            <p>등록된 팀이 없습니다.<br><small class="text-muted">왼쪽 폼으로 첫 번째 팀을 추가해보세요.</small></p>
+          </div>
+
+          <!-- 목록 테이블 -->
+          <div th:if="${!#lists.isEmpty(teams)}" class="members-card">
+            <div class="table-responsive">
+              <table class="table members-table mb-0">
+                <thead>
+                <tr>
+                  <th>팀 이름</th>
+                  <th>설명</th>
+                  <th style="width:90px">생성일</th>
+                  <th style="width:110px"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${teams}">
+                  <td class="fw-semibold" style="color:var(--tx1)" th:text="${t.name}"></td>
+                  <td class="text-muted" style="font-size:.82rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                      th:text="${t.description != null and !#strings.isEmpty(t.description) ? t.description : '-'}"></td>
+                  <td class="text-muted" style="font-size:.8rem"
+                      th:text="${#temporals.format(t.createdAt, 'yy.MM.dd')}"></td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a th:href="@{/admin/teams/{id}/edit(id=${t.id})}"
+                         class="btn btn-sm btn-outline-primary"
+                         style="font-size:.75rem;border-radius:6px;padding:.2rem .55rem">
+                        <i class="bi bi-pencil me-1"></i>수정
+                      </a>
+                      <form th:action="@{/admin/teams/{id}/delete(id=${t.id})}" method="post"
+                            class="d-inline" onsubmit="return confirm('팀을 삭제하시겠습니까?')">
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger"
+                                style="font-size:.75rem;border-radius:6px;padding:.2rem .55rem">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
             </div>
-          </form>
+          </div>
+
         </div>
       </div>
 
