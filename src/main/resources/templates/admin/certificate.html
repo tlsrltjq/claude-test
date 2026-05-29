@@ -18,6 +18,8 @@
         cursor:pointer; color:var(--tx1); }
       .cert-ac-dropdown li:hover, .cert-ac-dropdown li.ac-active { background:#f0f4ff; color:#1d4ed8; }
       .cert-ac-dropdown-empty { padding:.5rem .75rem; font-size:.83rem; color:var(--tx2); }
+      .cert-new-row { background:#f0fdf4 !important; }
+      .badge-new { background:#16a34a !important; color:#fff; font-size:.65rem; }
     </style>
 </head>
 <body>
@@ -162,7 +164,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="f,fs : ${files}">
+                <tr th:each="f,fs : ${files}"
+                    th:classappend="${newFiles != null and newFiles.contains(f)} ? 'cert-new-row'">
                   <td>
                     <span th:if="${f.endsWith('.pdf')}"
                           class="doc-list-icon ext-pdf">PDF</span>
@@ -171,7 +174,9 @@
                   </td>
                   <td style="font-size:.83rem;color:var(--tx1)">
                     <span th:text="${f}"></span>
-                    <span th:if="${fs.first}"
+                    <span th:if="${newFiles != null and newFiles.contains(f)}"
+                          class="badge badge-new rounded-pill ms-1">NEW</span>
+                    <span th:if="${(newFiles == null or newFiles.isEmpty()) and fs.first}"
                           class="badge rounded-pill ms-1"
                           style="background:#e7f0ff;color:#1d4ed8;font-size:.65rem">최신</span>
                   </td>
@@ -259,10 +264,8 @@
 
   window.onNameFocus = function () {
     var q = document.getElementById('nameSearch').value.trim();
-    if (q) {
-      var filtered = allNames.filter(function (n) { return n.includes(q); });
-      if (filtered.length) buildDrop(filtered);
-    }
+    var list = q ? allNames.filter(function (n) { return n.includes(q); }) : allNames.slice();
+    buildDrop(list);
   };
 
   window.onNameKey = function (e) {

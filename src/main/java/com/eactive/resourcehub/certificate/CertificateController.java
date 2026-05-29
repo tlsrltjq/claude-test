@@ -15,8 +15,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/admin/certificate")
@@ -53,7 +57,8 @@ public class CertificateController {
             return "redirect:/admin/certificate";
         }
 
-        populateModel(model, allUserNames, result);
+        certificateService.cleanupFiles(50);
+        populateModel(model, allUserNames, result, buildNewFilesSet(result));
         return "admin/certificate";
     }
 
@@ -71,7 +76,8 @@ public class CertificateController {
                 ? new CertificateService.CertificateResult(List.of(), List.of())
                 : certificateService.generate(names);
 
-        populateModel(model, getActiveUserNames(), result);
+        certificateService.cleanupFiles(50);
+        populateModel(model, getActiveUserNames(), result, buildNewFilesSet(result));
         return "admin/certificate";
     }
 
@@ -93,12 +99,24 @@ public class CertificateController {
     }
 
     private void populateModel(Model model, List<String> userNames,
-                               CertificateService.CertificateResult result) {
+                               CertificateService.CertificateResult result, Set<String> newFiles) {
         model.addAttribute("available", true);
         model.addAttribute("users", userNames);
         model.addAttribute("projects", projectService.getAllNonCancelledProjects());
         model.addAttribute("files", certificateService.getFiles());
         model.addAttribute("result", result);
+        model.addAttribute("newFiles", newFiles);
+    }
+
+    private Set<String> buildNewFilesSet(CertificateService.CertificateResult result) {
+        if (result.success().isEmpty()) return Set.of();
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        Set<String> set = new HashSet<>();
+        for (String name : result.success()) {
+            set.add("재직증명서_" + name + "_" + today + ".docx");
+            set.add("재직증명서_" + name + "_" + today + ".pdf");
+        }
+        return set;
     }
 
     private List<String> getActiveUserNames() {

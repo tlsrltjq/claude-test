@@ -68,6 +68,31 @@ def list_files():
     return jsonify({"files": files})
 
 
+@app.route("/files/cleanup", methods=["POST"])
+def cleanup_files():
+    """output/ 디렉터리를 정리한다. maxFiles 초과분을 오래된 것부터 삭제."""
+    data = request.get_json(force=True, silent=True) or {}
+    max_files = int(data.get("maxFiles", 50))
+
+    if not OUTPUT_DIR.exists():
+        return jsonify({"deleted": [], "remaining": 0})
+
+    all_files = sorted(
+        [f for f in OUTPUT_DIR.iterdir() if f.is_file()],
+        reverse=True,   # 파일명 내림차순 = 날짜 내림차순 (최신 먼저)
+    )
+
+    deleted = []
+    for f in all_files[max_files:]:
+        try:
+            f.unlink()
+            deleted.append(f.name)
+        except Exception:
+            pass
+
+    return jsonify({"deleted": deleted, "remaining": len(all_files) - len(deleted)})
+
+
 @app.route("/download/<path:filename>")
 def download(filename):
     file_path = OUTPUT_DIR / filename

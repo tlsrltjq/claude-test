@@ -112,6 +112,20 @@ public class CertificateService {
         }
     }
 
+    /** 오래된 파일을 삭제해 maxFiles 이하로 유지. 실패해도 조용히 처리. */
+    public void cleanupFiles(int maxFiles) {
+        try {
+            String body = mapper.writeValueAsString(java.util.Map.of("maxFiles", maxFiles));
+            JsonNode result = post("/files/cleanup", body);
+            List<String> deleted = toList(result.path("deleted"));
+            if (!deleted.isEmpty()) {
+                log.info("[Certificate GC] 오래된 파일 {}개 삭제", deleted.size());
+            }
+        } catch (Exception e) {
+            log.warn("[Certificate GC] 파일 정리 실패: {}", e.getMessage());
+        }
+    }
+
     public boolean isAvailable() {
         try {
             JsonNode node = get("/health");
