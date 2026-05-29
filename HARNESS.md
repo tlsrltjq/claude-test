@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V223 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-29):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. 이번 세션 완료 항목: 프로젝트·배정 상태 자동 전환 스케줄러(매일 자정), 내 폴더·공용 폴더 카드/리스트 뷰 토글(localStorage 유지), 문서 상세 info-row 여백 개선, 검색 '공유' 폴더 유형 제거, 대시보드 '활동 기록' 버튼 제거, 사이드바 접힘 상태 로그아웃 텍스트 버그 수정.
+**현재 상태 (2026-05-29):** Flyway V223. BUILD SUCCESSFUL. security-lint 15/15 PASS. 이번 세션 완료 항목: 전사인력조회 페이징(30명)·정렬 시각화·직원문서목록 카드/리스트 뷰, 인력표 등급 카드→인라인 통계(초기화 옆)·투입 정보 한 줄화·프리셋 선택 복원·미설정 등급 지원, 기술등급 산출 직원 선택 autocomplete 드롭다운 교체.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 

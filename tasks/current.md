@@ -71,13 +71,9 @@
 2026-05-29: UX 개선 다수 완료. BUILD SUCCESSFUL. security-lint 15/15 PASS.
 
 완료 항목:
-- 투입 캘린더: 전체 프로젝트 리스트(ACTIVE+PLANNED+ENDED 접기), 인력현황 툴바 1줄 통합, AJAX 월 이동 슬라이드
-- 프로젝트·배정 상태 자동 전환 스케줄러 (매일 자정, ProjectStatusScheduler)
-- 내 폴더·공용 폴더: 카드/리스트 뷰 토글 (localStorage 유지), 검색바 flex 정렬 수정
-- 내 폴더 '승인됨' 배지 제거
-- 문서 상세 페이지 info-row 여백·정렬 개선, 버전 목록 스타일 정리
-- 검색 폴더 유형에서 '공유' 제거
-- 대시보드 '활동 기록' 버튼 제거 (전 역할)
-- 사이드바 접힘 상태 로그아웃 텍스트 노출 버그 수정
+- 전사인력조회(/sales/members): 아바타 제거, 행 축소, 서버사이드 페이징(30명), 정렬 시각화
+- 직원문서목록(/sales/members/N/documents): 카드/리스트 뷰 토글 (localStorage: memberDocView)
+- 인력표(/sales/profiles): 등급 카드 제거 → 초기화 버튼 옆 인라인 통계, 투입 정보 한 줄화(~MM/dd만), 프리셋 선택 localStorage 복원, ZIP 옆 구분선+프리셋 이동, 저장 패널 한 줄, 미설정 등급 필터/통계 추가
+- 기술등급 산출(/sales/career-calculator): 직원 선택 스크롤 리스트 → autocomplete 드롭다운 (키보드 탐색, DOM 빌드, 자동 복원)
 
 **다음 작업 없음 — 사용자 지시 대기**
