@@ -73,7 +73,7 @@
     <form th:action="@{/logout}" method="post">
       <input type="hidden" name="_csrf" th:value="${_csrf.token}">
       <button type="submit" class="sb-logout">
-        <i class="bi bi-box-arrow-right"></i> 로그아웃
+        <i class="bi bi-box-arrow-right"></i><span> 로그아웃</span>
       </button>
     </form>
   </div>
