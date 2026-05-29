@@ -75,5 +75,9 @@
 - 직원문서목록(/sales/members/N/documents): 카드/리스트 뷰 토글 (localStorage: memberDocView)
 - 인력표(/sales/profiles): 등급 카드 제거 → 초기화 버튼 옆 인라인 통계, 투입 정보 한 줄화(~MM/dd만), 프리셋 선택 localStorage 복원, ZIP 옆 구분선+프리셋 이동, 저장 패널 한 줄, 미설정 등급 필터/통계 추가
 - 기술등급 산출(/sales/career-calculator): 직원 선택 스크롤 리스트 → autocomplete 드롭다운 (키보드 탐색, DOM 빌드, 자동 복원)
+- 경력계산기 결과 화면: 배너 내 career stats(총 경력·총 일수·인정 일수), 비교 카드 side-by-side, 상세 테이블 상태 컬럼 제거
+- 관리자 직원관리(/admin/employees): 아바타 제거, 행 압축, 페이징 30명, 서버사이드 정렬(이름·직급·권한·상태), 토글 버튼 폭 통일
+- 관리자 팀관리(/admin/teams): 2컬럼 레이아웃(sticky 추가 폼 좌 + 컴팩트 테이블 우), 팀아이콘 제거
+- 관리자 문서검토(/admin/documents-review): 파일유형 아이콘, 팀 배지 직원명 하단, 미리보기+검토 버튼, 날짜 yy.MM.dd, 상태 컬럼 제거
 
 **다음 작업 없음 — 사용자 지시 대기**
