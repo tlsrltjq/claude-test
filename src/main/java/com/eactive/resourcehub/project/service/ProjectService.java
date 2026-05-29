@@ -8,6 +8,7 @@ import com.eactive.resourcehub.project.dto.ProjectMemberRequest;
 import com.eactive.resourcehub.project.dto.ProjectUpdateRequest;
 import com.eactive.resourcehub.project.entity.Project;
 import com.eactive.resourcehub.project.entity.ProjectAssignment;
+import com.eactive.resourcehub.project.entity.ProjectStatus;
 import com.eactive.resourcehub.project.repository.ProjectAssignmentRepository;
 import com.eactive.resourcehub.project.repository.ProjectRepository;
 import com.eactive.resourcehub.user.entity.User;
@@ -102,9 +103,14 @@ public class ProjectService {
         req.validate();
 
         Project project = findById(id);
+        ProjectStatus newStatus = req.getStatus() != null ? req.getStatus() : project.getStatus();
         project.update(req.getName(), req.getClientName(),
                 req.getStartDate(), req.getEndDate(),
-                req.getMemo(), req.getStatus() != null ? req.getStatus() : project.getStatus());
+                req.getMemo(), newStatus);
+
+        if (newStatus == ProjectStatus.CANCELLED) {
+            assignmentRepository.cancelByProject(id);
+        }
 
         log.info("프로젝트 수정 — id={}, name={}", id, project.getName());
         auditService.log(actorId, AuditActionType.UPDATE_PROJECT,

@@ -24,19 +24,6 @@
   <!-- Nav -->
   <nav class="sb-nav">
 
-    <!-- 관리자 (최상단 고정) -->
-    <div class="sb-section" sec:authorize="hasRole('ADMIN')">
-      <div class="sb-section-title">관리자</div>
-      <a th:href="@{/admin}"                      class="sb-link" data-path="/admin"                      data-exact="true"><i class="bi bi-speedometer2"></i><span>관리자 대시보드</span></a>
-      <a th:href="@{/admin/employees}"            class="sb-link" data-path="/admin/employees"                             ><i class="bi bi-person-lines-fill"></i><span>직원 관리</span></a>
-      <a th:href="@{/admin/teams}"                class="sb-link" data-path="/admin/teams"                                 ><i class="bi bi-diagram-3"></i><span>팀 관리</span></a>
-      <a th:href="@{/admin/documents/review}"     class="sb-link" data-path="/admin/documents"                             ><i class="bi bi-file-earmark-check"></i><span>문서 검토</span></a>
-      <a th:href="@{/admin/statistics}"           class="sb-link" data-path="/admin/statistics"                            ><i class="bi bi-bar-chart"></i><span>통계</span></a>
-      <a th:href="@{/admin/certificate}"          class="sb-link" data-path="/admin/certificate"                           ><i class="bi bi-file-earmark-text"></i><span>재직증명서</span></a>
-      <a th:href="@{/admin/allowed-emails}"       class="sb-link" data-path="/admin/allowed-emails"                        ><i class="bi bi-envelope-check"></i><span>가입 허용</span></a>
-      <a th:href="@{/admin/gc}"                   class="sb-link" data-path="/admin/gc"                                   ><i class="bi bi-trash3"></i><span>파일 GC</span></a>
-    </div>
-
     <!-- 내 화면 -->
     <div class="sb-section">
       <div class="sb-section-title">내 화면</div>
@@ -54,6 +41,19 @@
       <a th:href="@{/sales/members}"            class="sb-link" data-path="/sales/members"            ><i class="bi bi-people"></i><span>전사 인력 조회</span></a>
       <a th:href="@{/sales/profiles}"           class="sb-link" data-path="/sales/profiles"           ><i class="bi bi-table"></i><span>인력표</span></a>
       <a th:href="@{/sales/career-calculator}"  class="sb-link" data-path="/sales/career-calculator"  ><i class="bi bi-calculator"></i><span>경력 계산기</span></a>
+    </div>
+
+    <!-- 관리자 -->
+    <div class="sb-section" sec:authorize="hasRole('ADMIN')">
+      <div class="sb-section-title">관리자</div>
+      <a th:href="@{/admin}"                      class="sb-link" data-path="/admin"                      data-exact="true"><i class="bi bi-speedometer2"></i><span>관리자 대시보드</span></a>
+      <a th:href="@{/admin/employees}"            class="sb-link" data-path="/admin/employees"                             ><i class="bi bi-person-lines-fill"></i><span>직원 관리</span></a>
+      <a th:href="@{/admin/teams}"                class="sb-link" data-path="/admin/teams"                                 ><i class="bi bi-diagram-3"></i><span>팀 관리</span></a>
+      <a th:href="@{/admin/documents/review}"     class="sb-link" data-path="/admin/documents"                             ><i class="bi bi-file-earmark-check"></i><span>문서 검토</span></a>
+      <a th:href="@{/admin/statistics}"           class="sb-link" data-path="/admin/statistics"                            ><i class="bi bi-bar-chart"></i><span>통계</span></a>
+      <a th:href="@{/admin/certificate}"          class="sb-link" data-path="/admin/certificate"                           ><i class="bi bi-file-earmark-text"></i><span>재직증명서</span></a>
+      <a th:href="@{/admin/allowed-emails}"       class="sb-link" data-path="/admin/allowed-emails"                        ><i class="bi bi-envelope-check"></i><span>가입 허용</span></a>
+      <a th:href="@{/admin/gc}"                   class="sb-link" data-path="/admin/gc"                                   ><i class="bi bi-trash3"></i><span>파일 GC</span></a>
     </div>
 
   </nav>

@@ -72,7 +72,6 @@ public class ProjectAssignmentController {
         model.addAttribute("today",                    today);
         model.addAttribute("weeks",                    CalendarGridBuilder.buildWeeks(ym));
         model.addAttribute("weekBars",                 CalendarGridBuilder.buildProjectWeekBars(monthlyProjects, ym));
-        model.addAttribute("dayMap",                   CalendarGridBuilder.buildDayMap(assignments, ym));
         model.addAttribute("allAssignments",           assignments);
         model.addAttribute("monthlyProjects",          monthlyProjects);
         model.addAttribute("activeAndPlannedProjects", activeAndPlannedProjects);
