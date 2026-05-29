@@ -37,8 +37,7 @@
 
       <!-- 검색/필터 -->
       <div class="filter-card">
-          <div class="d-flex align-items-end gap-2 flex-wrap">
-          <form id="filterForm" method="get" th:action="@{/sales/profiles}" class="d-flex align-items-end gap-2 flex-wrap" style="flex:1;min-width:0">
+          <form id="filterForm" method="get" th:action="@{/sales/profiles}" class="d-flex align-items-end gap-2 flex-wrap">
               <div>
                   <div class="filter-label">이름·이메일</div>
                   <div class="input-group input-group-sm" style="min-width:170px">
@@ -114,34 +113,33 @@
               </div>
               <input type="hidden" name="sort" th:value="${query.sort}">
               <input type="hidden" name="direction" th:value="${query.direction}">
-              <div class="d-flex gap-1">
+              <div class="d-flex gap-1 align-items-center">
                   <button type="submit" class="btn btn-primary btn-sm fw-semibold px-3">검색</button>
                   <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetAll()">초기화</button>
+                  <div class="grade-stats-inline flex-shrink-0">
+                      <div class="grade-stat grade-stat-special">
+                          <strong th:text="${gradeCounts != null and gradeCounts['특급'] != null ? gradeCounts['특급'] : 0}">0</strong>
+                          <span>특급</span>
+                      </div>
+                      <div class="grade-stat grade-stat-high">
+                          <strong th:text="${gradeCounts != null and gradeCounts['고급'] != null ? gradeCounts['고급'] : 0}">0</strong>
+                          <span>고급</span>
+                      </div>
+                      <div class="grade-stat grade-stat-mid">
+                          <strong th:text="${gradeCounts != null and gradeCounts['중급'] != null ? gradeCounts['중급'] : 0}">0</strong>
+                          <span>중급</span>
+                      </div>
+                      <div class="grade-stat grade-stat-low">
+                          <strong th:text="${gradeCounts != null and gradeCounts['초급'] != null ? gradeCounts['초급'] : 0}">0</strong>
+                          <span>초급</span>
+                      </div>
+                      <div class="grade-stat" style="color:var(--tx3)">
+                          <strong th:text="${gradeCounts != null and gradeCounts['미설정'] != null ? gradeCounts['미설정'] : 0}">0</strong>
+                          <span>미설정</span>
+                      </div>
+                  </div>
               </div>
           </form>
-          <div class="grade-stats-inline ms-auto flex-shrink-0">
-              <div class="grade-stat grade-stat-special">
-                  <strong th:text="${gradeCounts != null and gradeCounts['특급'] != null ? gradeCounts['특급'] : 0}">0</strong>
-                  <span>특급</span>
-              </div>
-              <div class="grade-stat grade-stat-high">
-                  <strong th:text="${gradeCounts != null and gradeCounts['고급'] != null ? gradeCounts['고급'] : 0}">0</strong>
-                  <span>고급</span>
-              </div>
-              <div class="grade-stat grade-stat-mid">
-                  <strong th:text="${gradeCounts != null and gradeCounts['중급'] != null ? gradeCounts['중급'] : 0}">0</strong>
-                  <span>중급</span>
-              </div>
-              <div class="grade-stat grade-stat-low">
-                  <strong th:text="${gradeCounts != null and gradeCounts['초급'] != null ? gradeCounts['초급'] : 0}">0</strong>
-                  <span>초급</span>
-              </div>
-              <div class="grade-stat" style="color:var(--tx3)">
-                  <strong th:text="${gradeCounts != null and gradeCounts['미설정'] != null ? gradeCounts['미설정'] : 0}">0</strong>
-                  <span>미설정</span>
-              </div>
-          </div>
-          </div>
       </div>
 
       <!-- 툴바 -->
