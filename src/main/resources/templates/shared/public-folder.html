@@ -72,10 +72,10 @@
                                    onclick="document.getElementById('publicFileInput').click()">
                                   <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                                   <div class="drop-text">클릭하거나 파일을 끌어다 놓으세요</div>
-                                  <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, HWPX, PPT, PPTX · 최대 20MB</div>
+                                  <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, PPT, ZIP, XLSX, XLS · 20MB 이하 즉시 승인 / 100MB 이하 검토 후 승인</div>
                               </div>
                               <input type="file" id="publicFileInput" name="file" class="d-none" required
-                                     accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx"
+                                     accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx,.zip,.xlsx,.xls"
                                      onchange="onPublicFileChange(this)">
                               <div class="file-name-display" id="publicFileNameDisplay">
                                   <i class="bi bi-file-earmark-fill text-primary"></i>
@@ -404,8 +404,8 @@ if (drop) {
     });
 }
 
-var ALLOWED_EXTS_PUB = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx'];
-var MAX_SIZE_PUB = 20 * 1024 * 1024;
+var ALLOWED_EXTS_PUB = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx','zip','xlsx','xls'];
+var MAX_SIZE_PUB = 100 * 1024 * 1024;
 
 var form = document.getElementById('publicUploadForm');
 if (form) {
@@ -418,7 +418,7 @@ if (form) {
         if (!file) { showPubError('파일을 선택해주세요.'); return; }
         var ext = file.name.split('.').pop().toLowerCase();
         if (!ALLOWED_EXTS_PUB.includes(ext)) { showPubError('허용되지 않는 파일 형식입니다: ' + ext); return; }
-        if (file.size > MAX_SIZE_PUB) { showPubError('파일 크기가 20MB를 초과합니다.'); return; }
+        if (file.size > MAX_SIZE_PUB) { showPubError('파일 크기가 100MB를 초과합니다.'); return; }
 
         var btn = document.getElementById('publicUploadBtn');
         var progressWrap = document.getElementById('publicProgressWrap');

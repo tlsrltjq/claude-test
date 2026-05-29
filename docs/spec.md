@@ -1,7 +1,7 @@
 # 제품 기능 스펙
 
-> 현재 코드(V217 기준) 기반 기능 SSOT. "왜"는 `docs/decisions.md`, "어디"는 `docs/architecture.md`, "화면"은 `docs/frontend.md`.
-> 참고 소스: 각 Controller/Service, `SecurityConfig.java`, Flyway V1~V217
+> 현재 코드(V226 기준) 기반 기능 SSOT. "왜"는 `docs/decisions.md`, "어디"는 `docs/architecture.md`, "화면"은 `docs/frontend.md`.
+> 참고 소스: 각 Controller/Service, `SecurityConfig.java`, Flyway V1~V226
 
 ---
 
@@ -19,7 +19,7 @@
 - 경로: `GET/POST /signup`, `GET/POST /signup/verify`, `POST /signup/resend`
 - 흐름: 폼 입력 → 이메일 인증 코드 발송 → 코드 입력 → 계정 ACTIVE
 - 필수 입력: 이름, 생년월일, 연락처, 회사 이메일(전체), 주소, 직급, 비밀번호, 개인정보 수집·이용 동의
-- 선택 입력: 팀
+- 선택 입력: 팀, 입사일(join_date — 점 구분 텍스트 입력, YYYYMMDD 형식으로 서버 전달)
 - 비밀번호 정책: 영문·숫자·특수문자 포함, 8자 이상
 - 인증 코드: 10분 TTL, 재발송 가능
 - 이메일: 전체 이메일 주소 입력. 사전 등록된 이메일(`allowed_emails` 테이블)에 없으면 가입 차단
@@ -42,9 +42,10 @@
 ### 1-4. 계정 설정
 
 - 경로: `GET /settings`, `POST /settings/profile`, `POST /settings/team`, `POST /settings/password`
-- 탭: 기본정보(`?tab=info` — 이름·주소·팀), 개인정보(`?tab=profile` — 연락처·생년월일), 비밀번호 변경(`?tab=password`)
+- 탭: 기본정보(`?tab=info` — 이름·주소·팀), 개인정보(`?tab=profile` — 연락처·생년월일·입사일), 비밀번호 변경(`?tab=password`)
 - 모든 역할 접근 가능
 - 직급은 관리자만 변경 가능 (ADMIN `/admin/employees/{id}/change-position`)
+- 입사일(join_date): 선택 입력, `date` 피커, 재직증명서 `{{입사일}}` 변수 연동
 
 ---
 
@@ -150,16 +151,24 @@
 
 ### 8-4. 프로젝트 투입 관리
 
+**프로젝트 CRUD**
+- 경로: `GET /sales/projects`, `GET /sales/projects/create`, `POST /sales/projects/create`
+- `GET /sales/projects/{id}`, `GET /sales/projects/{id}/edit`, `POST /sales/projects/{id}/edit`
+- `POST /sales/projects/{id}/delete` (ADMIN만)
+- `POST /sales/projects/{id}/members/add` (ADMIN만 — 직원 일괄 등록)
+- `POST /sales/projects/{id}/members/{assignmentId}/remove` (ADMIN만)
+- 프로젝트 상태: PLANNED / ACTIVE / ENDED / CANCELLED (CHECK 제약)
+
+**캘린더**
 - 경로: `GET /sales/calendar`
-- `POST /sales/assignments` (ADMIN만)
-- `POST /sales/assignments/{id}` (ADMIN만)
-- `POST /sales/assignments/{id}/delete` (ADMIN만)
-- 캘린더: 월별 직원 배정 현황. 일요일 시작, 기간 클리핑. CANCELLED 제외.
-- 배정 등록: 대상 직원·프로젝트명·기간·투입률(0~100)·역할·고객사·메모
+- 월별 직원 배정 현황 그리드. 일요일 시작, 기간 클리핑. CANCELLED 배정 제외.
 - 상태 자동 결정: 오늘 기준 `today < startDate` → PLANNED, `today >= startDate` → ACTIVE
 - 중복 투입: 저장 허용, `overlapWarning` flash로 경고만 표시 (ADR-037)
 - 인력표 투입 정보 컬럼: 투입 중(ACTIVE) / 투입 예정(PLANNED) / 미투입 배지로 표시
-- 대시보드 투입 요약 카드: 현재 투입 중·이번달 시작/종료·미투입 인원 수, 종료 임박 5건
+
+**대시보드 투입 요약 카드** (모든 역할)
+- 내 프로젝트 현황: ACTIVE·PLANNED 배정 목록 (상태 배지·프로젝트명·역할·기간·잔여일)
+- SALES/ADMIN 전용 KPI 4종: 현재 투입 중·이번달 신규 투입·이번달 종료 예정·미투입 인원 수, 종료 임박 5건
 
 ---
 
@@ -177,10 +186,12 @@
 - `POST /admin/employees/{userId}/toggle-status`
 - `POST /admin/employees/{userId}/change-position`
 - `POST /admin/employees/{userId}/change-team`
+- `POST /admin/employees/{userId}/delete` — 계정 완전 삭제 (확인 prompt 포함)
 - 직원 검색·필터(이름·직급·역할·팀), 페이지네이션
 - 계정 활성/비활성: 비활성 시 기존 세션 즉시 만료
 - 역할 변경: `POST /admin/users/{userId}/role` → 세션 즉시 만료(재로그인 시 새 권한 적용)
 - 권한 부여/회수: `POST /admin/users/{userId}/permissions/grant|revoke`
+- 삭제 시 연관 데이터: project_assignments user_id → SET NULL(이름 스냅샷 유지), 그 외 audit_logs·document_versions·resume_templates·documents.deleted_by → SET NULL, folders·permissions·employee_profiles → CASCADE (V224·V226)
 
 ### 9-3. 팀 관리
 
@@ -218,9 +229,12 @@
 
 ### 9-9. 가입 허용 이메일 관리
 
-- 경로: `GET /admin/allowed-emails`, `POST /admin/allowed-emails`, `POST /admin/allowed-emails/{id}/delete`
-- 사전 등록된 이메일만 회원가입 허용 (`allowed_emails` 테이블)
-- 이메일 추가·삭제. 등록되지 않은 이메일은 회원가입 폼 제출 시 차단
+- 경로: `GET /admin/allowed-emails`, `POST /admin/allowed-emails/{id}/delete`
+- 단건 등록: `POST /admin/allowed-emails` (email 파라미터)
+- 텍스트 일괄 등록: `POST /admin/allowed-emails/bulk` (쉼표·공백·줄바꿈 구분)
+- 엑셀 일괄 등록: `POST /admin/allowed-emails/bulk-excel` (.xlsx / .xls, 첫 번째 열 이메일)
+- 결과 flash: 추가 N건 / 건너뜀 K건 안내
+- 사전 등록된 이메일만 회원가입 허용 (`allowed_emails` 테이블). 등록되지 않은 이메일은 가입 폼 제출 시 차단
 
 ---
 

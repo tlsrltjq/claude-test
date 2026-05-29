@@ -42,7 +42,7 @@
 ## ADR-007: 스키마 변경은 Flyway 만, `ddl-auto: validate`
 - 결정: JPA 엔티티 변경 시 무조건 Flyway 마이그레이션 추가. `ddl-auto` 는 항상 `validate` (운영도 동일).
 - 이유: Hibernate auto-DDL 의 실수로 인한 운영 데이터 손실 방지. 마이그레이션은 코드 리뷰 대상.
-- 번호 규칙: V1–V6=MVP1, V100~=MVP2, V200~=MVP3·post-MVP3. 새 변경은 V216 이후.
+- 번호 규칙: V1–V6=MVP1, V100~=MVP2, V200~=MVP3·post-MVP3. 새 변경은 V227부터.
 - 정적 검사: `scripts/security-lint.sh [12]`.
 
 ## ADR-008: 감사 로그는 REQUIRES_NEW
@@ -188,6 +188,13 @@
 - 이유: 정적 private 메서드는 컨트롤러를 `@WebMvcTest` 로 올려야만 테스트 가능. 순수 로직(`buildWeeks`, `buildDayMap`)은 Spring 컨텍스트 없이 검증돼야 한다. package-private 분리로 `src/test/java` 동일 패키지에서 직접 접근 가능.
 - 트레이드오프: 컨트롤러 파일이 하나 늘어남. public 도우미 클래스가 아니므로 외부 패키지 접근 불가.
 - 적용 범위: 주 1회 빌드 실패 방지보다 테스트 가능성(testability) 이 높은 가치임. 향후 캘린더 로직 변경 시 `CalendarGridBuilderTest` 먼저 수정.
+
+## ADR-039: 계정 삭제 시 프로젝트 배정 이름 보존 (SET NULL + 스냅샷)
+- 결정: 직원 계정 삭제 시 `project_assignments.user_id` 는 CASCADE DELETE 가 아닌 SET NULL 처리. 삭제 전 `user_name` 컬럼에 이름 스냅샷을 저장. `ProjectAssignment.getDisplayName()` 은 `user != null` 이면 `user.getName()`, null 이면 `userName` 스냅샷, 그것도 없으면 "(삭제된 계정)" 반환.
+- 이유: 프로젝트 인력 투입 이력은 계정 삭제 후에도 보존 가치가 있음. 고객사·경영진이 과거 프로젝트 인력 구성을 조회할 때 "(삭제된 계정)" 만 표시되면 의미 없음. 이름 스냅샷으로 이력 가독성 유지. CASCADE 삭제 시 캘린더·상세 페이지의 배정 행이 사라져 데이터 손실이 발생.
+- 구현: V226 마이그레이션 (`ADD COLUMN user_name`, `UPDATE … SET user_name = name`, `ALTER COLUMN user_id DROP NOT NULL`, FK ON DELETE SET NULL). `ProjectAssignment.createForProject()` 에서 생성 시 `pa.userName = user.getName()` 로 즉시 스냅샷.
+- 영향: V224 에서 먼저 정비한 나머지 FK 6개(email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL) 도 같이 수정.
+- 트레이드오프: 이름 변경 후 삭제 시 스냅샷이 구 이름을 유지 (최근 업데이트된 이름이 아닐 수 있음). 스냅샷 재동기화는 미구현.
 
 ## ADR-035: 옛 stage별 verify.sh 하네스 폐기 → 범용 양식
 - 결정: MVP1~MVP3·post-MVP3·19~21 단계별 `harness/*/verify.sh` + `progress.json` 방식을 폐기. 대신 `CLAUDE.md` + `HARNESS.md` + `tasks/current.md` + `docs/architecture.md` + `docs/decisions.md` + `CHANGELOG.md` 범용 양식 사용. 옛 자산은 `harness/archive/legacy/` 보존.

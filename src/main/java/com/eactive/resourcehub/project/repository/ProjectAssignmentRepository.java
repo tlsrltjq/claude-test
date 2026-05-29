@@ -18,7 +18,9 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
     List<ProjectAssignment> findByProjectId(@Param("projectId") Long projectId);
 
     /** 특정 직원의 전체 배정 이력 (최신순) */
-    @Query("SELECT pa FROM ProjectAssignment pa JOIN FETCH pa.user " +
+    @Query("SELECT pa FROM ProjectAssignment pa " +
+           "JOIN FETCH pa.project " +
+           "JOIN FETCH pa.user " +
            "WHERE pa.user.id = :userId ORDER BY pa.startDate DESC")
     List<ProjectAssignment> findByUserId(@Param("userId") Long userId);
 

@@ -17,7 +17,7 @@
           ▼
   ┌────────────────┐      ┌────────────────────────┐
   │  Spring Boot   │◀────▶│  PostgreSQL 18         │
-  │  (Java 21)     │      │  + Flyway V1~V217      │
+  │  (Java 21)     │      │  + Flyway V1~V226      │
   └───┬────────┬───┘      └────────────────────────┘
       │        │
       │        └───────▶  Local FS (storage/) or S3/R2 (S3FileStorage)
@@ -101,11 +101,14 @@ com.eactive.resourcehub
 │  ├─ service/                       # CareerSaveService
 │  └─ repository/                    # EmployeeProfileRepository
 │
-├─ project/                          # 프로젝트 투입 관리 (V216)
-│  ├─ controller/                    # ProjectAssignmentController, CalendarGridBuilder (package-private)
-│  ├─ service/                       # ProjectAssignmentService, DeployStats (record)
-│  ├─ entity/                        # ProjectAssignment, AssignmentStatus
-│  ├─ repository/                    # ProjectAssignmentRepository
+├─ project/                          # 프로젝트 투입 관리 (V216~V226)
+│  ├─ controller/                    # ProjectController (/sales/projects/**),
+│  │                                 # ProjectAssignmentController (/sales/calendar),
+│  │                                 # CalendarGridBuilder (package-private)
+│  ├─ service/                       # ProjectService (CRUD·멤버 관리),
+│  │                                 # ProjectAssignmentService, DeployStats (record)
+│  ├─ entity/                        # Project, ProjectAssignment, AssignmentStatus
+│  ├─ repository/                    # ProjectRepository, ProjectAssignmentRepository
 │  └─ dto/                           # ProjectAssignmentRequest
 │
 ├─ template/                         # 이력서 템플릿
@@ -148,8 +151,8 @@ com.eactive.resourcehub
 | 검색 | GET | `/search` | 본인 권한 모든 문서 + 필터 |
 | 영업 | GET/POST | `/sales/members`, `/sales/profiles`, `/sales/profiles/export`, `/sales/profiles/bundle-download`, `/sales/profiles/preset`, `/sales/career-calculator`, `/sales/career-calculator/save`, `/sales/career-calculator/autofill` | SALES + ADMIN |
 | 투입 관리 | GET | `/sales/calendar` | SALES + ADMIN |
-| 투입 관리 | POST | `/sales/assignments`, `/sales/assignments/{id}`, `/sales/assignments/{id}/delete` | ADMIN 전용 (서비스 레이어 검증) |
-| 관리자 | GET/POST | `/admin/employees`, `/admin/employees/{id}/toggle-status\|change-team\|change-position`, `/admin/teams`, `/admin/teams/project-settings`, `/admin/user-role`, `/admin/user-permissions`, `/admin/documents/review/**`, `/admin/documents/expiry`, `/admin/statistics`, `/admin/resume-template`, `/admin/gc`, `/admin/gc/run`, `/admin/certificate`, `/admin/allowed-emails`, `/admin/allowed-emails/{id}/delete` | ADMIN |
+| 투입 관리 | GET/POST | `/sales/projects`, `/sales/projects/create`, `/sales/projects/{id}`, `/sales/projects/{id}/edit`, `/sales/projects/{id}/delete`, `/sales/projects/{id}/members/add`, `/sales/projects/{id}/members/{assignmentId}/remove` | SALES(읽기) + ADMIN(쓰기) |
+| 관리자 | GET/POST | `/admin/employees`, `/admin/employees/{id}/toggle-status\|change-team\|change-position\|delete`, `/admin/teams`, `/admin/teams/project-settings`, `/admin/user-role`, `/admin/user-permissions`, `/admin/documents/review/**`, `/admin/documents/expiry`, `/admin/statistics`, `/admin/resume-template`, `/admin/gc`, `/admin/gc/run`, `/admin/certificate`, `/admin/allowed-emails`, `/admin/allowed-emails`, `/admin/allowed-emails/bulk`, `/admin/allowed-emails/bulk-excel`, `/admin/allowed-emails/{id}/delete` | ADMIN |
 | 문서 | GET | `/documents/{v}/download`, `/documents/{v}/preview`, `/documents/{v}/thumbnail` | 컨트롤러 경유 다운로드만 허용 |
 | 문서 | POST | `/documents/{v}/thumbnail/regenerate` | ADMIN 또는 폴더 소유자만 가능 |
 
@@ -188,8 +191,17 @@ com.eactive.resourcehub
 | V215 | 기능 개편 | allowed_emails 테이블 신설 (이메일 사전등록 방식) |
 | V216 | post-MVP3 | project_assignments 테이블 신설 (프로젝트 투입 관리) |
 | V217 | cleanup | tags, document_tags 테이블 DROP (Tag 엔티티 제거) |
+| V218 | 기능 개편 | project_assignments.allocation_rate SMALLINT → INTEGER 타입 수정 |
+| V219 | 기능 개편 | project_assignments.allocation_rate 컬럼 삭제 |
+| V220 | 기능 개편 | projects 테이블 신설 (프로젝트 CRUD 분리) |
+| V221 | 기능 개편 | project_assignments.project_id FK 컬럼 추가 |
+| V222 | 기능 개편 | 기존 배정 데이터 → projects 테이블 마이그레이션 |
+| V223 | 기능 개편 | project_assignments 비정규화 컬럼 제거 (project_name·client_name·memo) |
+| V224 | 기능 개편 | 직원 삭제 대비 FK 정비 (audit_logs·document_versions·permissions·employee_profiles·folders) |
+| V225 | 기능 개편 | users.join_date 컬럼 추가 (입사일, 선택) |
+| V226 | 기능 개편 | project_assignments user_name 스냅샷 + user_id SET NULL, 누락 FK 6개 수정 |
 
-> 새 마이그레이션은 V218부터.
+> 새 마이그레이션은 V227부터.
 
 ---
 

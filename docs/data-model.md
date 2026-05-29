@@ -1,6 +1,6 @@
 # 데이터 모델
 
-> Flyway V1~V216 기준. 엔티티·테이블·관계·주요 제약조건.
+> Flyway V1~V226 기준. 엔티티·테이블·관계·주요 제약조건.
 > 참고 소스: `src/main/resources/db/migration/V*.sql`, `src/main/java/**/entity/*.java`
 
 ---
@@ -11,19 +11,18 @@
 teams ──< users >── employee_profiles
                 │
                 └──< folders >── documents >── document_versions
-                                     │
-                          document_tags >── tags (미사용)
 
 permissions ──> users
 permissions ──> folders (target_type = FOLDER)
 
 audit_logs ──> users
 
+projects ──< project_assignments >──> users (nullable — SET NULL on delete)
+
 resume_templates (독립)
 password_reset_tokens ──> users
-email_verification_tokens ──> users (확인 필요: 별도 테이블)
+email_verification_tokens ──> users
 column_view_preferences ──> users
-project_assignments ──> users
 
 allowed_emails (독립 — 회원가입 사전 허용 이메일 목록)
 ```
@@ -57,6 +56,7 @@ allowed_emails (독립 — 회원가입 사전 허용 이메일 목록)
 | name | VARCHAR(100) | NOT NULL | |
 | email | VARCHAR(255) | NOT NULL, UNIQUE | 회사 이메일 full (login_id와 동일) |
 | address | VARCHAR(255) | | 주소 (V214 추가) |
+| join_date | DATE | | 입사일 (V225 추가, 선택) |
 | team_id | BIGINT | FK → teams.id | NULL 허용 |
 | position | VARCHAR(50) | NOT NULL DEFAULT 'STAFF' | Position enum (V102에서 정규화) |
 | birth_date | DATE | NOT NULL DEFAULT '1970-01-01' | (V102 추가) |
@@ -274,10 +274,33 @@ UNIQUE: `(user_id, name)`
 |------|------|------|
 | id | BIGSERIAL PK | |
 | email | VARCHAR(255) NOT NULL UNIQUE | 가입 허용 이메일 주소 |
-| created_at | TIMESTAMPTZ | |
-| updated_at | TIMESTAMPTZ | |
+| note | VARCHAR(255) | 메모 (UI에서는 미사용) |
+| created_at | TIMESTAMP NOT NULL | |
+| created_by | BIGINT FK → users.id, SET NULL | 등록한 관리자 |
 
-> V215 신설. 이 목록에 등록된 이메일만 회원가입 가능. 관리자가 `/admin/allowed-emails`에서 추가·삭제.
+**인덱스:** `idx_allowed_emails_email`
+
+> V215 신설. 이 목록에 등록된 이메일만 회원가입 가능. 관리자가 `/admin/allowed-emails`에서 단건·텍스트 일괄·엑셀(.xlsx/.xls) 방식으로 추가·삭제.
+
+---
+
+### projects
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | BIGSERIAL | PK | |
+| name | VARCHAR(200) | NOT NULL | 프로젝트명 |
+| client_name | VARCHAR(200) | | 고객사명 |
+| start_date | DATE | NOT NULL | 프로젝트 시작일 |
+| end_date | DATE | NOT NULL | 프로젝트 종료일. CHECK(end_date >= start_date) |
+| memo | TEXT | | 비고 |
+| status | VARCHAR(20) | NOT NULL DEFAULT 'PLANNED' | PLANNED/ACTIVE/ENDED/CANCELLED |
+| created_at | TIMESTAMP | NOT NULL | |
+| updated_at | TIMESTAMP | NOT NULL | |
+
+**인덱스:** `idx_proj_status`, `idx_proj_dates(start_date, end_date)`
+
+> V220 신설. 프로젝트 단위 CRUD 관리. V222에서 기존 project_assignments 배정 데이터를 마이그레이션.
 
 ---
 
@@ -285,22 +308,20 @@ UNIQUE: `(user_id, name)`
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
-| id | BIGSERIAL PK | NOT NULL | |
-| user_id | BIGINT FK | NOT NULL | users.id |
-| project_name | VARCHAR(200) | NOT NULL | 프로젝트명 |
-| client_name | VARCHAR(200) | | 고객사명 |
-| role | VARCHAR(100) | | 역할 |
+| id | BIGSERIAL | PK | |
+| user_id | BIGINT | FK → users.id, NULL 허용 | 계정 삭제 시 SET NULL (V226) |
+| user_name | VARCHAR(100) | | 삭제된 계정 이름 스냅샷 (V226 추가) |
+| project_id | BIGINT | FK → projects.id, NOT NULL | V221 추가, V223에서 NOT NULL 확정 |
+| role | VARCHAR(100) | | 투입 역할 |
 | start_date | DATE | NOT NULL | 투입 시작일 |
-| end_date | DATE | NOT NULL | 투입 종료일. CHECK(end_date >= start_date) |
-| allocation_rate | INTEGER | NOT NULL | 투입률(%). CHECK(0 ≤ allocation_rate ≤ 100) |
+| end_date | DATE | NOT NULL | 투입 종료일 |
 | status | VARCHAR(20) | NOT NULL | PLANNED / ACTIVE / ENDED / CANCELLED |
-| memo | TEXT | | 비고 |
-| created_at | TIMESTAMPTZ | | |
-| updated_at | TIMESTAMPTZ | | |
+| created_at | TIMESTAMP | | |
+| updated_at | TIMESTAMP | | |
 
-**인덱스:** `idx_pa_user_id`, `idx_pa_status`, `idx_pa_dates(start_date, end_date)`, `idx_pa_user_dates`
+**인덱스:** `idx_pa_user_id`, `idx_pa_project_id`, `idx_pa_status`, `idx_pa_dates(start_date, end_date)`, `idx_pa_user_dates`
 
-> V216 신설. 프로젝트 투입 이력 관리. 같은 직원·같은 기간 중복 저장 허용(분할 투입). 상세: `docs/archive/feature-design/PROJECT_ASSIGNMENT.md`.
+> V216 신설 → V218~V226 단계적 개편. 이름 보존: `ProjectAssignment.getDisplayName()` — user 존재 시 `user.name`, 삭제된 경우 `userName` 스냅샷 반환. 중복 투입 저장 허용(분할 투입, ADR-037).
 
 ---
 
@@ -336,5 +357,15 @@ UNIQUE: `(user_id, name)`
 | V214 | users.address 컬럼 추가 |
 | V215 | allowed_emails 테이블 신설 (이메일 사전등록 방식) |
 | V216 | project_assignments 테이블 신설 (프로젝트 투입 관리) |
+| V217 | tags, document_tags 테이블 DROP |
+| V218 | project_assignments.allocation_rate SMALLINT → INTEGER 타입 수정 |
+| V219 | project_assignments.allocation_rate 컬럼 삭제 |
+| V220 | projects 테이블 신설 (프로젝트 CRUD 분리) |
+| V221 | project_assignments.project_id FK 컬럼 추가 |
+| V222 | 기존 배정 데이터 → projects 테이블 마이그레이션 |
+| V223 | project_assignments 비정규화 컬럼 제거 (project_name·client_name·memo), project_id NOT NULL 확정 |
+| V224 | 직원 삭제 대비 FK 정비 (audit_logs·document_versions·permissions·employee_profiles·folders SET NULL/CASCADE) |
+| V225 | users.join_date 컬럼 추가 (입사일, 선택) |
+| V226 | project_assignments user_name 스냅샷 추가 + user_id SET NULL 전환, 누락 FK 6개 수정 (email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL) |
 
-> 다음 마이그레이션은 **V217**부터.
+> 다음 마이그레이션은 **V227**부터.

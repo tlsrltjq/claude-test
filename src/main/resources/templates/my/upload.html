@@ -31,7 +31,7 @@
 
               <div id="largeFileWarn" class="alert alert-warning warn-box d-none">
                   <i class="bi bi-info-circle me-1"></i>
-                  <strong>10MB 초과 파일</strong>은 관리자 승인 후 공개됩니다. 업로드는 정상 진행됩니다.
+                  <strong>20MB 초과 파일</strong>은 관리자 승인 후 공개됩니다. 업로드는 정상 진행됩니다.
               </div>
 
               <form id="uploadForm" th:action="@{/my/folder/documents}" method="post" enctype="multipart/form-data">
@@ -94,10 +94,10 @@
                   <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
                       <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                       <div class="drop-text">클릭하거나 파일을 끌어다 놓으세요</div>
-                      <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, HWPX · 최대 20MB</div>
+                      <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, PPT, ZIP, XLSX, XLS · 20MB 이하 즉시 승인 / 100MB 이하 검토 후 승인</div>
                   </div>
                   <input type="file" id="fileInput" name="file" class="d-none" required
-                         accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx"
+                         accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx,.zip,.xlsx,.xls"
                          onchange="onFileChange(this)">
                   <div class="file-name-display" id="fileNameDisplay">
                       <i class="bi bi-file-earmark-fill text-primary"></i>
@@ -216,8 +216,8 @@ function onCancelClick() {
 }
 
 /* ── 제출 처리 (XHR + 진행률) ── */
-const ALLOWED_EXTS = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx'];
-const MAX_SIZE = 20 * 1024 * 1024;
+const ALLOWED_EXTS = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx','zip','xlsx','xls'];
+const MAX_SIZE = 100 * 1024 * 1024;
 
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -229,7 +229,7 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     if (!file) { showXhrError('파일을 선택해주세요.'); return; }
     const ext = file.name.split('.').pop().toLowerCase();
     if (!ALLOWED_EXTS.includes(ext)) { showXhrError('허용되지 않는 파일 형식입니다: ' + ext); return; }
-    if (file.size > MAX_SIZE) { showXhrError('파일 크기가 20MB를 초과합니다.'); return; }
+    if (file.size > MAX_SIZE) { showXhrError('파일 크기가 100MB를 초과합니다.'); return; }
 
     const btn = document.getElementById('uploadBtn');
     const progressWrap = document.getElementById('progressWrap');
@@ -283,9 +283,9 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
         } else {
             try {
                 const data = JSON.parse(xhr.responseText);
-                showXhrError(data.message || '업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.');
+                showXhrError(data.message || '업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·PPT·ZIP·XLSX·XLS)과 크기(100MB 이하)를 확인하세요.');
             } catch (e) {
-                showXhrError('업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·HWPX·PPT·PPTX)과 크기(20MB 이하)를 확인하세요.');
+                showXhrError('업로드에 실패했습니다. 파일 형식(PDF·JPG·PNG·DOCX·HWP·PPT·ZIP·XLSX·XLS)과 크기(100MB 이하)를 확인하세요.');
             }
         }
         resetBtn();

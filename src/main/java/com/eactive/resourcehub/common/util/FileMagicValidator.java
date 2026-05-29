@@ -22,16 +22,19 @@ public final class FileMagicValidator {
                                                 (byte)0xA1, (byte)0xB1, 0x1A, (byte)0xE1};
     private static final byte[] SIG_HWP_OLD = {0x48, 0x57, 0x50, 0x20, 0x44, 0x6F, 0x63}; // "HWP Doc"
 
-    private static final Map<String, byte[][]> SIGNATURES = Map.of(
-        "pdf",  new byte[][] {SIG_PDF},
-        "jpg",  new byte[][] {SIG_JPG},
-        "jpeg", new byte[][] {SIG_JPG},
-        "png",  new byte[][] {SIG_PNG},
-        "docx", new byte[][] {SIG_ZIP},
-        "pptx", new byte[][] {SIG_ZIP},
-        "hwpx", new byte[][] {SIG_ZIP},
-        "hwp",  new byte[][] {SIG_OLE2, SIG_HWP_OLD},
-        "ppt",  new byte[][] {SIG_OLE2}
+    private static final Map<String, byte[][]> SIGNATURES = Map.ofEntries(
+        Map.entry("pdf",  new byte[][] {SIG_PDF}),
+        Map.entry("jpg",  new byte[][] {SIG_JPG}),
+        Map.entry("jpeg", new byte[][] {SIG_JPG}),
+        Map.entry("png",  new byte[][] {SIG_PNG}),
+        Map.entry("docx", new byte[][] {SIG_ZIP}),
+        Map.entry("pptx", new byte[][] {SIG_ZIP}),
+        Map.entry("hwpx", new byte[][] {SIG_ZIP}),
+        Map.entry("xlsx", new byte[][] {SIG_ZIP}),
+        Map.entry("zip",  new byte[][] {SIG_ZIP}),
+        Map.entry("hwp",  new byte[][] {SIG_OLE2, SIG_HWP_OLD}),
+        Map.entry("ppt",  new byte[][] {SIG_OLE2}),
+        Map.entry("xls",  new byte[][] {SIG_OLE2})
     );
 
     /**

@@ -43,7 +43,7 @@ import com.eactive.resourcehub.common.util.FileMagicValidator;
 @RequiredArgsConstructor
 public class DocumentUploadService {
 
-    private static final long LARGE_FILE_THRESHOLD = 10L * 1024 * 1024; // 10 MB
+    private static final long LARGE_FILE_THRESHOLD = 20L * 1024 * 1024; // 20 MB
 
     private final FileStorage fileStorage;
     private final FolderRepository folderRepository;
