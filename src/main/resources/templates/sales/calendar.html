@@ -65,128 +65,137 @@
            ═══════════════════════════════════════════════════════ -->
       <div id="view-calendar">
 
-        <!-- 월 네비 + 프로젝트 등록 버튼 -->
-        <div class="cal-controls">
-          <div class="month-nav">
-            <a th:href="@{/sales/calendar(year=${prev.year},month=${prev.monthValue})}"
-               class="btn-month"><i class="bi bi-chevron-left"></i></a>
-            <span class="month-title"
-                  th:text="|${ym.year}년 ${ym.monthValue}월|">2026년 5월</span>
-            <a th:href="@{/sales/calendar(year=${next.year},month=${next.monthValue})}"
-               class="btn-month"><i class="bi bi-chevron-right"></i></a>
-          </div>
-          <div th:if="${currentUser.role.name() == 'ADMIN' or currentUser.role.name() == 'SALES'}">
-            <button type="button" class="btn btn-success btn-sm"
-                    data-bs-toggle="modal" data-bs-target="#createProjectModal">
-              <i class="bi bi-plus-lg me-1"></i>프로젝트 등록
-            </button>
-          </div>
-        </div>
+        <!--/* th:fragment="calendarContent" — AJAX 월 이동 시 이 영역만 교체 */-->
+        <div id="cal-content" th:fragment="calendarContent">
 
-        <!-- 현재 진행중인 프로젝트 목록 (캘린더 위) -->
-        <div class="list-card">
-          <div class="card-head">
-            <i class="bi bi-folder2-open"></i>
-            <span>현재 진행중인 프로젝트</span>
-            <span class="ms-1 text-muted fw-400" style="font-size:.75rem;"
-                  th:text="${'(' + #lists.size(activeProjectItems) + '건)'}"></span>
-          </div>
-
-          <div th:if="${#lists.isEmpty(activeProjectItems)}" class="empty-state">
-            <i class="bi bi-calendar-x"></i>
-            <div class="fw-600 mb-1" style="color:#6c757d;">오늘 기준 진행중인 프로젝트가 없습니다.</div>
+          <!-- 월 네비 + 프로젝트 등록 버튼 -->
+          <div class="cal-controls">
+            <div class="month-nav">
+              <button type="button" class="btn-month cal-nav-btn"
+                      th:attr="data-year=${prev.year},data-month=${prev.monthValue}"
+                      data-dir="prev" aria-label="이전 달">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <span class="month-title"
+                    th:text="|${ym.year}년 ${ym.monthValue}월|">2026년 5월</span>
+              <button type="button" class="btn-month cal-nav-btn"
+                      th:attr="data-year=${next.year},data-month=${next.monthValue}"
+                      data-dir="next" aria-label="다음 달">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+            <div th:if="${currentUser.role.name() == 'ADMIN' or currentUser.role.name() == 'SALES'}">
+              <button type="button" class="btn btn-success btn-sm"
+                      data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                <i class="bi bi-plus-lg me-1"></i>프로젝트 등록
+              </button>
+            </div>
           </div>
 
-          <div th:unless="${#lists.isEmpty(activeProjectItems)}" class="table-responsive">
-            <table class="table assign-table mb-0">
+          <!-- 현재 진행중인 프로젝트 목록 -->
+          <div class="list-card">
+            <div class="card-head">
+              <i class="bi bi-folder2-open"></i>
+              <span>현재 진행중인 프로젝트</span>
+              <span class="ms-1 text-muted fw-400" style="font-size:.75rem;"
+                    th:text="${'(' + #lists.size(activeProjectItems) + '건)'}"></span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(activeProjectItems)}" class="empty-state">
+              <i class="bi bi-calendar-x"></i>
+              <div class="fw-600 mb-1" style="color:#6c757d;">오늘 기준 진행중인 프로젝트가 없습니다.</div>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(activeProjectItems)}" class="table-responsive">
+              <table class="table assign-table mb-0">
+                <thead>
+                  <tr>
+                    <th>프로젝트</th>
+                    <th>고객사</th>
+                    <th>기간</th>
+                    <th>투입 인원</th>
+                    <th>잔여일</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="item : ${activeProjectItems}">
+                    <td>
+                      <a th:href="@{/sales/projects/{id}(id=${item.project.id})}"
+                         class="fw-600 text-decoration-none"
+                         th:text="${item.project.name}">프로젝트명</a>
+                    </td>
+                    <td th:text="${item.project.clientName != null ? item.project.clientName : '—'}">고객사</td>
+                    <td class="text-nowrap" style="font-size:.78rem;">
+                      <span th:text="${#temporals.format(item.project.startDate,'yy.MM.dd')}"></span>
+                      ~
+                      <span th:text="${#temporals.format(item.project.endDate,'yy.MM.dd')}"></span>
+                    </td>
+                    <td>
+                      <span th:if="${item.lead != null}" class="fw-600" th:text="${item.lead.name}"></span>
+                      <span th:if="${item.totalCount > 1}" class="text-muted"
+                            th:text="|외 ${item.totalCount - 1}명|"></span>
+                      <span th:if="${item.lead == null}" class="text-muted">—</span>
+                    </td>
+                    <td>
+                      <span th:with="days=${item.project.endDate.toEpochDay() - today.toEpochDay()}"
+                            th:class="${days <= 7 ? 'fw-700 text-danger' : (days <= 30 ? 'fw-600 text-warning' : 'text-muted')}"
+                            th:text="${days + '일'}">N일</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 캘린더 그리드 -->
+          <div class="cal-card mb-3">
+            <table class="cal-table">
               <thead>
                 <tr>
-                  <th>프로젝트</th>
-                  <th>고객사</th>
-                  <th>기간</th>
-                  <th>투입 인원</th>
-                  <th>잔여일</th>
+                  <th class="cal-sun">일</th>
+                  <th>월</th>
+                  <th>화</th>
+                  <th>수</th>
+                  <th>목</th>
+                  <th>금</th>
+                  <th class="cal-sat">토</th>
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="item : ${activeProjectItems}">
-                  <td>
-                    <a th:href="@{/sales/projects/{id}(id=${item.project.id})}"
-                       class="fw-600 text-decoration-none"
-                       th:text="${item.project.name}">프로젝트명</a>
-                  </td>
-                  <td th:text="${item.project.clientName != null ? item.project.clientName : '—'}">고객사</td>
-                  <td class="text-nowrap" style="font-size:.78rem;">
-                    <span th:text="${#temporals.format(item.project.startDate,'yy.MM.dd')}"></span>
-                    ~
-                    <span th:text="${#temporals.format(item.project.endDate,'yy.MM.dd')}"></span>
-                  </td>
-                  <td>
-                    <span th:if="${item.lead != null}" class="fw-600" th:text="${item.lead.name}"></span>
-                    <span th:if="${item.totalCount > 1}" class="text-muted"
-                          th:text="|외 ${item.totalCount - 1}명|"></span>
-                    <span th:if="${item.lead == null}" class="text-muted">—</span>
-                  </td>
-                  <td>
-                    <span th:with="days=${item.project.endDate.toEpochDay() - today.toEpochDay()}"
-                          th:class="${days <= 7 ? 'fw-700 text-danger' : (days <= 30 ? 'fw-600 text-warning' : 'text-muted')}"
-                          th:text="${days + '일'}">N일</span>
-                  </td>
-                </tr>
+                <th:block th:each="week, wStat : ${weeks}">
+                  <tr>
+                    <td th:each="day, dStat : ${week}"
+                        th:class="${day == null}
+                            ? 'cal-cell cal-empty'
+                            : (${day.equals(today)}
+                                ? 'cal-cell cal-today ' + (${dStat.index == 0} ? 'cal-sun' : (${dStat.index == 6} ? 'cal-sat' : ''))
+                                : 'cal-cell ' + (${dStat.index == 0} ? 'cal-sun' : (${dStat.index == 6} ? 'cal-sat' : '')))">
+                      <div th:if="${day != null}">
+                        <span th:if="${day.equals(today)}" class="cal-num cal-num-today"
+                              th:text="${day.dayOfMonth}">1</span>
+                        <span th:unless="${day.equals(today)}" class="cal-num"
+                              th:text="${day.dayOfMonth}">1</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:unless="${#lists.isEmpty(weekBars[wStat.index])}" class="cal-bar-row">
+                    <td colspan="7" class="cal-bars-cell">
+                      <div th:each="bar : ${weekBars[wStat.index]}" class="cal-bars-grid">
+                        <a th:href="@{/sales/projects/{id}(id=${bar.project.id})}"
+                           class="cal-bar"
+                           th:classappend="${'bar-color-' + (bar.project.id % 10)}"
+                           th:title="|${bar.project.name}${bar.project.clientName != null ? ' · ' + bar.project.clientName : ''} (${#temporals.format(bar.project.startDate,'MM.dd')}~${#temporals.format(bar.project.endDate,'MM.dd')})|"
+                           th:text="${bar.project.name}"
+                           th:style="|grid-column: ${bar.startCol + 1} / span ${bar.colSpan}|">프로젝트명</a>
+                      </div>
+                    </td>
+                  </tr>
+                </th:block>
               </tbody>
             </table>
           </div>
-        </div>
 
-        <!-- 캘린더 그리드 -->
-        <div class="cal-card mb-3">
-          <table class="cal-table">
-            <thead>
-              <tr>
-                <th class="cal-sun">일</th>
-                <th>월</th>
-                <th>화</th>
-                <th>수</th>
-                <th>목</th>
-                <th>금</th>
-                <th class="cal-sat">토</th>
-              </tr>
-            </thead>
-            <tbody>
-              <th:block th:each="week, wStat : ${weeks}">
-                <!-- 날짜 행 -->
-                <tr>
-                  <td th:each="day, dStat : ${week}"
-                      th:class="${day == null}
-                          ? 'cal-cell cal-empty'
-                          : (${day.equals(today)}
-                              ? 'cal-cell cal-today ' + (${dStat.index == 0} ? 'cal-sun' : (${dStat.index == 6} ? 'cal-sat' : ''))
-                              : 'cal-cell ' + (${dStat.index == 0} ? 'cal-sun' : (${dStat.index == 6} ? 'cal-sat' : '')))">
-                    <div th:if="${day != null}">
-                      <span th:if="${day.equals(today)}" class="cal-num cal-num-today"
-                            th:text="${day.dayOfMonth}">1</span>
-                      <span th:unless="${day.equals(today)}" class="cal-num"
-                            th:text="${day.dayOfMonth}">1</span>
-                    </div>
-                  </td>
-                </tr>
-                <!-- 프로젝트 바 행 -->
-                <tr th:unless="${#lists.isEmpty(weekBars[wStat.index])}" class="cal-bar-row">
-                  <td colspan="7" class="cal-bars-cell">
-                    <div th:each="bar : ${weekBars[wStat.index]}" class="cal-bars-grid">
-                      <a th:href="@{/sales/projects/{id}(id=${bar.project.id})}"
-                         class="cal-bar"
-                         th:classappend="${'bar-color-' + (bar.project.id % 10)}"
-                         th:title="|${bar.project.name}${bar.project.clientName != null ? ' · ' + bar.project.clientName : ''} (${#temporals.format(bar.project.startDate,'MM.dd')}~${#temporals.format(bar.project.endDate,'MM.dd')})|"
-                         th:text="${bar.project.name}"
-                         th:style="|grid-column: ${bar.startCol + 1} / span ${bar.colSpan}|">프로젝트명</a>
-                    </div>
-                  </td>
-                </tr>
-              </th:block>
-            </tbody>
-          </table>
-        </div>
+        </div><!-- /#cal-content -->
 
       </div><!-- /#view-calendar -->
 
@@ -197,13 +206,11 @@
 
         <!-- 검색 필터 -->
         <div class="filter-bar">
-          <form method="get" th:action="@{/sales/calendar}" class="row g-2 align-items-end">
-            <input type="hidden" name="year"  th:value="${ym.year}">
-            <input type="hidden" name="month" th:value="${ym.monthValue}">
+          <div class="row g-2 align-items-end">
             <div class="col-sm-5 col-md-3">
               <label>직원명</label>
-              <input id="personnelSearch" type="text" name="q" class="form-control form-control-sm"
-                     placeholder="이름 검색" th:value="${q}">
+              <input id="personnelSearch" type="text" class="form-control form-control-sm"
+                     placeholder="이름 검색">
             </div>
             <div class="col-sm-4 col-md-2">
               <label>상태</label>
@@ -217,13 +224,13 @@
             <div class="col-auto">
               <button type="button" class="btn btn-outline-secondary btn-sm" id="personnelReset">초기화</button>
             </div>
-          </form>
+          </div>
         </div>
 
         <!-- 통계 카드 -->
         <div class="personnel-stats">
           <div class="pstat-card pstat-total">
-            <div class="pstat-num" id="stat-total" th:text="${totalPersonnel}">0</div>
+            <div class="pstat-num" th:text="${totalPersonnel}">0</div>
             <div class="pstat-label">전체 인원</div>
           </div>
           <div class="pstat-card pstat-deployed">
@@ -240,9 +247,11 @@
         <div class="list-card">
           <div class="card-head">
             <i class="bi bi-people"></i>
-            <span>전체 인력 현황 (오늘 기준)</span>
+            <span>전체 인력 현황</span>
+            <span class="text-muted fw-400 ms-1" style="font-size:.75rem;"
+                  th:text="${'(오늘 기준 · ' + #temporals.format(today,'MM월 dd일') + ')'}"></span>
             <span class="ms-1 text-muted fw-400" id="personnel-count-label" style="font-size:.75rem;"
-                  th:text="${'(' + totalPersonnel + '명)'}"></span>
+                  th:text="${'— ' + totalPersonnel + '명'}"></span>
           </div>
 
           <div th:if="${#lists.isEmpty(personnelStatusList)}" class="empty-state">
@@ -295,7 +304,7 @@
                     <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}"
                           class="text-muted">
                       <span th:text="${#temporals.format(item.plannedAssignment.startDate, 'MM.dd')}"></span>
-                      <span class="ms-1 text-muted" style="font-size:.72rem;">시작</span>
+                      <span class="ms-1" style="font-size:.72rem;">시작</span>
                     </span>
                     <span th:if="${item.activeAssignment == null and item.plannedAssignment == null}" class="text-muted">—</span>
                   </td>
@@ -386,7 +395,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 (function () {
-  /* 뷰 모드 전환 */
+
+  /* ── 뷰 모드 전환 ── */
   function switchMode(mode) {
     document.getElementById('view-calendar').style.display  = (mode === 'calendar')  ? '' : 'none';
     document.getElementById('view-personnel').style.display = (mode === 'personnel') ? '' : 'none';
@@ -397,11 +407,52 @@
     localStorage.setItem('calendarMode', mode);
   }
   window.switchMode = switchMode;
-
-  /* 저장된 모드 복원 */
   switchMode(localStorage.getItem('calendarMode') || 'calendar');
 
-  /* 인력 현황 클라이언트 필터 */
+  /* ── AJAX 월 이동 ── */
+  function loadCalendar(year, month, dir) {
+    var oldEl = document.getElementById('cal-content');
+    if (!oldEl || oldEl.classList.contains('cal-loading')) return;
+
+    oldEl.classList.add('cal-loading');
+
+    fetch('/sales/calendar?year=' + year + '&month=' + month + '&partial=true', {
+      credentials: 'same-origin'
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error('fetch failed');
+      return r.text();
+    })
+    .then(function (html) {
+      var parser = new DOMParser();
+      var doc    = parser.parseFromString(html, 'text/html');
+      var newEl  = doc.getElementById('cal-content');
+      if (!newEl) throw new Error('fragment not found');
+
+      var container = document.getElementById('cal-content');
+      container.parentNode.replaceChild(newEl, container);
+
+      var animClass = dir === 'next' ? 'cal-anim-from-right' : 'cal-anim-from-left';
+      newEl.classList.add(animClass);
+      setTimeout(function () { newEl.classList.remove(animClass); }, 280);
+    })
+    .catch(function () {
+      window.location.href = '/sales/calendar?year=' + year + '&month=' + month;
+    });
+  }
+
+  /* 월 이동 버튼 — 이벤트 위임 (동적 교체 후에도 동작) */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.cal-nav-btn');
+    if (!btn) return;
+    e.preventDefault();
+    var year  = parseInt(btn.getAttribute('data-year'),  10);
+    var month = parseInt(btn.getAttribute('data-month'), 10);
+    var dir   = btn.getAttribute('data-dir');
+    loadCalendar(year, month, dir);
+  });
+
+  /* ── 인력 현황 클라이언트 필터 ── */
   var searchInput  = document.getElementById('personnelSearch');
   var statusSelect = document.getElementById('personnelStatusFilter');
   var resetBtn     = document.getElementById('personnelReset');
@@ -413,15 +464,13 @@
     var rows   = document.querySelectorAll('#personnelTable tbody tr');
     var visible = 0;
     rows.forEach(function (row) {
-      var name     = (row.getAttribute('data-name')   || '').toLowerCase();
-      var rowStatus = row.getAttribute('data-status') || '';
-      var matchName   = !q      || name.includes(q);
-      var matchStatus = !status || rowStatus === status;
-      var show = matchName && matchStatus;
+      var name      = (row.getAttribute('data-name')   || '').toLowerCase();
+      var rowStatus = (row.getAttribute('data-status') || '');
+      var show = (!q || name.includes(q)) && (!status || rowStatus === status);
       row.style.display = show ? '' : 'none';
       if (show) visible++;
     });
-    if (countLabel) countLabel.textContent = '(' + visible + '명)';
+    if (countLabel) countLabel.textContent = '— ' + visible + '명';
   }
 
   if (searchInput)  searchInput.addEventListener('input', filterPersonnel);
@@ -434,7 +483,7 @@
     });
   }
 
-  /* 로딩 오버레이 */
+  /* ── 로딩 오버레이 (모달 POST 폼) ── */
   document.querySelectorAll('form').forEach(function (f) {
     if ((f.getAttribute('method') || 'get').toLowerCase() !== 'get') {
       f.addEventListener('submit', function () {
@@ -442,6 +491,7 @@
       });
     }
   });
+
 })();
 </script>
 </body>

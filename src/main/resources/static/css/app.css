@@ -979,6 +979,13 @@ nav.topnav { background: var(--accent); }
 /* Calendar controls row (month nav + action button) */
 .cal-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; flex-wrap: wrap; gap: .5rem; }
 
+/* Calendar AJAX slide animations */
+@keyframes calFromLeft  { from { transform: translateX(-28px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes calFromRight { from { transform: translateX(28px);  opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.cal-anim-from-left  { animation: calFromLeft  .22s ease-out; }
+.cal-anim-from-right { animation: calFromRight .22s ease-out; }
+.cal-loading { opacity: .45; pointer-events: none; transition: opacity .1s; }
+
 /* Personnel stats */
 .personnel-stats { display: flex; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
 .pstat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: .65rem 1.25rem; text-align: center; min-width: 110px; }

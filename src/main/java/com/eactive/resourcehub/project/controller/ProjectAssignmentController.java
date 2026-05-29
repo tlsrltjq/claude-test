@@ -39,6 +39,7 @@ public class ProjectAssignmentController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String project,
             @RequestParam(required = false) AssignmentStatus status,
+            @RequestParam(defaultValue = "false") boolean partial,
             @AuthenticationPrincipal CustomUserDetails details,
             Model model) {
 
@@ -89,17 +90,7 @@ public class ProjectAssignmentController {
                 .sorted(Comparator.comparing(i -> i.project().getName()))
                 .collect(Collectors.toList());
 
-        // Mode 2: 전체 인력 현황 (투입중/투입예정/미투입)
-        List<User> assignableUsers = assignmentService.findAssignableUsers();
-        Map<Long, ProjectAssignment> plannedAssignMap = assignmentService.getNextAssignmentsByUserId();
-        List<PersonnelStatusItem> personnelStatusList = assignableUsers.stream()
-                .map(u -> new PersonnelStatusItem(u,
-                        activeAssignMap.get(u.getId()),
-                        plannedAssignMap.get(u.getId())))
-                .collect(Collectors.toList());
-        long deployedCount = personnelStatusList.stream()
-                .filter(i -> i.activeAssignment() != null).count();
-
+        // 캘린더 공통 모델
         model.addAttribute("ym",                 ym);
         model.addAttribute("prev",               ym.minusMonths(1));
         model.addAttribute("next",               ym.plusMonths(1));
@@ -111,9 +102,26 @@ public class ProjectAssignmentController {
         model.addAttribute("monthlyProjects",    monthlyProjects);
         model.addAttribute("projectListItems",   projectListItems);
         model.addAttribute("activeProjectItems", activeProjectItems);
+        model.addAttribute("currentUser",        details.getUser());
+
+        // fragment 요청(월 이동 AJAX)은 캘린더 영역만 반환
+        if (partial) {
+            return "sales/calendar :: calendarContent";
+        }
+
+        // Mode 2: 전체 인력 현황 (풀 페이지 로드 시만 계산)
+        List<User> assignableUsers = assignmentService.findAssignableUsers();
+        Map<Long, ProjectAssignment> plannedAssignMap = assignmentService.getNextAssignmentsByUserId();
+        List<PersonnelStatusItem> personnelStatusList = assignableUsers.stream()
+                .map(u -> new PersonnelStatusItem(u,
+                        activeAssignMap.get(u.getId()),
+                        plannedAssignMap.get(u.getId())))
+                .collect(Collectors.toList());
+        long deployedCount = personnelStatusList.stream()
+                .filter(i -> i.activeAssignment() != null).count();
+
         model.addAttribute("allStatuses",        AssignmentStatus.values());
         model.addAttribute("assignableUsers",    assignableUsers);
-        model.addAttribute("currentUser",        details.getUser());
         model.addAttribute("q",                  q != null ? q : "");
         model.addAttribute("project",            project != null ? project : "");
         model.addAttribute("filterStatus",       status);
