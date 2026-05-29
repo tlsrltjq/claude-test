@@ -269,24 +269,13 @@
                   <th>직급</th>
                   <th>상태</th>
                   <th>투입 프로젝트</th>
-                  <th>종료일</th>
+                  <th>날짜</th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="item : ${personnelStatusList}">
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="user-circle-sm"
-                           th:text="${#strings.substring(item.user.name, 0, 1)}">?</div>
-                      <div>
-                        <div class="fw-600" th:text="${item.user.name}">이름</div>
-                        <div style="font-size:.73rem; color:#adb5bd;"
-                             th:text="${item.user.team != null ? item.user.team.name : '—'}">팀</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style="font-size:.8rem;"
-                      th:text="${item.user.position != null ? item.user.position.displayName : '—'}">직급</td>
+                  <td class="fw-600" th:text="${item.user.name}">이름</td>
+                  <td th:text="${item.user.position != null ? item.user.position.displayName : '—'}">직급</td>
                   <td>
                     <span th:if="${item.activeAssignment != null}" class="badge-deployed">투입중</span>
                     <span th:if="${item.activeAssignment == null and item.plannedAssignment != null}" class="badge-planned-deploy">투입 예정</span>

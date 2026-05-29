@@ -989,9 +989,9 @@ nav.topnav { background: var(--accent); }
 .pstat-idle .pstat-num { color: #9ca3af; }
 
 /* Personnel table */
-.personnel-table { font-size: .82rem; margin: 0; }
-.personnel-table thead th { background: #f1f5f9; color: #475569; font-weight: 700; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; padding: .65rem .75rem; border: none; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
-.personnel-table tbody td { padding: .6rem .75rem; vertical-align: middle; border-color: #f0f1f3; }
+.personnel-table { font-size: .8rem; margin: 0; }
+.personnel-table thead th { background: #f1f5f9; color: #475569; font-weight: 700; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; padding: .4rem .65rem; border: none; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
+.personnel-table tbody td { padding: .3rem .65rem; vertical-align: middle; border-color: #f0f1f3; }
 .personnel-table tbody tr:hover { background: #f0f6ff; }
 .badge-deployed { background: #dbeafe; color: #1d4ed8; font-size: .72rem; padding: .25em .65em; border-radius: 6px; font-weight: 700; white-space: nowrap; }
 .badge-planned-deploy { background: #fef3c7; color: #92400e; font-size: .72rem; padding: .25em .65em; border-radius: 6px; font-weight: 700; white-space: nowrap; }
