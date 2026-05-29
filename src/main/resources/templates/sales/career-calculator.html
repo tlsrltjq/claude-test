@@ -284,86 +284,71 @@
                           <div class="grade" th:text="${result.proposedGrade != null ? result.proposedGrade : '등급 미달'}"></div>
                           <div class="basis" th:if="${result.proposedBasis != null}"
                                th:text="${result.proposedBasis + ' 기준'}"></div>
+
+                          <!-- 요약 통계 -->
+                          <div class="banner-stats-row">
+                              <div class="banner-stat-item">
+                                  <span class="banner-stat-label">총 경력</span>
+                                  <span class="banner-stat-value" th:text="${result.educationResult.displayText()}"></span>
+                              </div>
+                              <div class="banner-stat-item">
+                                  <span class="banner-stat-label">총 일수</span>
+                                  <span class="banner-stat-value" th:text="${#numbers.formatInteger(result.totalRawDays(), 1, 'COMMA') + '일'}"></span>
+                              </div>
+                              <div class="banner-stat-item">
+                                  <span class="banner-stat-label">인정 일수</span>
+                                  <span class="banner-stat-value" th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA') + '일'}"></span>
+                              </div>
+                          </div>
+
+                          <!-- 저장 (배너 내) -->
+                          <form th:action="@{/sales/career-calculator/save}" method="post" class="banner-save-form">
+                              <input type="hidden" name="_csrf"           th:value="${_csrf.token}">
+                              <input type="hidden" name="targetUserId"    th:value="${targetUserId}">
+                              <input type="hidden" name="careerMonths"    th:value="${result.rawMonths()}">
+                              <input type="hidden" name="careerTotalDays" th:value="${result.totalRawDays()}">
+                              <select name="developerGrade" class="form-select form-select-sm" style="min-width:110px;max-width:140px">
+                                  <option value="">등급 없음</option>
+                                  <option th:each="g : ${grades}" th:value="${g}" th:text="${g}"
+                                          th:selected="${result.proposedGrade != null and result.proposedGrade == g}"></option>
+                              </select>
+                              <button th:if="${targetUserId != null}" type="submit" class="btn btn-success btn-sm fw-semibold px-3">
+                                  <i class="bi bi-floppy me-1"></i>프로필에 저장
+                              </button>
+                              <span th:if="${targetUserId == null}" class="text-muted" style="font-size:.78rem">
+                                  <i class="bi bi-info-circle me-1"></i>직원 선택 후 저장 가능
+                              </span>
+                          </form>
                       </div>
 
-                      <!-- 저장 (배너 바로 아래) -->
-                      <div class="calc-card">
-                          <div class="calc-card-header">
-                              <span><i class="bi bi-floppy-fill"></i>프로필 저장</span>
-                          </div>
-                          <div class="calc-card-body">
-                              <form th:action="@{/sales/career-calculator/save}" method="post"
-                                    class="d-flex align-items-end gap-3 flex-wrap">
-                                  <input type="hidden" name="_csrf"           th:value="${_csrf.token}">
-                                  <input type="hidden" name="targetUserId"    th:value="${targetUserId}">
-                                  <input type="hidden" name="careerMonths"    th:value="${result.rawMonths()}">
-                                  <input type="hidden" name="careerTotalDays" th:value="${result.totalRawDays()}">
-                                  <div>
-                                      <div class="field-label">개발자 등급 (저장)</div>
-                                      <select name="developerGrade" class="form-select form-select-sm" style="min-width:110px">
-                                          <option value="">등급 없음</option>
-                                          <option th:each="g : ${grades}" th:value="${g}" th:text="${g}"
-                                                  th:selected="${result.proposedGrade != null and result.proposedGrade == g}"></option>
-                                      </select>
+                      <!-- 기준별 비교 카드 -->
+                      <div class="row g-2 mb-3">
+                          <div class="col" th:with="er=${result.educationResult}">
+                              <div th:class="'compare-card' + (${result.proposedBasis != null and result.proposedBasis == er.basisLabel()} ? ' compare-card-selected' : '')">
+                                  <div class="compare-card-label" th:text="${er.basisLabel() + ' 기준'}"></div>
+                                  <div class="compare-card-days" th:text="${#numbers.formatInteger(er.totalDays(), 1, 'COMMA') + '일'}"></div>
+                                  <div class="compare-card-period" th:text="${er.displayText()}"></div>
+                                  <div class="mt-2">
+                                      <span th:if="${er.grade() == '특급'}" class="grade-pill-special">특급</span>
+                                      <span th:if="${er.grade() == '고급'}" class="grade-pill-high">고급</span>
+                                      <span th:if="${er.grade() == '중급'}" class="grade-pill-mid">중급</span>
+                                      <span th:if="${er.grade() == '초급'}" class="grade-pill-low">초급</span>
+                                      <span th:if="${er.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
                                   </div>
-                                  <div th:if="${targetUserId != null}">
-                                      <button type="submit" class="btn btn-success fw-semibold px-4">
-                                          <i class="bi bi-floppy me-1"></i>프로필에 저장
-                                      </button>
-                                  </div>
-                                  <div th:if="${targetUserId == null}" class="text-muted align-self-center" style="font-size:.82rem">
-                                      <i class="bi bi-info-circle me-1"></i>직원을 먼저 선택해야 저장할 수 있습니다.
-                                  </div>
-                              </form>
+                              </div>
                           </div>
-                      </div>
-
-                      <!-- 기준별 비교 -->
-                      <div class="calc-card">
-                          <div class="calc-card-header">
-                              <span><i class="bi bi-bar-chart-fill"></i>기준별 경력 비교</span>
-                          </div>
-                          <div class="calc-card-body p-0">
-                              <div class="table-responsive">
-                                  <table class="table result-table mb-0">
-                                      <thead>
-                                          <tr>
-                                              <th class="text-start">구분</th>
-                                              <th>인정일수</th>
-                                              <th>경력기간</th>
-                                              <th>환산경력</th>
-                                              <th>적용등급</th>
-                                          </tr>
-                                      </thead>
-                                      <tbody>
-                                          <tr th:with="er=${result.educationResult}">
-                                              <td class="text-start fw-semibold" th:text="${er.basisLabel() + ' 기준'}"></td>
-                                              <td th:text="${#numbers.formatInteger(er.totalDays(), 1, 'COMMA') + '일'}"></td>
-                                              <td th:text="${er.displayText()}"></td>
-                                              <td th:text="${er.summary()}"></td>
-                                              <td>
-                                                  <span th:if="${er.grade() == '특급'}" class="grade-pill-special">특급</span>
-                                                  <span th:if="${er.grade() == '고급'}" class="grade-pill-high">고급</span>
-                                                  <span th:if="${er.grade() == '중급'}" class="grade-pill-mid">중급</span>
-                                                  <span th:if="${er.grade() == '초급'}" class="grade-pill-low">초급</span>
-                                                  <span th:if="${er.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
-                                              </td>
-                                          </tr>
-                                          <tr th:if="${result.certResult != null}" th:with="cr=${result.certResult}">
-                                              <td class="text-start fw-semibold" th:text="${cr.basisLabel() + ' 기준'}"></td>
-                                              <td th:text="${#numbers.formatInteger(cr.totalDays(), 1, 'COMMA') + '일'}"></td>
-                                              <td th:text="${cr.displayText()}"></td>
-                                              <td th:text="${cr.summary()}"></td>
-                                              <td>
-                                                  <span th:if="${cr.grade() == '특급'}" class="grade-pill-special">특급</span>
-                                                  <span th:if="${cr.grade() == '고급'}" class="grade-pill-high">고급</span>
-                                                  <span th:if="${cr.grade() == '중급'}" class="grade-pill-mid">중급</span>
-                                                  <span th:if="${cr.grade() == '초급'}" class="grade-pill-low">초급</span>
-                                                  <span th:if="${cr.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
-                                              </td>
-                                          </tr>
-                                      </tbody>
-                                  </table>
+                          <div class="col" th:if="${result.certResult != null}" th:with="cr=${result.certResult}">
+                              <div th:class="'compare-card' + (${result.proposedBasis != null and result.proposedBasis == cr.basisLabel()} ? ' compare-card-selected' : '')">
+                                  <div class="compare-card-label" th:text="${cr.basisLabel() + ' 기준'}"></div>
+                                  <div class="compare-card-days" th:text="${#numbers.formatInteger(cr.totalDays(), 1, 'COMMA') + '일'}"></div>
+                                  <div class="compare-card-period" th:text="${cr.displayText()}"></div>
+                                  <div class="mt-2">
+                                      <span th:if="${cr.grade() == '특급'}" class="grade-pill-special">특급</span>
+                                      <span th:if="${cr.grade() == '고급'}" class="grade-pill-high">고급</span>
+                                      <span th:if="${cr.grade() == '중급'}" class="grade-pill-mid">중급</span>
+                                      <span th:if="${cr.grade() == '초급'}" class="grade-pill-low">초급</span>
+                                      <span th:if="${cr.grade() == null}" class="text-muted" style="font-size:.78rem">등급 미달</span>
+                                  </div>
                               </div>
                           </div>
                       </div>
@@ -378,31 +363,29 @@
                                   <table class="table result-table mb-0">
                                       <thead>
                                           <tr>
-                                              <th style="width:42px">NO</th>
+                                              <th style="width:36px">NO</th>
                                               <th class="text-start">소속회사</th>
                                               <th>시작일</th>
                                               <th>종료일</th>
                                               <th>총일수</th>
                                               <th>학력인정</th>
                                               <th th:if="${result.certResult != null}">자격증인정</th>
-                                              <th>상태</th>
                                           </tr>
                                       </thead>
                                       <tbody>
                                           <tr th:each="row : ${result.rows}"
                                               th:class="${row.overlap()} ? 'table-warning' : ''">
                                               <td th:text="${row.no()}"></td>
-                                              <td class="text-start" th:text="${row.company() != null and !row.company().isBlank() ? row.company() : '-'}"></td>
+                                              <td class="text-start">
+                                                  <span th:text="${row.company() != null and !row.company().isBlank() ? row.company() : '-'}"></span>
+                                                  <span th:if="${row.overlap()}" class="overlap-warn ms-1" style="font-size:.72rem">중복</span>
+                                              </td>
                                               <td th:text="${row.start()}"></td>
                                               <td th:text="${row.end()}"></td>
                                               <td th:text="${#numbers.formatInteger(row.totalDays(), 1, 'COMMA')}"></td>
                                               <td th:text="${#numbers.formatInteger(row.educationDays(), 1, 'COMMA')}"></td>
                                               <td th:if="${result.certResult != null}"
                                                   th:text="${#numbers.formatInteger(row.certDays(), 1, 'COMMA')}"></td>
-                                              <td>
-                                                  <span th:if="${row.overlap()}" class="overlap-warn" style="font-size:.78rem">중복</span>
-                                                  <span th:unless="${row.overlap()}" class="text-success" style="font-size:.78rem">정상</span>
-                                              </td>
                                           </tr>
                                       </tbody>
                                       <tfoot>
@@ -412,7 +395,6 @@
                                               <td th:text="${#numbers.formatInteger(result.educationResult.totalDays(), 1, 'COMMA')}"></td>
                                               <td th:if="${result.certResult != null}"
                                                   th:text="${#numbers.formatInteger(result.certResult.totalDays(), 1, 'COMMA')}"></td>
-                                              <td></td>
                                           </tr>
                                       </tfoot>
                                   </table>
