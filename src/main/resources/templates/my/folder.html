@@ -146,7 +146,6 @@
                           <div class="d-flex flex-wrap gap-1 mb-1">
                               <span class="badge bg-secondary doc-type-badge" th:text="${doc.documentType.displayName}"></span>
                               <span th:if="${lv != null and lv.reviewStatus.name() == 'PENDING_REVIEW'}"  class="badge bg-warning text-dark" style="font-size:.65rem">검토 대기</span>
-                              <span th:if="${lv != null and lv.reviewStatus.name() == 'APPROVED'}"        class="badge bg-success"            style="font-size:.65rem">승인됨</span>
                               <span th:if="${lv != null and lv.reviewStatus.name() == 'REJECTED'}"        class="badge bg-danger"             style="font-size:.65rem">반려됨</span>
                               <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
                                     class="badge bg-danger" style="font-size:.65rem">만료됨</span>
@@ -211,7 +210,6 @@
                           <td>
                               <span class="badge bg-secondary doc-type-badge" th:text="${doc.documentType.displayName}"></span>
                               <span th:if="${lv != null and lv.reviewStatus.name() == 'PENDING_REVIEW'}"  class="badge bg-warning text-dark ms-1" style="font-size:.62rem">검토 대기</span>
-                              <span th:if="${lv != null and lv.reviewStatus.name() == 'APPROVED'}"        class="badge bg-success ms-1"            style="font-size:.62rem">승인됨</span>
                               <span th:if="${lv != null and lv.reviewStatus.name() == 'REJECTED'}"        class="badge bg-danger ms-1"             style="font-size:.62rem">반려됨</span>
                               <span th:if="${doc.expiresAt != null and doc.expiresAt.isBefore(#temporals.createToday())}"
                                     class="badge bg-danger ms-1" style="font-size:.62rem">만료됨</span>
