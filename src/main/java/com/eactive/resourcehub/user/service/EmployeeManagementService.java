@@ -27,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -50,16 +51,20 @@ public class EmployeeManagementService {
         return userRepository.findByStatusWithTeam(UserStatus.ACTIVE);
     }
 
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 30;
+    private static final List<String> ALLOWED_SORTS = List.of("name", "email", "position", "role", "status");
 
     @Transactional(readOnly = true)
-    public Page<User> findActiveFilteredPaged(String q, String position, String role, Long teamId, int page) {
+    public Page<User> findActiveFilteredPaged(String q, String position, String role, Long teamId,
+                                              int page, String sort, String direction) {
         String qLike = (q == null || q.isBlank()) ? null : "%" + q.toLowerCase() + "%";
         Position pos = parsePosition(position);
         UserRole roleEnum = parseRole(role);
+        String safeSort = ALLOWED_SORTS.contains(sort) ? sort : "name";
+        Sort.Direction dir = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         return userRepository.findFilteredPage(
                 MANAGED_STATUSES, qLike, pos, roleEnum, teamId,
-                PageRequest.of(Math.max(page, 0), PAGE_SIZE));
+                PageRequest.of(Math.max(page, 0), PAGE_SIZE, Sort.by(dir, safeSort)));
     }
 
     private Position parsePosition(String value) {

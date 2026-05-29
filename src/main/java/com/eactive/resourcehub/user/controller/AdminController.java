@@ -64,8 +64,10 @@ public class AdminController {
                             @RequestParam(required = false) String role,
                             @RequestParam(required = false) Long teamId,
                             @RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "name") String sort,
+                            @RequestParam(defaultValue = "asc") String direction,
                             Model model) {
-        var result = employeeService.findActiveFilteredPaged(q, position, role, teamId, page);
+        var result = employeeService.findActiveFilteredPaged(q, position, role, teamId, page, sort, direction);
         model.addAttribute("employees", result.getContent());
         model.addAttribute("totalCount", result.getTotalElements());
         model.addAttribute("currentPage", result.getNumber());
@@ -78,6 +80,8 @@ public class AdminController {
         model.addAttribute("position", position);
         model.addAttribute("role", role);
         model.addAttribute("teamId", teamId);
+        model.addAttribute("sort", sort);
+        model.addAttribute("direction", direction);
         return "admin/employees";
     }
 
