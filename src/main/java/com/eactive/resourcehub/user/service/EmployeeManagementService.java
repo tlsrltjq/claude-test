@@ -62,9 +62,11 @@ public class EmployeeManagementService {
         UserRole roleEnum = parseRole(role);
         String safeSort = ALLOWED_SORTS.contains(sort) ? sort : "name";
         Sort.Direction dir = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        // 관리자(ADMIN)는 항상 최상단 고정 — role ASC = "ADMIN" < "EMPLOYEE" < "SALES"
+        Sort combinedSort = Sort.by(Sort.Direction.ASC, "role").and(Sort.by(dir, safeSort));
         return userRepository.findFilteredPage(
                 MANAGED_STATUSES, qLike, pos, roleEnum, teamId,
-                PageRequest.of(Math.max(page, 0), PAGE_SIZE, Sort.by(dir, safeSort)));
+                PageRequest.of(Math.max(page, 0), PAGE_SIZE, combinedSort));
     }
 
     private Position parsePosition(String value) {
@@ -133,6 +135,27 @@ public class EmployeeManagementService {
             log.info("계정 활성화 — userId={}", userId);
             return UserStatus.ACTIVE;
         }
+    }
+
+    /**
+     * 직원 계정 완전 삭제. 관리자 계정 및 자기 자신은 불가.
+     * DB FK 설정(V224)에 의해 permissions·employee_profiles·project_assignments는 CASCADE,
+     * audit_logs·document_versions.uploaded_by·folders.owner_user_id는 SET NULL.
+     */
+    @Transactional
+    public void deleteEmployee(Long userId, Long actorId, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new IllegalArgumentException("관리자 계정은 삭제할 수 없습니다.");
+        }
+        if (userId.equals(actorId)) {
+            throw new IllegalArgumentException("자신의 계정은 삭제할 수 없습니다.");
+        }
+        String detail = "직원 삭제: " + user.getName() + " (" + user.getEmail() + ")";
+        auditService.log(actorId, AuditActionType.DELETE, AuditTargetType.USER, userId, detail, request);
+        log.info("직원 삭제 — userId={}, name={}, actor={}", userId, user.getName(), actorId);
+        userRepository.deleteById(userId);
     }
 
     @Transactional

@@ -101,10 +101,22 @@ public class AdminController {
 
         model.addAttribute("documents", employeeService.findPersonalDocuments(userId));
 
-        model.addAttribute("permissions", folderPermissionService.findPermissionsByUser(userId));
-        model.addAttribute("grantableFolders", folderPermissionService.findGrantableFolders(userId));
-
         return "admin/employee-detail";
+    }
+
+    @PostMapping("/employees/{userId}/delete")
+    public String deleteEmployee(@PathVariable Long userId,
+                                 @AuthenticationPrincipal CustomUserDetails actor,
+                                 HttpServletRequest request,
+                                 RedirectAttributes ra) {
+        try {
+            employeeService.deleteEmployee(userId, actor.getUser().getId(), request);
+            ra.addFlashAttribute("successMessage", "직원 계정이 삭제되었습니다.");
+            return "redirect:/admin/employees";
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/employees/" + userId + "?tab=info";
+        }
     }
 
     @PostMapping("/employees/{userId}/toggle-status")

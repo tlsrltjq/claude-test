@@ -45,8 +45,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                    "AND (:qLike IS NULL OR LOWER(u.name) LIKE :qLike OR LOWER(u.email) LIKE :qLike) " +
                    "AND (:position IS NULL OR u.position = :position) " +
                    "AND (:role IS NULL OR u.role = :role) " +
-                   "AND (:teamId IS NULL OR t.id = :teamId) " +
-                   "ORDER BY u.name",
+                   "AND (:teamId IS NULL OR t.id = :teamId)",
            countQuery = "SELECT COUNT(u) FROM User u LEFT JOIN u.team t " +
                         "WHERE u.status IN :statuses " +
                         "AND (:qLike IS NULL OR LOWER(u.name) LIKE :qLike OR LOWER(u.email) LIKE :qLike) " +
