@@ -1,0 +1,40 @@
+# Testcontainers 통합 테스트용 프로파일
+# DataSource는 @ServiceConnection이 Testcontainers PostgreSQL로 자동 설정
+spring:
+  flyway:
+    enabled: false   # 테스트 DB는 Hibernate ddl-auto: create-drop으로 스키마 생성
+  jpa:
+    hibernate:
+      ddl-auto: create
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+resourcehub:
+  storage:
+    type: local
+    s3:
+      endpoint: http://localhost:9000
+      access-key: test
+      secret-key: test
+      bucket: test-bucket
+      region: auto
+  upload:
+    base-dir: /tmp/test-uploads
+    allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx,zip,xlsx,xls
+  admin:
+    email: admin@test.com
+    password: Test1234!
+  seed:
+    test-password: ""
+    test-email: ""
+  gc:
+    retention-days: 7
