@@ -42,44 +42,51 @@
       <div class="row g-3">
           <div class="col-lg-4">
               <!-- 문서 정보 -->
-              <div class="side-card">
+              <div class="side-card mb-3">
                   <div class="card-header-custom"><i class="bi bi-info-circle me-2"></i>문서 정보</div>
-                  <div class="card-body">
-                      <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${document.documentType.displayName}"></span></span></div>
-                      <div class="info-row" th:if="${currentVersion != null}">
-                          <span class="info-label">현재 버전</span>
-                          <span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${currentVersion.versionNo}"></span></span>
-                      </div>
-                      <div class="info-row" th:if="${currentVersion != null}">
-                          <span class="info-label">검토 상태</span>
-                          <span class="info-val">
-                              <span th:if="${currentVersion.reviewStatus.name() == 'PENDING_REVIEW'}" class="badge rounded-pill" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.72rem;">검토 대기</span>
-                              <span th:if="${currentVersion.reviewStatus.name() == 'APPROVED'}" class="badge bg-success rounded-pill" style="font-size:.72rem;">승인됨</span>
-                              <span th:if="${currentVersion.reviewStatus.name() == 'REJECTED'}" class="badge bg-danger rounded-pill" style="font-size:.72rem;">반려됨</span>
-                              <span th:if="${currentVersion.reviewStatus.name() == 'ARCHIVED'}" class="badge bg-secondary rounded-pill" style="font-size:.72rem;">보관됨</span>
-                          </span>
-                      </div>
-                      <div class="info-row" th:if="${currentVersion != null and currentVersion.reviewStatus.name() == 'REJECTED' and currentVersion.rejectReason != null}">
-                          <span class="info-label">반려 사유</span><span class="info-val text-danger small" th:text="${currentVersion.rejectReason}"></span>
-                      </div>
-                      <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">파일명</span><span class="info-val text-muted small" th:text="${currentVersion.originalFileName}"></span></div>
-                      <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">크기</span><span class="info-val text-muted" th:text="${#numbers.formatDecimal(currentVersion.fileSize / 1024.0, 1, 1) + ' KB'}"></span></div>
-                      <div class="info-row" th:if="${currentVersion != null}"><span class="info-label">업로드일</span><span class="info-val text-muted" th:text="${#temporals.format(currentVersion.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
-                      <div class="info-row">
-                          <span class="info-label">만료일</span>
-                          <span class="info-val">
-                              <span th:if="${document.expiresAt == null}" class="text-muted small">미설정</span>
-                              <span th:if="${document.expiresAt != null and document.expiresAt.isBefore(#temporals.createToday())}"
-                                    class="badge bg-danger rounded-pill" style="font-size:.72rem;"
-                                    th:text="${#temporals.format(document.expiresAt, 'yyyy-MM-dd') + ' (만료됨)'}"></span>
-                              <span th:if="${document.expiresAt != null and !document.expiresAt.isBefore(#temporals.createToday()) and document.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
-                                    class="badge bg-warning text-dark rounded-pill" style="font-size:.72rem;"
-                                    th:text="${#temporals.format(document.expiresAt, 'yyyy-MM-dd') + ' (임박)'}"></span>
-                              <span th:if="${document.expiresAt != null and !document.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
-                                    class="text-success small fw-semibold"
-                                    th:text="${#temporals.format(document.expiresAt, 'yyyy-MM-dd')}"></span>
-                          </span>
-                      </div>
+                  <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${document.documentType.displayName}"></span></span></div>
+                  <div class="info-row" th:if="${currentVersion != null}">
+                      <span class="info-label">현재 버전</span>
+                      <span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${currentVersion.versionNo}"></span></span>
+                  </div>
+                  <div class="info-row" th:if="${currentVersion != null}">
+                      <span class="info-label">검토 상태</span>
+                      <span class="info-val">
+                          <span th:if="${currentVersion.reviewStatus.name() == 'PENDING_REVIEW'}" class="badge rounded-pill" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.72rem;">검토 대기</span>
+                          <span th:if="${currentVersion.reviewStatus.name() == 'APPROVED'}" class="badge bg-success rounded-pill" style="font-size:.72rem;">승인됨</span>
+                          <span th:if="${currentVersion.reviewStatus.name() == 'REJECTED'}" class="badge bg-danger rounded-pill" style="font-size:.72rem;">반려됨</span>
+                          <span th:if="${currentVersion.reviewStatus.name() == 'ARCHIVED'}" class="badge bg-secondary rounded-pill" style="font-size:.72rem;">보관됨</span>
+                      </span>
+                  </div>
+                  <div class="info-row" th:if="${currentVersion != null and currentVersion.reviewStatus.name() == 'REJECTED' and currentVersion.rejectReason != null}">
+                      <span class="info-label">반려 사유</span><span class="info-val text-danger" style="font-size:.82rem" th:text="${currentVersion.rejectReason}"></span>
+                  </div>
+                  <div class="info-row" th:if="${currentVersion != null}">
+                      <span class="info-label">파일명</span>
+                      <span class="info-val text-muted" style="font-size:.8rem;word-break:break-all" th:text="${currentVersion.originalFileName}"></span>
+                  </div>
+                  <div class="info-row" th:if="${currentVersion != null}">
+                      <span class="info-label">크기</span>
+                      <span class="info-val text-muted" th:text="${#numbers.formatDecimal(currentVersion.fileSize / 1024.0, 1, 1) + ' KB'}"></span>
+                  </div>
+                  <div class="info-row" th:if="${currentVersion != null}">
+                      <span class="info-label">업로드일</span>
+                      <span class="info-val text-muted" th:text="${#temporals.format(currentVersion.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                  </div>
+                  <div class="info-row">
+                      <span class="info-label">만료일</span>
+                      <span class="info-val">
+                          <span th:if="${document.expiresAt == null}" class="text-muted" style="font-size:.82rem">미설정</span>
+                          <span th:if="${document.expiresAt != null and document.expiresAt.isBefore(#temporals.createToday())}"
+                                class="badge bg-danger rounded-pill" style="font-size:.72rem;"
+                                th:text="${#temporals.format(document.expiresAt, 'yyyy-MM-dd') + ' (만료됨)'}"></span>
+                          <span th:if="${document.expiresAt != null and !document.expiresAt.isBefore(#temporals.createToday()) and document.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
+                                class="badge bg-warning text-dark rounded-pill" style="font-size:.72rem;"
+                                th:text="${#temporals.format(document.expiresAt, 'yyyy-MM-dd') + ' (임박)'}"></span>
+                          <span th:if="${document.expiresAt != null and !document.expiresAt.isBefore(#temporals.createToday().plusDays(30))}"
+                                class="text-success fw-semibold" style="font-size:.82rem"
+                                th:text="${#temporals.format(document.expiresAt, 'yyyy-MM-dd')}"></span>
+                      </span>
                   </div>
                   <div class="p-3 border-top d-flex flex-column gap-2" th:if="${currentVersion != null}">
                       <a th:href="@{/documents/{id}/download(id=${currentVersion.id})}"
@@ -106,9 +113,9 @@
               </div>
 
               <!-- 만료일 수정 -->
-              <div class="side-card" th:if="${isOwner}">
+              <div class="side-card mb-3" th:if="${isOwner}">
                   <div class="card-header-custom"><i class="bi bi-calendar-check me-2"></i>만료일 수정</div>
-                  <div class="card-body">
+                  <div style="padding:.75rem 1rem">
                       <form th:action="@{/my/folder/documents/{id}/expiry(id=${document.id})}" method="post">
                           <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                           <div class="d-flex gap-2 align-items-center mb-1">
@@ -124,17 +131,15 @@
               <!-- 버전 목록 -->
               <div class="side-card" th:if="${not #lists.isEmpty(versions)}">
                   <div class="card-header-custom"><i class="bi bi-layers me-2"></i>버전 목록</div>
-                  <div class="card-body">
-                      <div th:each="v : ${versions}" class="version-item">
-                          <span>
-                              <span class="badge bg-secondary rounded-pill me-1" th:text="'v' + ${v.versionNo}"></span>
-                              <span th:if="${v.reviewStatus.name() == 'PENDING_REVIEW'}" class="badge rounded-pill ms-1" style="background:#fff3cd; color:#856404; font-size:.68rem;">대기</span>
-                              <span th:if="${v.reviewStatus.name() == 'APPROVED'}" class="badge bg-success rounded-pill ms-1" style="font-size:.68rem;">승인</span>
-                              <span th:if="${v.reviewStatus.name() == 'REJECTED'}" class="badge bg-danger rounded-pill ms-1" style="font-size:.68rem;">반려</span>
-                              <span th:if="${v.reviewStatus.name() == 'ARCHIVED'}" class="badge bg-secondary rounded-pill ms-1" style="font-size:.68rem;">보관</span>
-                          </span>
-                          <span class="text-muted" style="font-size:.75rem;" th:text="${#temporals.format(v.createdAt, 'MM-dd HH:mm')}"></span>
-                      </div>
+                  <div th:each="v : ${versions}" class="version-item">
+                      <span>
+                          <span class="badge bg-secondary rounded-pill me-1" th:text="'v' + ${v.versionNo}"></span>
+                          <span th:if="${v.reviewStatus.name() == 'PENDING_REVIEW'}" class="badge rounded-pill" style="background:#fff3cd; color:#856404; font-size:.68rem;">대기</span>
+                          <span th:if="${v.reviewStatus.name() == 'APPROVED'}" class="badge bg-success rounded-pill" style="font-size:.68rem;">승인</span>
+                          <span th:if="${v.reviewStatus.name() == 'REJECTED'}" class="badge bg-danger rounded-pill" style="font-size:.68rem;">반려</span>
+                          <span th:if="${v.reviewStatus.name() == 'ARCHIVED'}" class="badge bg-secondary rounded-pill" style="font-size:.68rem;">보관</span>
+                      </span>
+                      <span class="text-muted" style="font-size:.78rem;" th:text="${#temporals.format(v.createdAt, 'yy.MM.dd HH:mm')}"></span>
                   </div>
               </div>
           </div>
