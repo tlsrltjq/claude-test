@@ -19,9 +19,9 @@
 | 투입 관리 | 캘린더(`/sales/calendar`), 프로젝트 CRUD·멤버 관리, 배정 삭제, 대시보드 통계, 프로젝트 바(bar) 렌더링, 하단 프로젝트 리스트 |
 | 관리자 | 직원·팀·문서 검토·통계·재직증명서·파일 GC·이메일 허용 목록 |
 
-기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V226 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
+기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-29):** Flyway V227. BUILD SUCCESSFUL. security-lint 15/15 PASS. 302개 테스트 전 통과. 이번 세션 완료 항목: 문서 검색 500 에러 수정(PostgreSQL null LocalDateTime sentinel 패턴), 테스트 스위트 구축(SearchServiceTest 16·DocumentUploadServiceTest 7·RouteSecurityTest 12·DocumentRepositoryIntegrationTest 11), Testcontainers PostgreSQL 통합 테스트 환경 구성(@DataJpaTest + @Import JpaAuditingConfig + ddl-auto: create).
+**현재 상태 (2026-05-30):** Flyway V227. BUILD SUCCESSFUL. security-lint 15/15 PASS. 393개 테스트 전 통과 (37개 클래스). 이번 세션 완료 항목: E2E 테스트 단일 클래스(E2ETest.java) 24케이스 구축, application-e2e.yml 신설(Flyway 비활성·AdminInitializer 시드), 단위 테스트 8개 클래스 신규 추가(SignupService 16·EmployeeManagementService 12·ThumbnailService 7·DocumentFileGcService 10·DocumentExpiryService 6·FolderPermissionService 8·AuditService 5·FolderService 3).
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
@@ -73,8 +73,8 @@
 - 실제 구현된 코드와 일치해야 함
 - 미구현 기능은 "향후 계획"으로 분리
 - API 경로·DTO 필드명·화면 경로는 소스 기준
-- Flyway 버전: 현재 V223. 다음은 **V224**부터
-- ADR 번호: 현재 ADR-038까지. 다음은 ADR-039부터
+- Flyway 버전: 현재 V227. 다음은 **V228**부터
+- ADR 번호: 현재 ADR-039까지. 다음은 ADR-040부터
 
 ---
 

@@ -1,6 +1,6 @@
 # 데이터 모델
 
-> Flyway V1~V226 기준. 엔티티·테이블·관계·주요 제약조건.
+> Flyway V1~V227 기준. 엔티티·테이블·관계·주요 제약조건.
 > 참고 소스: `src/main/resources/db/migration/V*.sql`, `src/main/java/**/entity/*.java`
 
 ---
@@ -367,5 +367,6 @@ UNIQUE: `(user_id, name)`
 | V224 | 직원 삭제 대비 FK 정비 (audit_logs·document_versions·permissions·employee_profiles·folders SET NULL/CASCADE) |
 | V225 | users.join_date 컬럼 추가 (입사일, 선택) |
 | V226 | project_assignments user_name 스냅샷 추가 + user_id SET NULL 전환, 누락 FK 6개 수정 (email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL) |
+| V227 | audit_logs 인덱스 추가 (created_at, action_type, user_id) |
 
-> 다음 마이그레이션은 **V227**부터.
+> 다음 마이그레이션은 **V228**부터.

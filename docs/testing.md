@@ -7,25 +7,29 @@
 
 ## 현재 테스트 범위
 
-### 자동화 (현재)
+### 자동화 (현재) — Java 테스트 393개, security-lint 15항목
 
-**공통 유틸**
+**공통 유틸·서비스**
 
 | 파일 | 케이스 수 | 범위 |
 |------|-----------|------|
 | `FileMagicValidatorTest.java` | 12 | 9개 확장자 magic bytes 정상·불일치 |
 | `FileUtilsTest.java` | 9 | 확장자 추출, 경로 처리 |
+| `PasswordValidatorTest.java` | 7 | 비밀번호 복잡도 규칙 5가지 |
+| `AuditServiceTest.java` | 5 | user not found 스킵, 감사 저장, X-Forwarded-For, save 예외 전파 방지 |
 
 **사용자·인증**
 
 | 파일 | 케이스 수 | 범위 |
 |------|-----------|------|
 | `SignupValidationTest.java` | 14 | SignupRequest 유효성 검증 5가지 규칙 |
+| `SignupServiceTest.java` | 16 | 이메일 중복·허용 목록 차단·인증 코드 발급·완료·미래 생년월일 차단 |
 | `PasswordResetTokenTest.java` | 8 | 토큰 만료·재사용 불가·consumed 상태 |
 | `PasswordResetServiceTest.java` | 13 | 코드 발급·검증·비밀번호 변경 흐름 |
 | `EmailAllowlistServiceTest.java` | 9 | 허용 이메일 추가·삭제·조회 |
 | `SettingsServiceTest.java` | 6 | 이름·주소·팀·비밀번호 변경 |
 | `UserRoleServiceTest.java` | 5 | 역할 변경, TEAM_LEADER 차단 |
+| `EmployeeManagementServiceTest.java` | 12 | 상태 전환(ADMIN 보호·ACTIVE↔DISABLED), 직원 삭제, 팀·직급 변경 |
 | `CareerCalculatorTest.java` | 6 | 경력 계산, 중복 구간 제거 |
 
 **문서·폴더**
@@ -36,23 +40,55 @@
 | `DocumentDeleteServiceTest.java` | 9 | 본인 삭제, ADMIN 강제 삭제, 공용 폴더 삭제 |
 | `DocumentReviewServiceTest.java` | 5 | 승인·반려 상태 전환 |
 | `FolderAccessServiceTest.java` | 13 | SHARED_PUBLIC read, 개인 폴더 격리, 권한 부여 |
+| `DocumentUploadServiceTest.java` | 7 | 확장자·magic bytes·신규 업로드·대용량 검토 플래그·중복 체크섬 |
+| `SearchServiceTest.java` | 16 | ADMIN/EMPLOYEE 라우팅·folderKind 필터·날짜 sentinel·kw 변환·중복 제거 |
+| `ThumbnailServiceTest.java` | 7 | EMPLOYEE 비소유자 403, ADMIN·소유자 허용, 버전 미존재 404, 파일 삭제 실패 계속 |
+| `DocumentFileGcServiceTest.java` | 10 | runGc(후보 없음·있음·파일 삭제 실패·프리뷰), orphanScan(IOException·고아·기존 경로 스킵) |
+| `DocumentExpiryServiceTest.java` | 6 | findExpired 위임, findExpiringSoon 오늘+30일, 만료 알림 발송, 이메일 실패 계속 |
+| `FolderServiceTest.java` | 3 | 기존 폴더 반환, 신규 폴더 저장·감사, 폴더명에 소유자 이름 포함 |
+| `DocumentPreviewResolverTest.java` | 10 | 확장자별 미리보기 타입 결정 |
+| `DocumentRepositoryIntegrationTest.java` ¹ | 11 | sentinel 날짜·키워드·타입 필터·날짜 범위 (Testcontainers PostgreSQL) |
 
-**팀·보안**
+¹ `@DataJpaTest` + Testcontainers + `@Import(JpaAuditingConfig.class)`
+
+**권한**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `FolderPermissionServiceTest.java` | 8 | 권한 부여(중복·유저없음·폴더없음·성공), 회수, 부여가능 폴더 목록 |
+
+**팀**
 
 | 파일 | 케이스 수 | 범위 |
 |------|-----------|------|
 | `TeamServiceTest.java` | 11 | 팀 CRUD, project_team 토글, 감사 로그 |
-| `SecurityAccessTest.java` | 5 | 미인증·EMPLOYEE·SALES·ADMIN 경로 접근 |
 
 **프로젝트 투입 관리**
 
 | 파일 | 케이스 수 | 범위 |
 |------|-----------|------|
-| `ProjectAssignmentTest.java` | 15 | 엔티티 상태 결정, remainingDays, isActiveOn |
-| `ProjectAssignmentRequestTest.java` | 12 | validate() 5가지 오류 규칙 |
-| `CalendarGridBuilderTest.java` | 11 | 요일 오프셋, 클리핑, CANCELLED 제외 |
-| `ProjectAssignmentServiceTest.java` | 22 | CRUD, 권한, 통계, 선택 로직 |
-| `ProjectAssignmentControllerTest.java` | 13 | HTTP 상태, CSRF, 리다이렉트 |
+| `ProjectAssignmentTest.java` | 16 | 엔티티 상태 결정, remainingDays, isActiveOn |
+| `ProjectTest.java` | 11 | 프로젝트 엔티티 상태·멤버 관리 |
+| `CalendarGridBuilderTest.java` | 18 | 요일 오프셋, 클리핑, CANCELLED 제외 |
+| `ProjectAssignmentControllerTest.java` | 12 | HTTP 상태, CSRF, 리다이렉트 |
+| `ProjectControllerTest.java` | 13 | 프로젝트 CRUD HTTP 상태·권한 |
+| `ProjectAssignmentServiceTest.java` | 15 | CRUD, 권한, 통계, 선택 로직 |
+| `ProjectServiceTest.java` | 17 | 프로젝트 서비스 CRUD·멤버·상태 전환 |
+
+**보안 슬라이스**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `SecurityAccessTest.java` | 5 | 미인증·EMPLOYEE·SALES·ADMIN 경로 접근 |
+| `RouteSecurityTest.java` | 12 | 미인증 302·EMPLOYEE/SALES/ADMIN 권한 매트릭스 (WebMvc 슬라이스) |
+
+**E2E 통합 테스트**
+
+| 파일 | 케이스 수 | 범위 |
+|------|-----------|------|
+| `E2ETest.java` ² | 24 | 인증(9)·관리자(8)·문서/검색(7) — 단일 클래스, Testcontainers PostgreSQL |
+
+² `@SpringBootTest(MOCK)` + `@ActiveProfiles("e2e")` + `AdminInitializer` 시드. Flyway 비활성화(`application-e2e.yml`), `ddl-auto: create`.
 
 **보안 정적 분석**
 
@@ -60,14 +96,14 @@
 |------|---------|------|
 | `scripts/security-lint.sh` | 15 | Bash grep 기반, 0 FAIL 유지 |
 
-> 총 자동화 테스트: **210개** (Java 테스트 195개 + security-lint 15항목)
+> 총 자동화 테스트: **Java 393개** (37개 클래스) + security-lint 15항목
+
+---
 
 ### 미커버 영역 (현재)
 
-- 서비스 단위 테스트: `SignupService`, `DocumentUploadService`, `SalesProfileQueryService`, `BundleDownloadService`, `SalesProfileExporter`, `SalesMemberService`, `SharedFolderService`, `DocumentFileGcService`, `ColumnViewPreferenceService`, `CertificateService`
-- 컨트롤러 슬라이스 테스트: `AdminController`. `/sales/**` EMPLOYEE 역할 차단은 `@WebMvcTest` 슬라이스 제약으로 검증 불가 → 수동 QA 보완
-- 통합 테스트: 업로드→검토→승인 전체 흐름, 폴더 권한 부여→접근 흐름
-- E2E 테스트: 없음 (Playwright 등 미도입)
+- 서비스 단위 테스트: `SalesProfileQueryService`, `BundleDownloadService`, `SalesProfileExporter`, `SalesMemberService`, `SharedFolderService`, `ColumnViewPreferenceService`, `CertificateService`
+- 컨트롤러 슬라이스 테스트: `AdminController` (직접 슬라이스 없음, E2E로 보완 중)
 
 ---
 
@@ -80,17 +116,29 @@ testImplementation 'org.springframework.boot:spring-boot-starter-test'
     → JUnit 5, AssertJ, Mockito, MockMvc
 testImplementation 'org.springframework.security:spring-security-test'
     → @WithMockUser, SecurityMockMvcRequestPostProcessors
+testImplementation 'org.testcontainers:junit-jupiter:1.21.0'
+testImplementation 'org.testcontainers:postgresql:1.21.0'
+testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    → @ServiceConnection, Testcontainers PostgreSQL 18
 testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 testCompileOnly 'org.projectlombok:lombok'
 testAnnotationProcessor 'org.projectlombok:lombok'
 ```
 
-### 외부 의존성이 필요한 도구 (미도입, 도입 전 승인 필요)
+### 미도입 도구 (도입 전 승인 필요)
 
 | 도구 | 용도 | 비고 |
 |------|------|------|
-| Testcontainers | PostgreSQL 실제 DB 통합 테스트 | build.gradle 의존성 추가 필요 |
 | Playwright/Selenium | E2E 브라우저 테스트 | 별도 런타임 필요 |
+
+---
+
+## 테스트 프로파일
+
+| 프로파일 | 파일 | 용도 |
+|----------|------|------|
+| `test` | `application-test.yml` | 단위·슬라이스 테스트 — Flyway 비활성, `ddl-auto: create`, stub mail/S3 |
+| `e2e` | `application-e2e.yml` | E2E 통합 테스트 — Flyway 비활성, `ddl-auto: create`, `AdminInitializer` 시드 (`admin@test.com / Test1234!`) |
 
 ---
 
@@ -104,8 +152,11 @@ testAnnotationProcessor 'org.projectlombok:lombok'
 # 보안 정적 분석 (0 FAIL 유지)
 bash scripts/security-lint.sh
 
+# E2E만 실행
+./gradlew test --tests "com.eactive.resourcehub.e2e.E2ETest"
+
 # 특정 테스트 클래스만 실행
-./gradlew test --tests "com.eactive.resourcehub.user.service.CareerCalculatorTest"
+./gradlew test --tests "com.eactive.resourcehub.user.service.SignupServiceTest"
 ```
 
 ---
@@ -113,28 +164,10 @@ bash scripts/security-lint.sh
 ## 테스트 작성 원칙
 
 1. **반복 실행 가능** — 테스트 데이터는 각 테스트에서 생성·정리. 외부 상태 의존 금지
-2. **외부 서비스 격리** — SMTP: `ConsoleEmailSender` 프로파일 또는 Mock 사용. Certificate Flask: Mock 처리. S3: 임시 디렉토리 LocalFileStorage 사용
+2. **외부 서비스 격리** — SMTP: `ConsoleEmailSender` 프로파일 또는 Mock. Certificate Flask: Mock. S3: 임시 디렉토리 `LocalFileStorage`
 3. **실패하는 테스트 커밋 금지** — 모든 테스트가 통과하는 상태로만 커밋
-4. **테스트 프로파일** — `application-test.yml` 또는 `@TestPropertySource`로 운영 설정과 분리
-
----
-
-## 테스트 추가 우선순위
-
-### 즉시 추가 가능 (순수 로직, 외부 의존 없음)
-
-| 대상 | 검증 항목 |
-|------|----------|
-| `SignupService` | 이메일 중복, 허용 목록 차단, 코드 만료 |
-| `DocumentUploadService` | magic bytes 검증, 중복 체크섬 차단, 허용 확장자 |
-| `SalesMemberService` | 회원 목록 필터·정렬, 자동채움 데이터 |
-
-### `@WebMvcTest` + MockMvc 필요
-
-| 대상 | 검증 항목 |
-|------|----------|
-| `AdminController` | ADMIN 역할 정상 접근, 비ADMIN 403 |
-| `SignupController` | CSRF 없는 POST → 403, 유효성 오류 → 폼 재표시 |
+4. **테스트 프로파일 분리** — `application-test.yml` / `application-e2e.yml` 로 운영 설정과 분리
+5. **E2E는 단일 클래스** — 병렬 컨텍스트 생성으로 인한 레이스 컨디션(AdminInitializer unique constraint) 방지
 
 ---
 
@@ -148,7 +181,6 @@ bash scripts/security-lint.sh
 | 썸네일 비동기 생성 | `@Async`, LibreOffice 도구 필요 | 단위 테스트에서 Mock, 운영 환경 수동 확인 |
 | S3 파일 스토리지 | 외부 서비스 | `LocalFileStorage` + 임시 디렉토리로 대체 테스트 |
 | 세션 만료 (DISABLED 계정) | 실시간 세션 레지스트리 | MockMvc + Mock SessionRegistry |
-| E2E 브라우저 흐름 | Playwright 등 미도입 | 수동 QA (`docs/archive/qa/qa-checklist.md`) |
 
 ---
 

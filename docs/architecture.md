@@ -17,7 +17,7 @@
           ▼
   ┌────────────────┐      ┌────────────────────────┐
   │  Spring Boot   │◀────▶│  PostgreSQL 18         │
-  │  (Java 21)     │      │  + Flyway V1~V226      │
+  │  (Java 21)     │      │  + Flyway V1~V227      │
   └───┬────────┬───┘      └────────────────────────┘
       │        │
       │        └───────▶  Local FS (storage/) or S3/R2 (S3FileStorage)
@@ -200,8 +200,9 @@ com.eactive.resourcehub
 | V224 | 기능 개편 | 직원 삭제 대비 FK 정비 (audit_logs·document_versions·permissions·employee_profiles·folders) |
 | V225 | 기능 개편 | users.join_date 컬럼 추가 (입사일, 선택) |
 | V226 | 기능 개편 | project_assignments user_name 스냅샷 + user_id SET NULL, 누락 FK 6개 수정 |
+| V227 | 테스트 | audit_logs 인덱스 추가 (created_at, action_type, user_id) |
 
-> 새 마이그레이션은 V227부터.
+> 새 마이그레이션은 V228부터.
 
 ---
 
