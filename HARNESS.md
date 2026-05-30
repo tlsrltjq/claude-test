@@ -6,7 +6,7 @@
 
 ---
 
-## 현재 구현 범위 (V223 기준)
+## 현재 구현 범위 (V227 기준)
 
 | 도메인 | 주요 기능 |
 |--------|----------|
@@ -17,11 +17,11 @@
 | 문서 검토 | PENDING_REVIEW → APPROVED/REJECTED, 파일 GC(cron 02:00) |
 | 영업 | 인력표(필터·컬럼·프리셋·투입정보), 경력 계산기, 엑셀/번들 다운로드 |
 | 투입 관리 | 캘린더(`/sales/calendar`), 프로젝트 CRUD·멤버 관리, 배정 삭제, 대시보드 통계, 프로젝트 바(bar) 렌더링, 하단 프로젝트 리스트 |
-| 관리자 | 직원·팀·문서 검토·통계·재직증명서·파일 GC·이메일 허용 목록 |
+| 관리자 | 직원·팀·팀 프로젝트 설정·문서 검토·만료 문서·통계·재직증명서·파일 GC·이메일 허용 목록 |
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-30):** Flyway V227. BUILD SUCCESSFUL. security-lint 15/15 PASS. 393개 테스트 전 통과 (37개 클래스). 이번 세션 완료 항목: E2E 테스트 단일 클래스(E2ETest.java) 24케이스 구축, application-e2e.yml 신설(Flyway 비활성·AdminInitializer 시드), 단위 테스트 8개 클래스 신규 추가(SignupService 16·EmployeeManagementService 12·ThumbnailService 7·DocumentFileGcService 10·DocumentExpiryService 6·FolderPermissionService 8·AuditService 5·FolderService 3).
+**현재 상태 (2026-05-30):** Flyway V227. BUILD SUCCESSFUL. security-lint 15/15 PASS. 393개 테스트 전 통과 (37개 클래스). 이번 세션 완료 항목: E2E 단일 클래스 24케이스·단위 테스트 8클래스 추가(총 393개), 전체 문서 최신화, dead code GC(미사용 메서드 5개 제거), 사이드바 관리자 메뉴 2항목 추가(팀 프로젝트 설정·만료 문서).
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 

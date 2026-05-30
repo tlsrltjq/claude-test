@@ -5,6 +5,8 @@
 
 ---
 
+2026-05-30 | feat | feat: 사이드바 관리자 메뉴 2항목 추가 — 팀 프로젝트 설정·만료 문서
+2026-05-30 | refactor | refactor: dead code GC — CertificateService.getTemplates()·SalesProfileExporter byte[] 오버로드 2개·ProfileRow 미사용 메서드 2개 제거
 2026-05-30 | test+docs | test: E2E 단일 클래스(E2ETest 24케이스)·단위 테스트 8클래스(93케이스) 추가 — 393개 전 통과 / docs: 전체 문서(HARNESS·testing·architecture·data-model·decisions·tasks) V227·393테스트 기준 최신화
 2026-05-29 | test | test: 테스트 스위트 302개 구축 — SearchService·DocumentUpload·RouteSecurityTest 단위테스트, Testcontainers DocumentRepositoryIntegrationTest 11개, build.gradle Testcontainers 의존성 추가 / fix: 문서검색 500 에러(PostgreSQL null LocalDateTime sentinel 패턴 적용)
 2026-05-29 | perf+feat | feat: 회원가입 개인정보 동의서 7섹션 모달·5체크박스 전체동의·내용보기 스크롤·폼 검증 / perf: ZIP·Excel 스트리밍·DeployStats COUNT·검색 DB 위임·PDF 썸네일 tempfile·V227 audit_logs 인덱스 / fix: 캘린더 CANCELLED cascade·memberCounts·dayMap·사이드바 순서
