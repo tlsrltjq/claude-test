@@ -30,17 +30,6 @@ public class CertificateService {
         this.baseUrl = baseUrl;
     }
 
-    /** 템플릿이 등록된 직원 이름 목록 */
-    public List<String> getTemplates() {
-        try {
-            JsonNode node = get("/templates");
-            return toList(node.path("templates"));
-        } catch (Exception e) {
-            log.warn("재직증명서 서비스 연결 실패 (templates): {}", e.getMessage());
-            return List.of();
-        }
-    }
-
     /** 발급된 파일 목록 */
     public List<String> getFiles() {
         try {

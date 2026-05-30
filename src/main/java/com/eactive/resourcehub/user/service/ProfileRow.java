@@ -40,14 +40,6 @@ public class ProfileRow {
         return profile != null ? profile.getCareerMonths() : 0;
     }
 
-    public int getCareerYears() {
-        return getCareerMonths() / 12;
-    }
-
-    public int getCareerRemainMonths() {
-        return getCareerMonths() % 12;
-    }
-
     /** careerDisplay="ymd" 용: "N년 N개월" */
     public String getCareerYmd() {
         int days = getCareerTotalDays();

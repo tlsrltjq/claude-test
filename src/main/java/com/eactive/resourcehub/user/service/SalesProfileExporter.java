@@ -6,7 +6,6 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.format.DateTimeFormatter;
@@ -105,21 +104,6 @@ public class SalesProfileExporter {
             wb.write(out);
             wb.dispose();
         }
-    }
-
-    /** 하위호환 — byte[] 반환이 필요한 경우 */
-    public byte[] export(List<ProfileRow> rows, Set<String> visibleCols, String careerDisplay) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            export(rows, visibleCols, careerDisplay, bos);
-        } catch (IOException e) {
-            throw new RuntimeException("엑셀 생성 실패", e);
-        }
-        return bos.toByteArray();
-    }
-
-    public byte[] export(List<ProfileRow> rows, Set<String> visibleCols) {
-        return export(rows, visibleCols, "ymd");
     }
 
     private String careerText(ProfileRow row, String careerDisplay) {
