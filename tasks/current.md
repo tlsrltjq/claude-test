@@ -12,11 +12,11 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-31: 직원 문서 카드 레이아웃 통일 완료.
+2026-05-31: 통계 페이지 LazyInitializationException 긴급 수정 완료.
 
 완료 항목:
-- fix: admin/employee-documents.html — doc-icon-area 래퍼 적용, 파일명 accent 색상, 날짜 yy.MM.dd, 미리보기·다운로드·삭제 버튼 정비 ("상세" 버튼 제거)
-- fix: sales/employee-documents.html — 동일한 카드 구조 적용(doc-icon-area, accent 파일명, yy.MM.dd)
-- 전체 빌드: BUILD SUCCESSFUL
+- fix: AuditLogRepository.findByActionTypeWithUser — LEFT JOIN FETCH u.team 추가, 반환 타입 Page→List 변경
+- 원인: 이번 세션에서 통계 이력 테이블에 팀 컬럼 추가 시 쿼리에 team fetch 누락
+- 전체 빌드: BUILD SUCCESSFUL, security-lint 15/15 PASS
 
 **다음 작업 없음 — 사용자 지시 대기**
