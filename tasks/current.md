@@ -12,13 +12,11 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-05-31: UI 버그 수정·사이드바 정리 세션 완료.
+2026-05-31: 직원 문서 카드 레이아웃 통일 완료.
 
 완료 항목:
-- fix: GlobalModelAttributeAdvice 추가 — 사이드바 `currentUser` 분리(직원 상세 등 컨트롤러 `user` 모델과 충돌 해결)
-- fix: 통계 페이지 다운로드·업로드 이력 테이블 레이아웃 개선(colgroup·members-table·팀 컬럼·sticky thead)
-- fix: 직원 문서 목록 테이블 스타일 정비(members-table, 썸네일 140px→36px, colgroup 8컬럼)
-- chore: 사이드바 팀 관리·팀 프로젝트 설정 2항목 제거
-- 전체 빌드: 393개 전 통과, security-lint 15/15 PASS (변경 내용은 HTML·Java 1개 신규 클래스만)
+- fix: admin/employee-documents.html — doc-icon-area 래퍼 적용, 파일명 accent 색상, 날짜 yy.MM.dd, 미리보기·다운로드·삭제 버튼 정비 ("상세" 버튼 제거)
+- fix: sales/employee-documents.html — 동일한 카드 구조 적용(doc-icon-area, accent 파일명, yy.MM.dd)
+- 전체 빌드: BUILD SUCCESSFUL
 
 **다음 작업 없음 — 사용자 지시 대기**

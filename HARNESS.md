@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-05-31):** Flyway V227. BUILD SUCCESSFUL. security-lint 15/15 PASS. 393개 테스트 전 통과 (37개 클래스). 이번 세션 완료 항목: GlobalModelAttributeAdvice 추가(사이드바 currentUser 분리), 통계 페이지 이력 테이블 레이아웃 개선, 직원 문서 목록 테이블 스타일 정비, 사이드바 팀 관리·팀 프로젝트 설정 2항목 제거.
+**현재 상태 (2026-05-31):** Flyway V227. BUILD SUCCESSFUL. security-lint 15/15 PASS. 393개 테스트 전 통과 (37개 클래스). 이번 세션 완료 항목: 직원 문서 카드 레이아웃 통일 — admin/employee-documents.html·sales/employee-documents.html 양쪽 모두 doc-icon-area 래퍼 적용, 파일명 accent 색상, 날짜 yy.MM.dd 형식, 관리자용 미리보기·다운로드·삭제 버튼 정비.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 

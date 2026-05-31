@@ -5,6 +5,7 @@
 
 ---
 
+2026-05-31 | fix | fix: 직원 문서 카드 레이아웃 통일 — admin·sales employee-documents.html 양쪽 doc-icon-area 래퍼 적용, 파일명 accent 색상, 날짜 yy.MM.dd, 관리자 미리보기·다운로드·삭제 버튼 정비
 2026-05-31 | fix+chore | fix: GlobalModelAttributeAdvice 추가 — 사이드바 currentUser 분리로 직원 상세 페이지 프로필 깨짐 해결 / fix: 통계 이력 테이블 레이아웃(colgroup·members-table·팀 컬럼 추가) / fix: 직원 문서 목록 테이블 스타일 정비(members-table·썸네일 36px·colgroup) / chore: 사이드바 팀 관리·팀 프로젝트 설정 2항목 제거
 2026-05-30 | feat | feat: 사이드바 관리자 메뉴 2항목 추가 — 팀 프로젝트 설정·만료 문서
 2026-05-30 | refactor | refactor: dead code GC — CertificateService.getTemplates()·SalesProfileExporter byte[] 오버로드 2개·ProfileRow 미사용 메서드 2개 제거

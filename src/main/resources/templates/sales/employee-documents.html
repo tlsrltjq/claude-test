@@ -47,34 +47,44 @@
            th:if="${documents != null and not #lists.isEmpty(documents)}">
         <div th:each="doc : ${documents}" class="col">
           <div class="doc-card">
+            <!-- 썸네일 이미지 -->
             <div th:if="${doc.currentVersion != null and doc.currentVersion.thumbnailStoragePath != null}">
               <img th:src="@{/documents/{id}/thumbnail(id=${doc.currentVersion.id})}"
                    class="doc-thumb" alt=""
                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-              <div class="doc-icon ext-etc" style="display:none;"
-                   th:with="ext=${(doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase()}"
+              <div class="doc-icon-area" style="display:none;"
+                   th:with="ext=${(doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase()}">
+                <div th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
+                     th:text="${ext.toUpperCase()}"></div>
+              </div>
+            </div>
+            <!-- 아이콘 영역 (썸네일 없음) -->
+            <div th:if="${doc.currentVersion == null or doc.currentVersion.thumbnailStoragePath == null}"
+                 class="doc-icon-area"
+                 th:with="ext=${doc.currentVersion != null ? (doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase() : 'file'}">
+              <div th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
                    th:text="${ext.toUpperCase()}"></div>
             </div>
-            <div th:if="${doc.currentVersion == null or doc.currentVersion.thumbnailStoragePath == null}"
-                 th:with="ext=${doc.currentVersion != null ? (doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase() : 'file'}"
-                 th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
-                 th:text="${ext.toUpperCase()}"></div>
+            <!-- 카드 내용 -->
             <div class="card-body">
               <span class="badge bg-secondary rounded-pill mb-1" th:text="${doc.documentType.displayName}"></span>
               <div class="fw-semibold text-truncate small" th:text="${doc.title}"></div>
-              <div class="text-muted text-truncate" style="font-size:.75rem;"
+              <div class="text-truncate" style="font-size:.75rem;color:var(--accent)"
                    th:text="${doc.currentVersion != null ? doc.currentVersion.originalFileName : '-'}"></div>
-              <div class="text-muted" style="font-size:.72rem;"
-                   th:text="${doc.currentVersion != null ? 'v' + doc.currentVersion.versionNo : ''}"></div>
+              <div class="text-muted" style="font-size:.72rem;">
+                <span th:text="${doc.currentVersion != null ? 'v' + doc.currentVersion.versionNo : ''}"></span>
+                <span class="ms-1" th:text="${doc.currentVersion != null ? #temporals.format(doc.currentVersion.createdAt, 'yy.MM.dd') : ''}"></span>
+              </div>
             </div>
+            <!-- 액션 버튼 -->
             <div class="card-footer d-flex gap-1" th:if="${doc.currentVersion != null}">
               <a th:href="@{/documents/{id}/preview(id=${doc.currentVersion.id})}"
                  target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">
-                <i class="bi bi-eye me-1"></i>미리보기
+                <i class="bi bi-eye"></i>
               </a>
               <a th:href="@{/documents/{id}/download(id=${doc.currentVersion.id})}"
                  class="btn btn-outline-primary btn-sm flex-fill">
-                <i class="bi bi-download me-1"></i>다운로드
+                <i class="bi bi-download"></i>
               </a>
             </div>
           </div>
