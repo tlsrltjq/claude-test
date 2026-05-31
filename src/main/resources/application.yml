@@ -55,6 +55,7 @@ resourcehub:
   upload:
     base-dir: ${RESOURCEHUB_UPLOAD_BASE_DIR:./storage/uploads}
     allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx,ppt,pptx,zip,xlsx,xls
+  contact-email: ${RESOURCEHUB_CONTACT_EMAIL:}
   admin:
     email: ${RESOURCEHUB_ADMIN_EMAIL:admin@eactive.co.kr}
     password: ${RESOURCEHUB_ADMIN_PASSWORD}

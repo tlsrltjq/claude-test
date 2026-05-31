@@ -8,6 +8,7 @@ import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.document.entity.DocumentVersion;
 import com.eactive.resourcehub.document.service.DocumentAccessService;
 import com.eactive.resourcehub.document.service.DocumentPreviewResolver;
+import com.eactive.resourcehub.common.util.RedirectUtils;
 import com.eactive.resourcehub.document.service.ThumbnailService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import com.eactive.resourcehub.common.util.FileUtils;
 
@@ -156,22 +156,7 @@ public class DocumentController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "썸네일 재생성 중 오류가 발생했습니다.");
         }
-        return "redirect:" + safeReferer(request.getHeader("Referer"), "/my/folder");
-    }
-
-    /** Referer에서 경로만 추출해 open redirect 방지. */
-    private static String safeReferer(String referer, String fallback) {
-        if (referer == null || referer.isBlank()) return fallback;
-        if (referer.startsWith("/") && !referer.startsWith("//")) return referer;
-        try {
-            URI uri = new URI(referer);
-            String path = uri.getRawPath();
-            if (path == null || path.isBlank()) return fallback;
-            String query = uri.getRawQuery();
-            return query != null ? path + "?" + query : path;
-        } catch (Exception e) {
-            return fallback;
-        }
+        return "redirect:" + RedirectUtils.safeReferer(request.getHeader("Referer"), "/my/folder");
     }
 
 }

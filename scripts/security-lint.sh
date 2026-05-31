@@ -254,6 +254,57 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 16. safeReferer 중복 구현 금지 (open redirect 방어 비대칭 위험)
+# ─────────────────────────────────────────────
+echo "[16] safeReferer 중복 구현 금지"
+count=$(echo "$JAVA_FILES" | xargs grep -lE "private static.*safeReferer" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$count" -gt 1 ]; then
+  files=$(echo "$JAVA_FILES" | xargs grep -lE "private static.*safeReferer" 2>/dev/null)
+  warn "safeReferer가 ${count}개 파일에 중복 구현됨 — 한 쪽이 수정되면 open redirect 방어 비대칭 발생, RedirectUtils 유틸로 통합 권장:"
+  echo "$files" | sed 's/^/         /'
+  FAIL=$((FAIL+1))
+else
+  ok "safeReferer 중복 구현 없음"
+fi
+
+# ─────────────────────────────────────────────
+# 17. LocalFileStorage 경로 탈출 방어 (resolve 후 startsWith 검증 필수)
+# ─────────────────────────────────────────────
+echo "[17] LocalFileStorage 경로 탈출 방어"
+FS_FILE=$(echo "$JAVA_FILES" | grep -E "LocalFileStorage\.java" | head -1)
+if [ -n "$FS_FILE" ]; then
+  if grep -q "startsWith" "$FS_FILE"; then
+    ok "LocalFileStorage 경로 탈출 방어 확인"
+  else
+    err "LocalFileStorage.load()/delete()에서 resolve() 후 startsWith(baseDir) 검증 누락 — 경로 탈출 공격 가능:"
+    echo "$FS_FILE" | sed 's/^/         /'
+  fi
+else
+  warn "LocalFileStorage.java 를 찾을 수 없음"
+fi
+
+# ─────────────────────────────────────────────
+# 18. 광범위한 예외(Exception/RuntimeException) catch 블록 내 예외 메시지 모델 노출 금지
+#     catch (IllegalArgumentException e) 등 구체적 비즈니스 예외는 허용
+# ─────────────────────────────────────────────
+echo "[18] 광범위한 예외 catch 블록 내 예외 메시지 모델 노출 금지"
+EX_CHECKER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lint/check_exception_model_leak.py"
+if [ ! -f "$EX_CHECKER" ]; then
+  warn "보조 스크립트 누락: $EX_CHECKER — 검사 건너뜀"
+elif ! command -v python3 >/dev/null 2>&1; then
+  warn "python3 미설치 — 검사 건너뜀"
+else
+  output=$(python3 "$EX_CHECKER" $JAVA_FILES 2>&1)
+  rc=$?
+  if [ $rc -eq 0 ]; then
+    ok "광범위한 예외 catch 내 메시지 노출 없음"
+  else
+    err "catch (Exception/RuntimeException) 블록에서 e.getMessage()를 모델에 직접 노출 감지 — 내부 오류 정보가 뷰에 노출될 수 있음:"
+    echo "$output" | sed 's/^/         /'
+  fi
+fi
+
+# ─────────────────────────────────────────────
 # 결과 요약
 # ─────────────────────────────────────────────
 echo

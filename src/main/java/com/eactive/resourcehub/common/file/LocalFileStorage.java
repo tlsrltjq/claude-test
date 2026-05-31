@@ -34,15 +34,26 @@ public class LocalFileStorage implements FileStorage {
 
     @Override
     public InputStream load(String storagePath) throws IOException {
-        return Files.newInputStream(Paths.get(baseDir).resolve(storagePath));
+        Path target = resolveAndValidate(storagePath);
+        return Files.newInputStream(target);
     }
 
     @Override
     public void delete(String storagePath) throws IOException {
-        boolean deleted = Files.deleteIfExists(Paths.get(baseDir).resolve(storagePath));
+        Path target = resolveAndValidate(storagePath);
+        boolean deleted = Files.deleteIfExists(target);
         if (deleted) {
             log.debug("파일 삭제: {}", storagePath);
         }
+    }
+
+    private Path resolveAndValidate(String storagePath) {
+        Path base = Paths.get(baseDir).normalize();
+        Path resolved = base.resolve(storagePath).normalize();
+        if (!resolved.startsWith(base)) {
+            throw new IllegalArgumentException("경로 탈출 시도 감지: " + storagePath);
+        }
+        return resolved;
     }
 
     @Override

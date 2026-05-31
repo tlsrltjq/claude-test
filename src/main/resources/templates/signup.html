@@ -331,7 +331,7 @@
                           <p class="text-secondary mb-0">개인정보 관련 문의는 아래 담당자에게 연락해 주세요.</p>
                           <ul class="text-secondary mt-1 mb-0">
                               <li>개인정보 담당자: 사내 개인정보 보호 담당자</li>
-                              <li>문의 이메일: <code>shingi@eactive.co.kr</code></li>
+                              <li th:if="${contactEmail != null and !contactEmail.isEmpty()}">문의 이메일: <code th:text="${contactEmail}"></code></li>
                           </ul>
                       </div>
 

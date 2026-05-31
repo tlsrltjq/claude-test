@@ -3,6 +3,8 @@
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
 
+2026-06-01 | Post-MVP3 | chore: 보안 린트 #16~18 추가 (safeReferer 중복·경로 탈출·예외 메시지 노출), RedirectUtils 추출, LocalFileStorage resolveAndValidate, 문의 이메일 환경변수화
+
 ---
 
 2026-05-31 | fix | fix: 통계 페이지 LazyInitializationException — AuditLogRepository LEFT JOIN FETCH u.team 추가, findByActionTypeWithUser 반환 타입 Page→List 변경

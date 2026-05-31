@@ -265,7 +265,7 @@
       </div>
 
       <footer class="text-center pt-4 mt-2" style="color:#adb5bd; font-size:.82rem; border-top: 1px solid var(--border);">
-        문의사항은 <a href="https://mail.google.com/mail/?view=cm&to=shingi@eactive.co.kr" target="_blank" rel="noopener" style="color:#6c8ebf;">shingi@eactive.co.kr</a> 로 보내주세요.
+        <span th:if="${contactEmail != null and !contactEmail.isEmpty()}">문의사항은 <a th:href="'https://mail.google.com/mail/?view=cm&to=' + ${contactEmail}" th:text="${contactEmail}" target="_blank" rel="noopener" style="color:#6c8ebf;"></a> 로 보내주세요.</span>
       </footer>
 
     </div>
