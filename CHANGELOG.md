@@ -5,6 +5,7 @@
 
 ---
 
+2026-05-31 | fix+chore | fix: GlobalModelAttributeAdvice 추가 — 사이드바 currentUser 분리로 직원 상세 페이지 프로필 깨짐 해결 / fix: 통계 이력 테이블 레이아웃(colgroup·members-table·팀 컬럼 추가) / fix: 직원 문서 목록 테이블 스타일 정비(members-table·썸네일 36px·colgroup) / chore: 사이드바 팀 관리·팀 프로젝트 설정 2항목 제거
 2026-05-30 | feat | feat: 사이드바 관리자 메뉴 2항목 추가 — 팀 프로젝트 설정·만료 문서
 2026-05-30 | refactor | refactor: dead code GC — CertificateService.getTemplates()·SalesProfileExporter byte[] 오버로드 2개·ProfileRow 미사용 메서드 2개 제거
 2026-05-30 | test+docs | test: E2E 단일 클래스(E2ETest 24케이스)·단위 테스트 8클래스(93케이스) 추가 — 393개 전 통과 / docs: 전체 문서(HARNESS·testing·architecture·data-model·decisions·tasks) V227·393테스트 기준 최신화
