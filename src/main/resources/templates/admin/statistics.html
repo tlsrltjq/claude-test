@@ -23,7 +23,9 @@
       .stat-tabs .nav-link { font-size:.82rem; padding:.35rem .75rem; border-radius:6px 6px 0 0; color:var(--tx2); border:none; background:none; }
       .stat-tabs .nav-link.active { color:var(--accent); background:#f0f4ff; font-weight:600; }
       /* 이력 테이블 스크롤 영역 */
-      .stat-history-body { max-height:420px; overflow-y:auto; }
+      .stat-history-body { max-height:420px; overflow-y:auto; overflow-x:hidden; }
+      .stat-history-body table { width:100%; table-layout:fixed; }
+      .stat-history-body thead th { position:sticky; top:0; z-index:1; background:#f1f5f9; }
     </style>
 </head>
 <body>
@@ -188,13 +190,19 @@
                 </div>
                 <div th:if="${!#lists.isEmpty(recentDownloads)}"
                      class="stat-history-body table-responsive">
-                  <table class="table members-table mb-0">
+                  <table class="table members-table mb-0" style="width:100%">
+                    <colgroup>
+                      <col style="width:110px">
+                      <col style="width:120px">
+                      <col>
+                      <col style="width:130px">
+                    </colgroup>
                     <thead>
                     <tr>
-                      <th style="width:90px">일시</th>
-                      <th style="width:90px">직원</th>
-                      <th>사유</th>
-                      <th style="width:110px">IP</th>
+                      <th>일시</th>
+                      <th>직원</th>
+                      <th>팀</th>
+                      <th>IP</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -202,11 +210,11 @@
                       <td class="text-muted" style="font-size:.78rem;white-space:nowrap"
                           th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
                       <td class="fw-semibold" style="font-size:.83rem;color:var(--tx1)"
-                          th:text="${log.user.name}"></td>
-                      <td class="text-muted" style="font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                          th:text="${log.reason != null ? log.reason : '-'}"></td>
-                      <td class="text-muted" style="font-size:.72rem;font-family:monospace"
-                          th:text="${log.ipAddress}"></td>
+                          th:text="${log.user != null ? log.user.name : '-'}"></td>
+                      <td class="text-muted" style="font-size:.78rem"
+                          th:text="${log.user != null and log.user.team != null ? log.user.team.name : '-'}"></td>
+                      <td class="text-muted" style="font-size:.72rem;font-family:monospace;white-space:nowrap"
+                          th:text="${log.ipAddress != null ? log.ipAddress : '-'}"></td>
                     </tr>
                     </tbody>
                   </table>
@@ -221,11 +229,18 @@
                 </div>
                 <div th:if="${!#lists.isEmpty(recentUploads)}"
                      class="stat-history-body table-responsive">
-                  <table class="table members-table mb-0">
+                  <table class="table members-table mb-0" style="width:100%">
+                    <colgroup>
+                      <col style="width:110px">
+                      <col style="width:120px">
+                      <col>
+                      <col style="width:130px">
+                    </colgroup>
                     <thead>
                     <tr>
-                      <th style="width:90px">일시</th>
-                      <th style="width:90px">직원</th>
+                      <th>일시</th>
+                      <th>직원</th>
+                      <th>구분</th>
                       <th>IP</th>
                     </tr>
                     </thead>
@@ -234,9 +249,11 @@
                       <td class="text-muted" style="font-size:.78rem;white-space:nowrap"
                           th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
                       <td class="fw-semibold" style="font-size:.83rem;color:var(--tx1)"
-                          th:text="${log.user.name}"></td>
-                      <td class="text-muted" style="font-size:.72rem;font-family:monospace"
-                          th:text="${log.ipAddress}"></td>
+                          th:text="${log.user != null ? log.user.name : '-'}"></td>
+                      <td class="text-muted" style="font-size:.78rem"
+                          th:text="${log.reason != null ? log.reason : '-'}"></td>
+                      <td class="text-muted" style="font-size:.72rem;font-family:monospace;white-space:nowrap"
+                          th:text="${log.ipAddress != null ? log.ipAddress : '-'}"></td>
                     </tr>
                     </tbody>
                   </table>
