@@ -64,12 +64,12 @@
   <div class="sb-footer">
     <div class="sb-user">
       <div class="sb-avatar"
-           th:text="${user != null ? #strings.substring(user.name,0,1) : '?'}">?</div>
+           th:text="${currentUser != null ? #strings.substring(currentUser.name,0,1) : '?'}">?</div>
       <div>
         <div class="sb-user-name"
-             th:text="${user != null ? user.name : ''}"></div>
+             th:text="${currentUser != null ? currentUser.name : ''}"></div>
         <div class="sb-user-role"
-             th:text="${user != null ? user.role.displayName : ''}"></div>
+             th:text="${currentUser != null ? currentUser.role.displayName : ''}"></div>
       </div>
     </div>
     <form th:action="@{/logout}" method="post">
