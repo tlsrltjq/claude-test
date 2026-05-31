@@ -22,8 +22,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 
     long countByActionType(AuditActionType actionType);
 
-    @Query("SELECT a FROM AuditLog a JOIN FETCH a.user WHERE a.actionType = :type ORDER BY a.createdAt DESC")
-    Page<AuditLog> findByActionTypeWithUser(@Param("type") AuditActionType type, Pageable pageable);
+    @Query("SELECT a FROM AuditLog a JOIN FETCH a.user u LEFT JOIN FETCH u.team WHERE a.actionType = :type ORDER BY a.createdAt DESC")
+    List<AuditLog> findByActionTypeWithUser(@Param("type") AuditActionType type, Pageable pageable);
 
     @Query("SELECT a FROM AuditLog a JOIN FETCH a.user WHERE a.actionType = :type AND a.user.id = :userId ORDER BY a.createdAt DESC")
     Page<AuditLog> findByActionTypeAndUserIdWithUser(@Param("type") AuditActionType type,

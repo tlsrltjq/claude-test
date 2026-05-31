@@ -37,7 +37,7 @@ public class StatisticsService {
     @Transactional(readOnly = true)
     public List<AuditLog> findRecentDownloads(int limit) {
         return auditLogRepository.findByActionTypeWithUser(
-                AuditActionType.DOWNLOAD, PageRequest.of(0, limit)).getContent();
+                AuditActionType.DOWNLOAD, PageRequest.of(0, limit));
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +77,7 @@ public class StatisticsService {
     @Transactional(readOnly = true)
     public List<AuditLog> findRecentUploads(int limit) {
         return auditLogRepository.findByActionTypeWithUser(
-                AuditActionType.UPLOAD, PageRequest.of(0, limit)).getContent();
+                AuditActionType.UPLOAD, PageRequest.of(0, limit));
     }
 
     @Transactional(readOnly = true)
