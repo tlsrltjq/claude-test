@@ -66,8 +66,33 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
+
+    // Playwright — 브라우저 기반 UI E2E 테스트
+    testImplementation 'com.microsoft.playwright:playwright:1.47.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    // playwright 태그는 기본 test 태스크에서 제외 (브라우저 설치 필요)
+    excludeTags 'playwright'
+}
+
+// ./gradlew playwrightInstall — Chromium 브라우저 바이너리 설치
+tasks.register('playwrightInstall', JavaExec) {
+    group = 'verification'
+    description = 'Playwright Chromium 브라우저 설치'
+    classpath = configurations.testRuntimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args = ['install', 'chromium', '--with-deps']
+}
+
+// ./gradlew playwrightTest — Playwright E2E 테스트만 실행 (playwrightInstall 선행 필요)
+tasks.register('playwrightTest', Test) {
+    group = 'verification'
+    description = 'Playwright 브라우저 E2E 테스트 실행'
+    useJUnitPlatform {
+        includeTags 'playwright'
+    }
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
 }
