@@ -155,9 +155,8 @@ class ProjectAssignmentServiceTest {
 
     @Test
     void 통계_ADMIN_직원은_미투입_계산에서_제외() {
-        // ADMIN 1명 + 비ADMIN 2명 (empUser, salesUser)
-        when(userRepository.findByStatus(UserStatus.ACTIVE))
-                .thenReturn(List.of(adminUser, empUser, salesUser));
+        // countByStatusAndRoleNot → ADMIN 제외 2명
+        when(userRepository.countByStatusAndRoleNot(UserStatus.ACTIVE, UserRole.ADMIN)).thenReturn(2L);
         when(assignmentRepository.countActiveDistinctUsersOn(any())).thenReturn(0L);
         when(assignmentRepository.countStartingBetween(any(), any())).thenReturn(0L);
         when(assignmentRepository.countEndingBetween(any(), any())).thenReturn(0L);
@@ -170,8 +169,8 @@ class ProjectAssignmentServiceTest {
 
     @Test
     void 통계_미투입은_음수가_되지_않음() {
-        // 비ADMIN 2명, DB COUNT가 2 반환 (distinct 처리)
-        when(userRepository.findByStatus(UserStatus.ACTIVE)).thenReturn(List.of(empUser, salesUser));
+        // 비ADMIN 2명 모두 투입 중
+        when(userRepository.countByStatusAndRoleNot(UserStatus.ACTIVE, UserRole.ADMIN)).thenReturn(2L);
         when(assignmentRepository.countActiveDistinctUsersOn(any())).thenReturn(2L);
         when(assignmentRepository.countStartingBetween(any(), any())).thenReturn(0L);
         when(assignmentRepository.countEndingBetween(any(), any())).thenReturn(0L);
@@ -183,8 +182,8 @@ class ProjectAssignmentServiceTest {
 
     @Test
     void 통계_현재_투입_중_직원_수는_distinct_처리() {
-        // DB COUNT DISTINCT — empUser 2개 배정이어도 1명으로 집계
-        when(userRepository.findByStatus(UserStatus.ACTIVE)).thenReturn(List.of(empUser));
+        // DB COUNT DISTINCT — 1명
+        when(userRepository.countByStatusAndRoleNot(UserStatus.ACTIVE, UserRole.ADMIN)).thenReturn(1L);
         when(assignmentRepository.countActiveDistinctUsersOn(any())).thenReturn(1L);
         when(assignmentRepository.countStartingBetween(any(), any())).thenReturn(0L);
         when(assignmentRepository.countEndingBetween(any(), any())).thenReturn(0L);

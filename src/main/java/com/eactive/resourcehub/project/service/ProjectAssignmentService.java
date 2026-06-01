@@ -96,8 +96,7 @@ public class ProjectAssignmentService {
         long startingThisMonth = assignmentRepository.countStartingBetween(mStart, mEnd);
         long endingThisMonth   = assignmentRepository.countEndingBetween(mStart, mEnd);
         long currentlyDeployed = assignmentRepository.countActiveDistinctUsersOn(today);
-        long totalNonAdmin     = userRepository.findByStatus(UserStatus.ACTIVE).stream()
-                .filter(u -> u.getRole() != UserRole.ADMIN).count();
+        long totalNonAdmin     = userRepository.countByStatusAndRoleNot(UserStatus.ACTIVE, UserRole.ADMIN);
         long notDeployed       = Math.max(0, totalNonAdmin - currentlyDeployed);
 
         return new DeployStats(startingThisMonth, endingThisMonth, currentlyDeployed, notDeployed);

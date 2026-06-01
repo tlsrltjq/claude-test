@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByTeamId(Long teamId);
 
+    long countByStatusAndRoleNot(UserStatus status, UserRole excludeRole);
+
     List<User> findByStatus(UserStatus status);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.team WHERE u.status = :status")
