@@ -85,7 +85,7 @@
 | 단위 테스트 | JUnit 5 + Mockito | 순수 로직, 외부 의존 없음 |
 | 서비스 통합 | Mockito + @ExtendWith | Repository·외부 서비스 Mock |
 | 컨트롤러 슬라이스 | @WebMvcTest + MockMvc | HTTP 상태·CSRF·리다이렉트 |
-| 보안 정적 분석 | scripts/security-lint.sh | 15개 항목, 0 FAIL 유지 |
+| 보안 정적 분석 | scripts/security-lint.sh | 18개 항목, 0 FAIL 유지 |
 | 전체 빌드 | ./gradlew build | BUILD SUCCESSFUL 유지 |
 
 - 테스트가 깨지면 무시하지 말고 원인 분석

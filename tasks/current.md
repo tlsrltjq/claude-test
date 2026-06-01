@@ -8,7 +8,7 @@
 - `harness/archive/legacy/**`
 
 ## 완료 기준 (달성)
-- `bash scripts/security-lint.sh` 15/15 PASS ✓
+- `bash scripts/security-lint.sh` 18/18 PASS ✓
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
