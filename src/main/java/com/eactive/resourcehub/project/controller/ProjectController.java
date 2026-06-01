@@ -22,6 +22,17 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    // ── 프로젝트 등록 페이지 (ADMIN·SALES) ──────────────────────────
+
+    @GetMapping("/sales/projects/new")
+    public String newPage(
+            @AuthenticationPrincipal CustomUserDetails details,
+            Model model) {
+        model.addAttribute("assignableUsers", projectService.findAssignableUsers());
+        model.addAttribute("currentUser",     details.getUser());
+        return "sales/project-new";
+    }
+
     // ── 프로젝트 상세 페이지 (ADMIN·SALES) ──────────────────────────
 
     @GetMapping("/sales/projects/{id}")

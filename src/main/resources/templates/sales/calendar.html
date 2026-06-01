@@ -76,10 +76,9 @@
               </button>
             </div>
             <div th:if="${currentUser.role.name() == 'ADMIN' or currentUser.role.name() == 'SALES'}">
-              <button type="button" class="btn btn-success btn-sm"
-                      data-bs-toggle="modal" data-bs-target="#createProjectModal">
+              <a th:href="@{/sales/projects/new}" class="btn btn-success btn-sm">
                 <i class="bi bi-plus-lg me-1"></i>프로젝트 등록
-              </button>
+              </a>
             </div>
           </div>
 
@@ -350,85 +349,6 @@
 
 </div><!-- /.app-shell -->
 
-<!-- 프로젝트 등록 모달 -->
-<div th:if="${currentUser.role.name() == 'ADMIN' or currentUser.role.name() == 'SALES'}"
-     class="modal fade" id="createProjectModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <form th:action="@{/sales/projects}" method="post">
-        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-        <div class="modal-header py-2 px-3">
-          <h6 class="modal-title fw-700"><i class="bi bi-folder-plus me-1 text-success"></i>프로젝트 등록</h6>
-          <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body px-3 py-3">
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label fw-600 small">프로젝트명 <span class="text-danger">*</span></label>
-              <input type="text" name="name" class="form-control form-control-sm" placeholder="프로젝트명" required maxlength="200">
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-600 small">고객사</label>
-              <input type="text" name="clientName" class="form-control form-control-sm" placeholder="고객사명" maxlength="200">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-600 small">시작일 <span class="text-danger">*</span></label>
-              <input type="date" name="startDate" class="form-control form-control-sm" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-600 small">종료일 <span class="text-danger">*</span></label>
-              <input type="date" name="endDate" class="form-control form-control-sm" required>
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-600 small">메모</label>
-              <textarea name="memo" class="form-control form-control-sm" rows="2" placeholder="특이사항 등"></textarea>
-            </div>
-            <div class="col-12">
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <label class="form-label fw-600 small mb-0">투입 직원 선택</label>
-                <span id="cpm-count" class="badge bg-primary" style="display:none;font-size:.72rem">0명 선택</span>
-              </div>
-              <!-- 검색 + 팀 필터 -->
-              <div class="d-flex gap-2 mb-2">
-                <input type="text" id="cpm-search" class="form-control form-control-sm"
-                       placeholder="이름 검색..." autocomplete="off" style="flex:1">
-                <select id="cpm-team" class="form-select form-select-sm" style="width:120px">
-                  <option value="">전체 팀</option>
-                </select>
-              </div>
-              <!-- 직원 목록 -->
-              <div class="border rounded" style="max-height:240px;overflow-y:auto;" id="cpm-list">
-                <div th:each="u : ${assignableUsers}"
-                     class="cpm-item form-check d-flex align-items-center px-3 py-1"
-                     th:attr="data-name=${u.name}, data-team=${u.team != null ? u.team.name : ''}">
-                  <input class="form-check-input flex-shrink-0 me-2" type="checkbox" name="selectedUserIds"
-                         th:value="${u.id}" th:id="|chk-${u.id}|">
-                  <label class="form-check-label small d-flex justify-content-between w-100"
-                         th:for="|chk-${u.id}|" style="cursor:pointer">
-                    <span th:text="${u.name}">이름</span>
-                    <span class="text-muted ms-2" style="font-size:.73rem;white-space:nowrap"
-                          th:text="${u.team != null ? u.team.name : ''}">팀</span>
-                  </label>
-                </div>
-                <div th:if="${#lists.isEmpty(assignableUsers)}"
-                     class="text-muted small px-3 py-2">활성 직원이 없습니다.</div>
-                <div id="cpm-empty" class="text-muted small px-3 py-2" style="display:none">
-                  검색 결과가 없습니다.
-                </div>
-              </div>
-              <!-- 선택된 직원 태그 -->
-              <div id="cpm-tags" class="d-flex flex-wrap gap-1 mt-2"></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer py-2 px-3">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">취소</button>
-          <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-lg me-1"></i>등록</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 
 <div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
   <div class="spinner-border text-light" style="width:3.5rem;height:3.5rem;" role="status">
@@ -540,90 +460,7 @@
     filterPersonnel();
   });
 
-  /* ── 프로젝트 등록 모달 — 직원 검색 + 팀 필터 + 선택 카운터 ── */
-  (function initCreateProjectModal() {
-    var cpmSearch = document.getElementById('cpm-search');
-    var cpmTeam   = document.getElementById('cpm-team');
-    var cpmList   = document.getElementById('cpm-list');
-    var cpmCount  = document.getElementById('cpm-count');
-    var cpmTags   = document.getElementById('cpm-tags');
-    var cpmEmpty  = document.getElementById('cpm-empty');
-    if (!cpmList) return;
-
-    // 팀 목록 수집 → select 옵션 추가
-    var teams = new Set();
-    cpmList.querySelectorAll('.cpm-item').forEach(function(el) {
-      if (el.dataset.team) teams.add(el.dataset.team);
-    });
-    Array.from(teams).sort().forEach(function(t) {
-      var opt = document.createElement('option');
-      opt.value = t; opt.textContent = t;
-      cpmTeam.appendChild(opt);
-    });
-
-    function updateFilter() {
-      var q    = cpmSearch ? cpmSearch.value.trim().toLowerCase() : '';
-      var team = cpmTeam   ? cpmTeam.value : '';
-      var visible = 0;
-      cpmList.querySelectorAll('.cpm-item').forEach(function(el) {
-        var show = (!q    || el.dataset.name.toLowerCase().includes(q))
-                && (!team || el.dataset.team === team);
-        el.style.display = show ? '' : 'none';
-        if (show) visible++;
-      });
-      if (cpmEmpty) cpmEmpty.style.display = visible === 0 ? '' : 'none';
-    }
-
-    function updateCounter() {
-      var checked = cpmList.querySelectorAll('input[type=checkbox]:checked');
-      var n = checked.length;
-      if (cpmCount) {
-        cpmCount.textContent = n + '명 선택';
-        cpmCount.style.display = n > 0 ? '' : 'none';
-      }
-      // 태그 갱신
-      if (cpmTags) {
-        cpmTags.innerHTML = '';
-        checked.forEach(function(chk) {
-          var label = cpmList.querySelector('label[for="' + chk.id + '"]');
-          var name  = label ? label.querySelector('span:first-child').textContent : chk.value;
-          var tag = document.createElement('span');
-          tag.className = 'badge d-inline-flex align-items-center gap-1';
-          tag.style.cssText = 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:.75rem;font-weight:500;cursor:default';
-          tag.innerHTML = name + ' <span style="cursor:pointer;font-size:.85em" data-chk="' + chk.id + '">✕</span>';
-          cpmTags.appendChild(tag);
-        });
-      }
-    }
-
-    // 태그의 ✕ 클릭으로 선택 해제
-    if (cpmTags) {
-      cpmTags.addEventListener('click', function(e) {
-        var x = e.target.closest('[data-chk]');
-        if (!x) return;
-        var chk = document.getElementById(x.dataset.chk);
-        if (chk) { chk.checked = false; updateCounter(); }
-      });
-    }
-
-    cpmList.addEventListener('change', updateCounter);
-    if (cpmSearch) cpmSearch.addEventListener('input', updateFilter);
-    if (cpmTeam)   cpmTeam.addEventListener('change', updateFilter);
-
-    // 모달 닫힐 때 초기화
-    var modal = document.getElementById('createProjectModal');
-    if (modal) {
-      modal.addEventListener('hidden.bs.modal', function() {
-        if (cpmSearch) cpmSearch.value = '';
-        if (cpmTeam)   cpmTeam.value   = '';
-        cpmList.querySelectorAll('input[type=checkbox]').forEach(function(c) { c.checked = false; });
-        updateFilter();
-        updateCounter();
-      });
-    }
-  })();
-
-  /* ── 로딩 오버레이 ── */
+/* ── 로딩 오버레이 ── */
   document.querySelectorAll('form').forEach(function (f) {
     if ((f.getAttribute('method') || 'get').toLowerCase() !== 'get') {
       f.addEventListener('submit', function () {
