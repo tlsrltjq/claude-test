@@ -77,6 +77,7 @@ public class SalesMemberService {
             documentRepository.findByFolderIdAndDocumentType(folder.getId(), DocumentType.GRADUATION_CERTIFICATE)
                     .stream()
                     .filter(d -> d.getStatus() == DocumentStatus.ACTIVE
+                              && !d.isExpired()
                               && d.getDegreeType() != null && d.getIssuedDate() != null)
                     .max(Comparator.comparingInt(d -> DEGREE_RANK.indexOf(d.getDegreeType())))
                     .ifPresent(d -> {
@@ -86,6 +87,7 @@ public class SalesMemberService {
             documentRepository.findByFolderIdAndDocumentType(folder.getId(), DocumentType.LICENSE)
                     .stream()
                     .filter(d -> d.getStatus() == DocumentStatus.ACTIVE
+                              && !d.isExpired()
                               && d.getCertTypeMeta() != null && d.getIssuedDate() != null)
                     .findFirst()
                     .ifPresent(d -> {

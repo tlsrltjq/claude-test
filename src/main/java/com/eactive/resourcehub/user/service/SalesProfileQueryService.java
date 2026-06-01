@@ -49,20 +49,32 @@ public class SalesProfileQueryService {
         Map<Long, Long> userToFolder = folderRepository.findByOwnerIdInAndType(userIds, FolderType.PERSONAL)
                 .stream().collect(Collectors.toMap(f -> f.getOwner().getId(), Folder::getId, (a, b) -> a));
 
-        // 3. 문서 배치 조회 (folderId → documents with currentVersion)
+        // 3. 문서 배치 조회 — 만료 제외, 동일 타입 여러 개면 최신 발급일 우선
         Map<Long, Map<DocumentType, DocumentVersion>> userDocMap = new HashMap<>();
         List<Long> folderIds = List.copyOf(userToFolder.values());
         if (!folderIds.isEmpty()) {
             List<Document> docs = documentRepository.findActiveWithVersionByFolderIds(folderIds);
             Map<Long, Long> folderToUser = userToFolder.entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (a, b) -> a));
+            Map<Long, Map<DocumentType, Document>> bestDocMap = new HashMap<>();
             for (Document doc : docs) {
-                if (doc.getCurrentVersion() == null) continue;
+                if (doc.getCurrentVersion() == null || doc.isExpired()) continue;
                 Long userId = folderToUser.get(doc.getFolder().getId());
                 if (userId == null) continue;
-                userDocMap.computeIfAbsent(userId, k -> new EnumMap<>(DocumentType.class))
-                        .putIfAbsent(doc.getDocumentType(), doc.getCurrentVersion());
+                bestDocMap.computeIfAbsent(userId, k -> new EnumMap<>(DocumentType.class))
+                        .merge(doc.getDocumentType(), doc, (prev, curr) -> {
+                            java.time.LocalDate dp = prev.getIssuedDate(), dc = curr.getIssuedDate();
+                            if (dp == null && dc == null) return curr.getId() > prev.getId() ? curr : prev;
+                            if (dp == null) return curr;
+                            if (dc == null) return prev;
+                            return dc.isAfter(dp) ? curr : prev;
+                        });
             }
+            bestDocMap.forEach((uid, typeMap) -> {
+                Map<DocumentType, DocumentVersion> vm = new EnumMap<>(DocumentType.class);
+                typeMap.forEach((type, doc) -> vm.put(type, doc.getCurrentVersion()));
+                userDocMap.put(uid, vm);
+            });
         }
 
         // 4. EmployeeProfile 배치 조회

@@ -12,15 +12,12 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-01: 개발자 등급 DB 정비 완료.
+2026-06-01: 만료 문서 필터링 완료.
 
 완료 항목:
-- chore: employee_profiles.developer_grade DB 정비
-  · JUNIOR(27) → 초급
-  · INTERMEDIATE(29) → 중급
-  · SENIOR(14) → 고급(career_months < 96) / 특급(career_months ≥ 96) 분리
-  · 경영본부 NULL(13) → user_id % 5 기준 특급/고급/중급 랜덤 배분
-  · 최종: 특급 12명 / 고급 18명 / 중급 37명 / 초급 34명 / NULL 1명(팀 없는 계정)
-- 코드 변경 없음, DB 직접 UPDATE
+- fix: SalesProfileQueryService — findActiveWithVersionByFolderIds 결과에서 isExpired() 문서 제외,
+  동일 타입 여러 개면 issuedDate 최신 우선(null이면 id 최신) 선택 (putIfAbsent → merge 교체)
+- fix: SalesMemberService.getMemberAutofillData — GRADUATION_CERTIFICATE·LICENSE 필터에 !isExpired() 추가
+- 빌드 BUILD SUCCESSFUL, 492개 테스트 전 통과
 
 **다음 작업 없음 — 사용자 지시 대기**
