@@ -45,22 +45,20 @@
           <!-- 문서 정보 -->
           <div class="side-card">
             <div class="card-header-custom"><i class="bi bi-file-earmark-text me-2"></i>문서 정보</div>
-            <div class="card-body">
-              <div class="info-row"><span class="info-label">직원</span><span class="info-val fw-semibold" th:text="${version.document.folder.owner.name}"></span></div>
-              <div class="info-row"><span class="info-label">팀</span><span class="info-val" th:text="${version.document.folder.owner.team != null ? version.document.folder.owner.team.name : '-'}"></span></div>
-              <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${version.document.documentType.displayName}"></span></span></div>
-              <div class="info-row"><span class="info-label">제목</span><span class="info-val" th:text="${version.document.title}"></span></div>
-              <div class="info-row"><span class="info-label">버전</span><span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${version.versionNo}"></span></span></div>
-              <div class="info-row"><span class="info-label">파일명</span><span class="info-val text-muted" th:text="${version.originalFileName}"></span></div>
-              <div class="info-row"><span class="info-label">업로드일</span><span class="info-val text-muted" th:text="${#temporals.format(version.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
-              <div class="info-row">
-                <span class="info-label">상태</span>
-                <span class="info-val">
-                  <span class="badge rounded-pill px-2" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.72rem;">
-                    <i class="bi bi-hourglass-split me-1"></i>검토 대기
-                  </span>
+            <div class="info-row"><span class="info-label">직원</span><span class="info-val fw-semibold" th:text="${version.document.folder.owner.name}"></span></div>
+            <div class="info-row"><span class="info-label">팀</span><span class="info-val" th:text="${version.document.folder.owner.team != null ? version.document.folder.owner.team.name : '-'}"></span></div>
+            <div class="info-row"><span class="info-label">종류</span><span class="info-val"><span class="badge bg-secondary rounded-pill" th:text="${version.document.documentType.displayName}"></span></span></div>
+            <div class="info-row"><span class="info-label">제목</span><span class="info-val" th:text="${version.document.title}"></span></div>
+            <div class="info-row"><span class="info-label">버전</span><span class="info-val"><span class="badge bg-dark rounded-pill" th:text="'v' + ${version.versionNo}"></span></span></div>
+            <div class="info-row"><span class="info-label">파일명</span><span class="info-val text-muted" style="font-size:.82rem;word-break:break-all" th:text="${version.originalFileName}"></span></div>
+            <div class="info-row"><span class="info-label">업로드일</span><span class="info-val text-muted" th:text="${#temporals.format(version.createdAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+            <div class="info-row">
+              <span class="info-label">상태</span>
+              <span class="info-val">
+                <span class="badge rounded-pill px-2" style="background:#fff3cd; color:#856404; border:1px solid #ffc107; font-size:.72rem;">
+                  <i class="bi bi-hourglass-split me-1"></i>검토 대기
                 </span>
-              </div>
+              </span>
             </div>
           </div>
 
@@ -76,7 +74,7 @@
           <!-- 반려 폼 -->
           <div class="reject-card">
             <div class="card-header-custom"><i class="bi bi-x-circle-fill me-2"></i>반려</div>
-            <div class="card-body">
+            <div style="padding:.75rem 1rem">
               <form th:action="@{/admin/documents/review/{id}/reject(id=${version.id})}" method="post">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <div class="mb-2">

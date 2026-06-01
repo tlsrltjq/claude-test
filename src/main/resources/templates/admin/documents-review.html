@@ -45,9 +45,15 @@
       </div>
 
       <!-- 목록 -->
-      <div th:if="${!#lists.isEmpty(pendingVersions)}" class="members-card">
+      <div th:if="${!#lists.isEmpty(pendingVersions)}" class="table-card">
+        <div class="table-card-hd">
+          <i class="bi bi-hourglass-split text-warning"></i>
+          <span>검토 대기 문서</span>
+          <span class="badge bg-warning text-dark ms-1"
+                th:text="${#lists.size(pendingVersions)}">0</span>
+        </div>
         <div class="table-responsive">
-          <table class="table members-table mb-0">
+          <table class="table assign-table mb-0">
             <thead>
             <tr>
               <th style="width:38px"></th>
@@ -57,7 +63,7 @@
               <th style="width:160px">파일명</th>
               <th style="width:52px">버전</th>
               <th style="width:78px">업로드</th>
-              <th style="width:100px"></th>
+              <th style="width:110px"></th>
             </tr>
             </thead>
             <tbody>

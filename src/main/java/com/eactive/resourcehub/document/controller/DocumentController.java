@@ -12,6 +12,7 @@ import com.eactive.resourcehub.common.util.RedirectUtils;
 import com.eactive.resourcehub.document.service.ThumbnailService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
@@ -28,6 +29,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import com.eactive.resourcehub.common.util.FileUtils;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class DocumentController {
@@ -43,7 +45,7 @@ public class DocumentController {
     public ResponseEntity<InputStreamResource> preview(
             @PathVariable Long documentVersionId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            HttpServletRequest request) throws IOException {
+            HttpServletRequest request) {
 
         DocumentVersion version = accessService.getVersionWithAccessCheck(documentVersionId, userDetails);
 
@@ -65,7 +67,9 @@ public class DocumentController {
         InputStream stream;
         try {
             stream = fileStorage.load(storagePath);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // S3 NoSuchKeyException, 로컬 파일 없음 등 모두 404로 처리
+            log.warn("파일 로드 실패 (preview) versionId={}: {}", documentVersionId, e.getMessage());
             return ResponseEntity.notFound().build();
         }
 
@@ -86,14 +90,15 @@ public class DocumentController {
     public ResponseEntity<InputStreamResource> download(
             @PathVariable Long documentVersionId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            HttpServletRequest request) throws IOException {
+            HttpServletRequest request) {
 
         DocumentVersion version = accessService.getVersionWithAccessCheck(documentVersionId, userDetails);
 
         InputStream stream;
         try {
             stream = fileStorage.load(version.getStoragePath());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.warn("파일 로드 실패 (download) versionId={}: {}", documentVersionId, e.getMessage());
             return ResponseEntity.notFound().build();
         }
 
@@ -125,8 +130,9 @@ public class DocumentController {
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(ct))
                         .body(new InputStreamResource(stream));
-            } catch (IOException e) {
-                // fall through to default
+            } catch (Exception e) {
+                // S3 NoSuchKeyException 등 — 기본 아이콘으로 폴백
+                log.warn("썸네일 로드 실패 versionId={}: {}", documentVersionId, e.getMessage());
             }
         }
 
