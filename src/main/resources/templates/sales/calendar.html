@@ -297,14 +297,31 @@
             <table class="table personnel-table mb-0" id="personnelTable">
               <thead>
                 <tr>
-                  <th>직원</th><th>직급</th><th>상태</th><th>투입 프로젝트</th><th>날짜</th>
+                  <th class="p-col-sortable" data-col="name">
+                    직원 <span class="sort-indicator"></span>
+                  </th>
+                  <th class="p-col-sortable" data-col="position">
+                    직급 <span class="sort-indicator"></span>
+                  </th>
+                  <th class="p-col-sortable" data-col="status">
+                    상태 <span class="sort-indicator"></span>
+                  </th>
+                  <th class="p-col-sortable" data-col="project">
+                    투입 프로젝트 <span class="sort-indicator"></span>
+                  </th>
+                  <th class="p-col-sortable" data-col="date">
+                    날짜 <span class="sort-indicator"></span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="item : ${personnelStatusList}"
                     th:attr="data-name=${item.user.name},
                              data-team=${item.user.team != null ? item.user.team.name : ''},
-                             data-status=${item.activeAssignment != null ? 'deployed' : (item.plannedAssignment != null ? 'planned' : 'idle')}">
+                             data-status=${item.activeAssignment != null ? 'deployed' : (item.plannedAssignment != null ? 'planned' : 'idle')},
+                             data-sort-position=${item.user.position != null ? item.user.position.ordinal() : 99},
+                             data-sort-project=${item.activeAssignment != null ? item.activeAssignment.project.name : (item.plannedAssignment != null ? item.plannedAssignment.project.name : '')},
+                             data-sort-date=${item.activeAssignment != null ? item.activeAssignment.endDate.toEpochDay() : (item.plannedAssignment != null ? item.plannedAssignment.startDate.toEpochDay() : 99999999)}">
                   <td class="fw-600" th:text="${item.user.name}">이름</td>
                   <td th:text="${item.user.position != null ? item.user.position.displayName : '—'}">직급</td>
                   <td>
@@ -459,6 +476,75 @@
     if (statusSelect) statusSelect.value = '';
     filterPersonnel();
   });
+
+/* ── 인력 현황 테이블 컬럼 정렬 ── */
+  (function initPersonnelSort() {
+    var table   = document.getElementById('personnelTable');
+    if (!table) return;
+    var tbody   = table.querySelector('tbody');
+    var headers = table.querySelectorAll('th.p-col-sortable');
+    var sortCol = null;
+    var sortDir = 1; // 1=asc, -1=desc
+
+    // 상태 순서: deployed(0) > planned(1) > idle(2)
+    var STATUS_ORDER = { deployed: 0, planned: 1, idle: 2 };
+
+    function getKey(row, col) {
+      switch (col) {
+        case 'name':     return (row.dataset.name    || '').toLowerCase();
+        case 'position': return parseInt(row.dataset.sortPosition || '99', 10);
+        case 'status':   return STATUS_ORDER[row.dataset.status] ?? 9;
+        case 'project':  return (row.dataset.sortProject || '').toLowerCase();
+        case 'date':     return parseInt(row.dataset.sortDate || '99999999', 10);
+        default:         return '';
+      }
+    }
+
+    function sortTable(col) {
+      if (sortCol === col) {
+        sortDir = -sortDir;
+      } else {
+        sortCol = col;
+        sortDir = 1;
+      }
+
+      var rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort(function(a, b) {
+        var ka = getKey(a, col);
+        var kb = getKey(b, col);
+        var cmp = (typeof ka === 'number')
+          ? ka - kb
+          : ka.localeCompare(kb, 'ko');
+        return cmp * sortDir;
+      });
+      rows.forEach(function(r) { tbody.appendChild(r); });
+
+      // 헤더 아이콘 갱신
+      headers.forEach(function(th) {
+        var ind = th.querySelector('.sort-indicator');
+        if (!ind) return;
+        if (th.dataset.col === col) {
+          ind.textContent = sortDir === 1 ? ' ↑' : ' ↓';
+          th.style.color = '#1d4ed8';
+        } else {
+          ind.textContent = ' ↕';
+          th.style.color = '';
+        }
+      });
+
+      // 필터 재적용 (숨겨진 행 유지)
+      filterPersonnel();
+    }
+
+    // 헤더 스타일 초기화
+    headers.forEach(function(th) {
+      th.style.cursor = 'pointer';
+      th.style.userSelect = 'none';
+      var ind = th.querySelector('.sort-indicator');
+      if (ind) { ind.textContent = ' ↕'; ind.style.opacity = '0.35'; }
+      th.addEventListener('click', function() { sortTable(th.dataset.col); });
+    });
+  })();
 
 /* ── 로딩 오버레이 ── */
   document.querySelectorAll('form').forEach(function (f) {
