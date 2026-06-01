@@ -64,6 +64,7 @@ public class DocumentUploadService {
                 .orElseThrow(() -> new ResourceNotFoundException("개인 폴더가 없습니다."));
 
         validateFile(req.getFile());
+        checkPendingReviewLimit(ownerId, req.getFile());
         String checksum = computeChecksum(req.getFile());
         checkDuplicate(checksum, folder.getId());
 
@@ -102,6 +103,7 @@ public class DocumentUploadService {
                 .orElseThrow(() -> new ResourceNotFoundException("폴더를 찾을 수 없습니다."));
 
         validateFile(req.getFile());
+        checkPendingReviewLimit(uploaderId, req.getFile());
         String checksum = computeChecksum(req.getFile());
         checkDuplicate(checksum, folderId);
 
@@ -206,6 +208,18 @@ public class DocumentUploadService {
             } catch (Exception e) {
                 log.warn("썸네일 생성 실패 (업로드는 성공): {}", e.getMessage());
             }
+        }
+    }
+
+    /** 검토 대기 3개 이상인 사용자가 20MB 이상 파일 업로드 시도 시 차단 */
+    private void checkPendingReviewLimit(Long ownerId, MultipartFile file) {
+        if (file.getSize() < LARGE_FILE_THRESHOLD) return; // 20MB 미만은 자동 승인 → 무관
+        long pending = documentVersionRepository.countPendingByOwner(ownerId);
+        if (pending >= 3) {
+            throw new IllegalArgumentException(
+                "검토 대기 중인 문서가 " + pending + "개입니다. " +
+                "검토 대기가 3개 이상일 때는 20MB 이상 파일을 업로드할 수 없습니다. " +
+                "기존 파일이 승인되거나 반려된 후 다시 시도해 주세요.");
         }
     }
 

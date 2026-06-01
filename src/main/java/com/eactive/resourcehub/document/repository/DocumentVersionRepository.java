@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,6 +76,21 @@ public interface DocumentVersionRepository extends JpaRepository<DocumentVersion
            "  SELECT MAX(dv2.versionNo) FROM DocumentVersion dv2 " +
            "  WHERE dv2.document.id = dv.document.id)")
     List<DocumentVersion> findLatestVersionsByDocumentIds(@Param("documentIds") List<Long> documentIds);
+
+    // 검토 대기 파일 수 — 업로드 차단 기준 (3개 이상 시 20MB 이상 차단)
+    @Query("SELECT COUNT(dv) FROM DocumentVersion dv " +
+           "WHERE dv.document.folder.owner.id = :ownerId " +
+           "AND dv.reviewStatus = 'PENDING_REVIEW'")
+    long countPendingByOwner(@Param("ownerId") Long ownerId);
+
+    // 2주 이상 방치된 검토 대기 버전 (스케줄러 자동 삭제용)
+    @Query("SELECT dv FROM DocumentVersion dv " +
+           "JOIN FETCH dv.document d " +
+           "JOIN FETCH d.folder f " +
+           "JOIN FETCH f.owner " +
+           "WHERE dv.reviewStatus = 'PENDING_REVIEW' " +
+           "AND dv.createdAt < :threshold")
+    List<DocumentVersion> findStaleReviewVersions(@Param("threshold") LocalDateTime threshold);
 
     // 중복 파일 탐지: 동일 폴더 내 같은 체크섬이 존재하는지 확인
     @Query("SELECT dv FROM DocumentVersion dv " +

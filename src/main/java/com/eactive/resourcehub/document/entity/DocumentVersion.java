@@ -110,6 +110,16 @@ public class DocumentVersion extends BaseEntity {
         };
     }
 
+    /** 반려/만료 즉시 삭제 후 경로 무효화 — GC가 이미 없는 파일을 재시도하지 않도록 */
+    public void clearFiles() {
+        this.storagePath       = null;
+        this.previewFileName   = null;
+        this.previewStoragePath = null;
+        this.thumbnailFileName  = null;
+        this.thumbnailStoragePath = null;
+        this.thumbnailContentType = null;
+    }
+
     public void setPreview(String previewFileName, String previewStoragePath) {
         this.previewFileName = previewFileName;
         this.previewStoragePath = previewStoragePath;
