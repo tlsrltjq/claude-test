@@ -25,7 +25,8 @@
 - feat: User.privacy_consent_at/version 필드 + recordConsent() 메서드
 - feat: SignupService.CONSENT_VERSION = "1.0" + completeSignup() 시 recordConsent() 호출
 - test: SignupServiceTest — completeSignup_동의일시와_버전이_저장된다 추가
-- docs: HARNESS·data-model·architecture·decisions·spec·CHANGELOG·tasks V229 기준 최신화
-- 빌드 BUILD SUCCESSFUL, 보안 린트 18/18 PASS, 테스트 492개 전 통과
+- docs: HARNESS·data-model·architecture·decisions·spec·testing·CHANGELOG·tasks V229 기준 최신화
+- test: SalesMemberServiceTest 20케이스 — 만료 필터링 회귀 보호, findActiveMembers, autofill 전 케이스
+- 빌드 BUILD SUCCESSFUL, 보안 린트 18/18 PASS, 테스트 512개 전 통과
 
 **다음 작업 없음 — 사용자 지시 대기**

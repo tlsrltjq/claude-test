@@ -3,6 +3,7 @@
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
 
+2026-06-01 | Post-MVP3 | test: SalesMemberServiceTest 20케이스 — 만료 필터링(졸업증명서·자격증) 회귀 보호, findActiveMembers 정렬·필터, autofill 8케이스 (492→512개)
 2026-06-01 | Post-MVP3 | chore: 보안 린트 #16~18 추가 (safeReferer 중복·경로 탈출·예외 메시지 노출), RedirectUtils 추출, LocalFileStorage resolveAndValidate, 문의 이메일 환경변수화
 2026-06-01 | Post-MVP3 | feat: 오피스 파일 LibreOffice PDF 변환 미리보기, hwp·zip 버튼 숨김, Dockerfile Alpine→Debian
 2026-06-01 | Post-MVP3 | test: Playwright E2E 16개, Repository 통합 4개, 단위 테스트 보강 (392→492개)
