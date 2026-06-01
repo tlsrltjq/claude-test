@@ -11,41 +11,28 @@
 - `bash scripts/security-lint.sh` 18/18 PASS ✓
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
-## 현재 작업: 오피스 파일 미리보기 (LibreOffice PDF 변환)
-
-### 목표
-docx·hwpx·pptx·ppt·xlsx·xls 업로드 시 LibreOffice로 PDF 변환 후 미리보기 제공.
-HWP는 변환 품질 문제로 미리보기 버튼 숨김(미지원).
-
-### 구현 범위
-1. **Dockerfile** — Alpine → Debian 기반으로 전환, LibreOffice + 나눔폰트 설치
-2. **`OfficePreviewService`** (신규) — soffice --headless로 PDF 변환, 비동기, 60초 타임아웃
-3. **`DocumentUploadService`** — 오피스 파일 업로드 후 OfficePreviewService 호출
-4. **`DocumentPreviewResolver`** — pptx·ppt·xlsx·xls 지원 추가, hwp 제외
-5. **`ThumbnailService`** — OFFICE_EXTS 에서 hwp 제거, pptx·ppt·xlsx·xls 추가
-6. **app.libreoffice.enabled** 환경변수 — false 시 변환 건너뜀 (개발환경 대응)
-
-### 변환 대상 / 제외
-| 확장자 | 처리 |
-|--------|------|
-| docx | LibreOffice 변환 |
-| hwpx | LibreOffice 변환 |
-| pptx | LibreOffice 변환 |
-| ppt  | LibreOffice 변환 |
-| xlsx | LibreOffice 변환 |
-| xls  | LibreOffice 변환 |
-| hwp  | 미지원 — 미리보기 버튼 숨김 |
-| pdf·jpg·jpeg·png | 기존 로직 유지 |
-
-### DB 마이그레이션
-불필요 — V1에서 `preview_file_name`, `preview_storage_path` 컬럼 이미 존재
-
-### 완료 기준
-- 오피스 파일 업로드 후 미리보기 iframe에 PDF 표시
-- hwp는 미리보기 버튼 미노출
-- LibreOffice 미설치 환경에서 graceful skip (업로드 실패 없음)
-- `./gradlew build` BUILD SUCCESSFUL
-- security-lint 18/18 PASS
-
 ## 이전 세션에서 멈춘 곳
-2026-06-01: 보안 린트 #16~18 추가, UserRole.TEAM_LEADER·TeamController 삭제, 문의 이메일 환경변수화 완료.
+2026-06-01: 대규모 테스트·품질 개선 세션 완료.
+
+완료 항목:
+- feat: 오피스 파일(docx·hwpx·pptx·ppt·xlsx·xls) LibreOffice PDF 변환 미리보기
+  - OfficePreviewService — soffice 비동기 변환, 60초 타임아웃, graceful skip
+  - Dockerfile Alpine → Debian(jammy) 전환, LibreOffice + 나눔폰트
+  - DocumentVersion.isPreviewSupported() 추가
+  - hwp·zip 등 미지원 파일 미리보기 버튼 숨김 (5개 템플릿)
+  - app.libreoffice.enabled 환경변수 (false 시 skip)
+- test: Playwright E2E 테스트 추가 (playwright:1.47.0)
+  - 16개 케이스 — 로그인, 네비게이션, 관리자, 접근제어, 로그아웃
+  - 실행: ./gradlew playwrightInstall && ./gradlew playwrightTest
+- test: Repository DB 통합 테스트 4개 신규
+  - AuditLogRepositoryIntegrationTest (LazyInit 회귀 방지 포함)
+  - UserRepositoryIntegrationTest (복합 필터, 제약조건)
+  - ProjectRepositoryIntegrationTest (@Modifying 상태 전환)
+  - ProjectAssignmentRepositoryIntegrationTest (겹침 감지, 일괄 취소)
+- test: 단위 테스트 보강 (392→492개, 41개 클래스)
+  - DocumentPreviewResolverTest 정비, RedirectUtilsTest, LocalFileStorageTest
+  - DocumentVersionTest(isPreviewSupported), OfficePreviewServiceTest
+- fix: getDeployStats() findByStatus 전체 로드 → countByStatusAndRoleNot COUNT 쿼리
+- 전체 빌드: BUILD SUCCESSFUL, security-lint 18/18 PASS
+
+**다음 작업 없음 — 사용자 지시 대기**
