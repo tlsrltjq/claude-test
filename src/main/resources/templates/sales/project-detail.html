@@ -235,18 +235,43 @@
         <h6 class="modal-title fw-700"><i class="bi bi-person-plus me-1 text-primary"></i>직원 추가</h6>
         <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
       </div>
-      <form th:action="@{/sales/projects/{id}/members(id=${project.id})}" method="post">
+      <form th:action="@{/sales/projects/{id}/members(id=${project.id})}" method="post" id="addMemberForm">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" name="userId" id="am-userId">
         <div class="modal-body px-3 py-3">
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label fw-600 small">직원 <span class="text-danger">*</span></label>
-              <select class="form-select form-select-sm" name="userId" required>
-                <option value="">-- 선택 --</option>
-                <option th:each="u : ${assignableUsers}"
-                        th:value="${u.id}"
-                        th:text="${u.name + (u.team != null ? ' (' + u.team.name + ')' : '')}">직원명</option>
-              </select>
+              <!-- 검색 + 팀 필터 -->
+              <div class="d-flex gap-2 mb-2">
+                <input type="text" id="am-search" class="form-control form-control-sm"
+                       placeholder="이름 검색..." autocomplete="off" style="flex:1">
+                <select id="am-team" class="form-select form-select-sm" style="width:120px">
+                  <option value="">전체 팀</option>
+                </select>
+              </div>
+              <!-- 직원 목록 -->
+              <div class="border rounded" style="max-height:200px;overflow-y:auto;" id="am-list">
+                <div th:each="u : ${assignableUsers}"
+                     class="am-item d-flex justify-content-between align-items-center px-3 py-2"
+                     style="cursor:pointer;transition:background .1s"
+                     th:attr="data-uid=${u.id}, data-name=${u.name}, data-team=${u.team != null ? u.team.name : ''}">
+                  <span class="fw-600 small" th:text="${u.name}">이름</span>
+                  <span class="text-muted" style="font-size:.73rem"
+                        th:text="${u.team != null ? u.team.name : '—'}">팀</span>
+                </div>
+                <div th:if="${#lists.isEmpty(assignableUsers)}"
+                     class="text-muted small px-3 py-2">활성 직원이 없습니다.</div>
+                <div id="am-empty" class="text-muted small px-3 py-2" style="display:none">
+                  검색 결과가 없습니다.
+                </div>
+              </div>
+              <!-- 선택된 직원 표시 -->
+              <div id="am-selected" class="mt-2 px-2 py-1 rounded"
+                   style="background:#eff6ff;border:1px solid #bfdbfe;display:none;font-size:.83rem">
+                <i class="bi bi-person-check-fill text-primary me-1"></i>
+                <span id="am-selected-name"></span>
+              </div>
             </div>
             <div class="col-12">
               <label class="form-label fw-600 small">역할</label>
@@ -264,7 +289,9 @@
         </div>
         <div class="modal-footer py-2 px-3">
           <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">취소</button>
-          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>추가</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="am-submit" disabled>
+            <i class="bi bi-plus-lg me-1"></i>추가
+          </button>
         </div>
       </form>
     </div>
@@ -324,6 +351,78 @@
   </div>
 </div>
 <script>
+/* ── 직원 추가 모달 — 검색 + 팀 필터 ── */
+(function() {
+  var searchEl  = document.getElementById('am-search');
+  var teamEl    = document.getElementById('am-team');
+  var listEl    = document.getElementById('am-list');
+  var emptyEl   = document.getElementById('am-empty');
+  var uidEl     = document.getElementById('am-userId');
+  var selectedEl = document.getElementById('am-selected');
+  var nameEl    = document.getElementById('am-selected-name');
+  var submitBtn = document.getElementById('am-submit');
+  if (!listEl) return;
+
+  // 팀 옵션 생성
+  var teams = new Set();
+  listEl.querySelectorAll('.am-item').forEach(function(el) { if (el.dataset.team) teams.add(el.dataset.team); });
+  Array.from(teams).sort().forEach(function(t) {
+    var opt = document.createElement('option'); opt.value = t; opt.textContent = t;
+    teamEl.appendChild(opt);
+  });
+
+  function applyFilter() {
+    var q    = searchEl.value.trim().toLowerCase();
+    var team = teamEl.value;
+    var vis  = 0;
+    listEl.querySelectorAll('.am-item').forEach(function(el) {
+      var show = (!q || el.dataset.name.toLowerCase().includes(q)) && (!team || el.dataset.team === team);
+      el.style.display = show ? '' : 'none';
+      if (show) vis++;
+    });
+    if (emptyEl) emptyEl.style.display = vis === 0 ? '' : 'none';
+  }
+
+  // 항목 클릭으로 선택
+  listEl.addEventListener('click', function(e) {
+    var item = e.target.closest('.am-item');
+    if (!item || item.id === 'am-empty') return;
+    listEl.querySelectorAll('.am-item').forEach(function(el) {
+      el.style.background = '';
+      el.style.fontWeight = '';
+    });
+    item.style.background = '#eff6ff';
+    uidEl.value = item.dataset.uid;
+    nameEl.textContent = item.dataset.name + (item.dataset.team ? ' (' + item.dataset.team + ')' : '');
+    selectedEl.style.display = '';
+    if (submitBtn) submitBtn.disabled = false;
+  });
+
+  if (searchEl) searchEl.addEventListener('input', applyFilter);
+  if (teamEl)   teamEl.addEventListener('change', applyFilter);
+
+  // 모달 닫힐 때 초기화
+  var modal = document.getElementById('addMemberModal');
+  if (modal) {
+    modal.addEventListener('hidden.bs.modal', function() {
+      searchEl.value = ''; teamEl.value = '';
+      uidEl.value = '';
+      selectedEl.style.display = 'none';
+      if (submitBtn) submitBtn.disabled = true;
+      listEl.querySelectorAll('.am-item').forEach(function(el) { el.style.background = ''; });
+      applyFilter();
+    });
+  }
+
+  // 폼 submit 전 userId 검증
+  var form = document.getElementById('addMemberForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      if (!uidEl.value) { e.preventDefault(); alert('직원을 선택해 주세요.'); }
+    });
+  }
+})();
+
 (function(){
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){

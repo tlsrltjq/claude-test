@@ -239,7 +239,13 @@
             <div>
               <label>직원명</label>
               <input id="personnelSearch" type="text" class="form-control form-control-sm"
-                     placeholder="이름 검색" style="width:160px;">
+                     placeholder="이름 검색" style="width:140px;">
+            </div>
+            <div>
+              <label>팀</label>
+              <select id="personnelTeamFilter" class="form-select form-select-sm" style="width:120px;">
+                <option value="">전체 팀</option>
+              </select>
             </div>
             <div>
               <label>상태</label>
@@ -298,6 +304,7 @@
               <tbody>
                 <tr th:each="item : ${personnelStatusList}"
                     th:attr="data-name=${item.user.name},
+                             data-team=${item.user.team != null ? item.user.team.name : ''},
                              data-status=${item.activeAssignment != null ? 'deployed' : (item.plannedAssignment != null ? 'planned' : 'idle')}">
                   <td class="fw-600" th:text="${item.user.name}">이름</td>
                   <td th:text="${item.user.position != null ? item.user.position.displayName : '—'}">직급</td>
@@ -346,7 +353,7 @@
 <!-- 프로젝트 등록 모달 -->
 <div th:if="${currentUser.role.name() == 'ADMIN' or currentUser.role.name() == 'SALES'}"
      class="modal fade" id="createProjectModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <form th:action="@{/sales/projects}" method="post">
         <input type="hidden" name="_csrf" th:value="${_csrf.token}">
@@ -377,16 +384,40 @@
               <textarea name="memo" class="form-control form-control-sm" rows="2" placeholder="특이사항 등"></textarea>
             </div>
             <div class="col-12">
-              <label class="form-label fw-600 small">투입 직원 선택</label>
-              <div class="border rounded p-2" style="max-height:160px;overflow-y:auto;">
-                <div th:each="u : ${assignableUsers}" class="form-check">
-                  <input class="form-check-input" type="checkbox" name="selectedUserIds"
-                         th:value="${u.id}" th:id="|chk-${u.id}|">
-                  <label class="form-check-label small" th:for="|chk-${u.id}|"
-                         th:text="${u.name + (u.team != null ? ' (' + u.team.name + ')' : '')}">직원</label>
-                </div>
-                <div th:if="${#lists.isEmpty(assignableUsers)}" class="text-muted small">활성 직원이 없습니다.</div>
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <label class="form-label fw-600 small mb-0">투입 직원 선택</label>
+                <span id="cpm-count" class="badge bg-primary" style="display:none;font-size:.72rem">0명 선택</span>
               </div>
+              <!-- 검색 + 팀 필터 -->
+              <div class="d-flex gap-2 mb-2">
+                <input type="text" id="cpm-search" class="form-control form-control-sm"
+                       placeholder="이름 검색..." autocomplete="off" style="flex:1">
+                <select id="cpm-team" class="form-select form-select-sm" style="width:120px">
+                  <option value="">전체 팀</option>
+                </select>
+              </div>
+              <!-- 직원 목록 -->
+              <div class="border rounded" style="max-height:240px;overflow-y:auto;" id="cpm-list">
+                <div th:each="u : ${assignableUsers}"
+                     class="cpm-item form-check d-flex align-items-center px-3 py-1"
+                     th:attr="data-name=${u.name}, data-team=${u.team != null ? u.team.name : ''}">
+                  <input class="form-check-input flex-shrink-0 me-2" type="checkbox" name="selectedUserIds"
+                         th:value="${u.id}" th:id="|chk-${u.id}|">
+                  <label class="form-check-label small d-flex justify-content-between w-100"
+                         th:for="|chk-${u.id}|" style="cursor:pointer">
+                    <span th:text="${u.name}">이름</span>
+                    <span class="text-muted ms-2" style="font-size:.73rem;white-space:nowrap"
+                          th:text="${u.team != null ? u.team.name : ''}">팀</span>
+                  </label>
+                </div>
+                <div th:if="${#lists.isEmpty(assignableUsers)}"
+                     class="text-muted small px-3 py-2">활성 직원이 없습니다.</div>
+                <div id="cpm-empty" class="text-muted small px-3 py-2" style="display:none">
+                  검색 결과가 없습니다.
+                </div>
+              </div>
+              <!-- 선택된 직원 태그 -->
+              <div id="cpm-tags" class="d-flex flex-wrap gap-1 mt-2"></div>
             </div>
           </div>
         </div>
@@ -465,17 +496,33 @@
 
   /* ── 인력 현황 클라이언트 필터 ── */
   var searchInput  = document.getElementById('personnelSearch');
+  var teamSelect   = document.getElementById('personnelTeamFilter');
   var statusSelect = document.getElementById('personnelStatusFilter');
   var resetBtn     = document.getElementById('personnelReset');
   var countLabel   = document.getElementById('personnel-count-label');
 
+  // 팀 목록을 테이블 데이터에서 추출해 select에 추가
+  (function buildTeamOptions() {
+    if (!teamSelect) return;
+    var rows = document.querySelectorAll('#personnelTable tbody tr');
+    var teams = new Set();
+    rows.forEach(function(r) { if (r.dataset.team) teams.add(r.dataset.team); });
+    Array.from(teams).sort().forEach(function(t) {
+      var opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      teamSelect.appendChild(opt);
+    });
+  })();
+
   function filterPersonnel() {
     var q      = searchInput  ? searchInput.value.trim().toLowerCase()  : '';
+    var team   = teamSelect   ? teamSelect.value   : '';
     var status = statusSelect ? statusSelect.value : '';
     var rows   = document.querySelectorAll('#personnelTable tbody tr');
     var visible = 0;
     rows.forEach(function (row) {
-      var show = (!q || (row.dataset.name || '').toLowerCase().includes(q))
+      var show = (!q      || (row.dataset.name   || '').toLowerCase().includes(q))
+              && (!team   || row.dataset.team   === team)
               && (!status || row.dataset.status === status);
       row.style.display = show ? '' : 'none';
       if (show) visible++;
@@ -484,12 +531,97 @@
   }
 
   if (searchInput)  searchInput.addEventListener('input', filterPersonnel);
+  if (teamSelect)   teamSelect.addEventListener('change', filterPersonnel);
   if (statusSelect) statusSelect.addEventListener('change', filterPersonnel);
   if (resetBtn) resetBtn.addEventListener('click', function () {
     if (searchInput)  searchInput.value  = '';
+    if (teamSelect)   teamSelect.value   = '';
     if (statusSelect) statusSelect.value = '';
     filterPersonnel();
   });
+
+  /* ── 프로젝트 등록 모달 — 직원 검색 + 팀 필터 + 선택 카운터 ── */
+  (function initCreateProjectModal() {
+    var cpmSearch = document.getElementById('cpm-search');
+    var cpmTeam   = document.getElementById('cpm-team');
+    var cpmList   = document.getElementById('cpm-list');
+    var cpmCount  = document.getElementById('cpm-count');
+    var cpmTags   = document.getElementById('cpm-tags');
+    var cpmEmpty  = document.getElementById('cpm-empty');
+    if (!cpmList) return;
+
+    // 팀 목록 수집 → select 옵션 추가
+    var teams = new Set();
+    cpmList.querySelectorAll('.cpm-item').forEach(function(el) {
+      if (el.dataset.team) teams.add(el.dataset.team);
+    });
+    Array.from(teams).sort().forEach(function(t) {
+      var opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      cpmTeam.appendChild(opt);
+    });
+
+    function updateFilter() {
+      var q    = cpmSearch ? cpmSearch.value.trim().toLowerCase() : '';
+      var team = cpmTeam   ? cpmTeam.value : '';
+      var visible = 0;
+      cpmList.querySelectorAll('.cpm-item').forEach(function(el) {
+        var show = (!q    || el.dataset.name.toLowerCase().includes(q))
+                && (!team || el.dataset.team === team);
+        el.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      if (cpmEmpty) cpmEmpty.style.display = visible === 0 ? '' : 'none';
+    }
+
+    function updateCounter() {
+      var checked = cpmList.querySelectorAll('input[type=checkbox]:checked');
+      var n = checked.length;
+      if (cpmCount) {
+        cpmCount.textContent = n + '명 선택';
+        cpmCount.style.display = n > 0 ? '' : 'none';
+      }
+      // 태그 갱신
+      if (cpmTags) {
+        cpmTags.innerHTML = '';
+        checked.forEach(function(chk) {
+          var label = cpmList.querySelector('label[for="' + chk.id + '"]');
+          var name  = label ? label.querySelector('span:first-child').textContent : chk.value;
+          var tag = document.createElement('span');
+          tag.className = 'badge d-inline-flex align-items-center gap-1';
+          tag.style.cssText = 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:.75rem;font-weight:500;cursor:default';
+          tag.innerHTML = name + ' <span style="cursor:pointer;font-size:.85em" data-chk="' + chk.id + '">✕</span>';
+          cpmTags.appendChild(tag);
+        });
+      }
+    }
+
+    // 태그의 ✕ 클릭으로 선택 해제
+    if (cpmTags) {
+      cpmTags.addEventListener('click', function(e) {
+        var x = e.target.closest('[data-chk]');
+        if (!x) return;
+        var chk = document.getElementById(x.dataset.chk);
+        if (chk) { chk.checked = false; updateCounter(); }
+      });
+    }
+
+    cpmList.addEventListener('change', updateCounter);
+    if (cpmSearch) cpmSearch.addEventListener('input', updateFilter);
+    if (cpmTeam)   cpmTeam.addEventListener('change', updateFilter);
+
+    // 모달 닫힐 때 초기화
+    var modal = document.getElementById('createProjectModal');
+    if (modal) {
+      modal.addEventListener('hidden.bs.modal', function() {
+        if (cpmSearch) cpmSearch.value = '';
+        if (cpmTeam)   cpmTeam.value   = '';
+        cpmList.querySelectorAll('input[type=checkbox]').forEach(function(c) { c.checked = false; });
+        updateFilter();
+        updateCounter();
+      });
+    }
+  })();
 
   /* ── 로딩 오버레이 ── */
   document.querySelectorAll('form').forEach(function (f) {
