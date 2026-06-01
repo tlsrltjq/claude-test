@@ -9,6 +9,8 @@ import com.eactive.resourcehub.team.repository.TeamRepository;
 import com.eactive.resourcehub.common.util.PasswordValidator;
 import com.eactive.resourcehub.user.dto.SignupRequest;
 import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.entity.AllowedEmail;
+import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.repository.AllowedEmailRepository;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +79,10 @@ public class SignupService {
         User user = User.create(email, encodedPassword, request.getName(), email, team,
                 request.getPosition(), birthDate, request.getPhone());
         user.verifyEmail();
+        allowedEmailRepository.findByEmail(email)
+                .map(AllowedEmail::getInitialRole)
+                .filter(role -> role != UserRole.EMPLOYEE)
+                .ifPresent(user::changeRole);
         if (request.getAddress() != null && !request.getAddress().isBlank() || joinDate != null) {
             user.updateProfile(null, null, null,
                     (request.getAddress() != null && !request.getAddress().isBlank()) ? request.getAddress() : null,

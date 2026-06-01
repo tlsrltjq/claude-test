@@ -1,0 +1,2 @@
+ALTER TABLE allowed_emails
+    ADD COLUMN initial_role VARCHAR(20) NOT NULL DEFAULT 'EMPLOYEE';

@@ -11,6 +11,7 @@
 2026-06-01 | Post-MVP3 | feat: 프로젝트 등록 전용 페이지 신설 (GET /sales/projects/new, 2단 레이아웃·팀별 그룹·전체 선택)
 2026-06-01 | Post-MVP3 | fix: 문서 검토 UI(card-body 충돌·테이블 클래스), S3 NoSuchKeyException → 500 수정, SampleDataFixRunner 시드 경로 교체
 2026-06-01 | Post-MVP3 | fix: 직원 관리 정렬 버그 4개 (이름·팀·권한·직급), 인력 현황 전 컬럼 정렬 추가, 캘린더 월 네비 위치 이동
+2026-06-01 | Post-MVP3 | feat: 허용 이메일 등록 폼 일반/영업 탭 분리 — V228 initial_role 컬럼, 회원가입 시 SALES 권한 자동 부여
 2026-06-01 | Post-MVP3 | chore: 전체 테스트 492→508개 확인, Document.isExpired() 미커밋 잔여분 정리
 2026-06-01 | Post-MVP3 | fix: 만료 문서 필터링 — 인력표·경력계산기 autofill에서 expiresAt 초과 문서 제외, 동일 타입 여러 개면 최신 발급일 우선 선택
 2026-06-01 | Post-MVP3 | chore: 개발자 등급 DB 정비 — 영어값 한국어 변환, NULL 경영본부 랜덤 배분 (특급12·고급18·중급37·초급34)

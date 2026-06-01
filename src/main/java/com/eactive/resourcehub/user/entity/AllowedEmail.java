@@ -23,6 +23,10 @@ public class AllowedEmail {
     @Column(length = 255)
     private String note;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole initialRole = UserRole.EMPLOYEE;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -30,10 +34,11 @@ public class AllowedEmail {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    public static AllowedEmail create(String email, String note, User createdBy) {
+    public static AllowedEmail create(String email, String note, UserRole initialRole, User createdBy) {
         AllowedEmail ae = new AllowedEmail();
         ae.email = email.trim().toLowerCase();
         ae.note = note;
+        ae.initialRole = initialRole != null ? initialRole : UserRole.EMPLOYEE;
         ae.createdAt = LocalDateTime.now();
         ae.createdBy = createdBy;
         return ae;

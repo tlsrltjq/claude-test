@@ -2,6 +2,7 @@ package com.eactive.resourcehub.user.service;
 
 import com.eactive.resourcehub.user.entity.AllowedEmail;
 import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.repository.AllowedEmailRepository;
 import com.eactive.resourcehub.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,26 +33,26 @@ public class EmailAllowlistService {
     }
 
     @Transactional
-    public AllowedEmail add(String email, String note, Long adminUserId) {
+    public AllowedEmail add(String email, String note, UserRole initialRole, Long adminUserId) {
         String normalized = email.trim().toLowerCase();
         if (allowedEmailRepository.existsByEmail(normalized)) {
             throw new IllegalArgumentException("이미 등록된 이메일입니다: " + normalized);
         }
         User admin = userRepository.findById(adminUserId).orElseThrow();
-        return allowedEmailRepository.save(AllowedEmail.create(normalized, note, admin));
+        return allowedEmailRepository.save(AllowedEmail.create(normalized, note, initialRole, admin));
     }
 
     /** 텍스트 일괄 등록: 쉼표·공백·줄바꿈 구분 */
     @Transactional
-    public BulkResult addBulk(String rawText, Long adminUserId) {
+    public BulkResult addBulk(String rawText, UserRole initialRole, Long adminUserId) {
         User admin = userRepository.findById(adminUserId).orElseThrow();
         List<String> emails = splitEmails(rawText);
-        return saveBulk(emails, admin);
+        return saveBulk(emails, initialRole, admin);
     }
 
     /** 엑셀 일괄 등록: 첫 번째 열의 이메일 추출 */
     @Transactional
-    public BulkResult addBulkFromExcel(MultipartFile file, Long adminUserId) throws IOException {
+    public BulkResult addBulkFromExcel(MultipartFile file, UserRole initialRole, Long adminUserId) throws IOException {
         User admin = userRepository.findById(adminUserId).orElseThrow();
         List<String> emails = new ArrayList<>();
         try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
@@ -65,16 +66,16 @@ public class EmailAllowlistService {
                 if (!val.isBlank()) emails.add(val);
             }
         }
-        return saveBulk(emails, admin);
+        return saveBulk(emails, initialRole, admin);
     }
 
-    private BulkResult saveBulk(List<String> emails, User admin) {
+    private BulkResult saveBulk(List<String> emails, UserRole initialRole, User admin) {
         int added = 0, skipped = 0;
         for (String raw : emails) {
             String email = raw.trim().toLowerCase();
             if (!email.contains("@")) { skipped++; continue; }
             if (allowedEmailRepository.existsByEmail(email)) { skipped++; continue; }
-            allowedEmailRepository.save(AllowedEmail.create(email, null, admin));
+            allowedEmailRepository.save(AllowedEmail.create(email, null, initialRole, admin));
             added++;
         }
         return new BulkResult(added, skipped);

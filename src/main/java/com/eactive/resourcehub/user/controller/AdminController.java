@@ -364,38 +364,47 @@ public class AdminController {
 
     @PostMapping("/allowed-emails")
     public String addAllowedEmail(@RequestParam String email,
+                                  @RequestParam(defaultValue = "EMPLOYEE") String initialRole,
                                   @AuthenticationPrincipal CustomUserDetails actor,
                                   RedirectAttributes ra) {
+        UserRole role = parseRole(initialRole);
         try {
-            emailAllowlistService.add(email, null, actor.getUser().getId());
+            emailAllowlistService.add(email, null, role, actor.getUser().getId());
             ra.addFlashAttribute("successMessage", "이메일을 등록했습니다: " + email);
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
+        ra.addFlashAttribute("activeTab", role == UserRole.SALES ? "sales" : "employee");
         return "redirect:/admin/allowed-emails";
     }
 
     @PostMapping("/allowed-emails/bulk")
     public String addAllowedEmailsBulkText(@RequestParam(required = false) String emails,
+                                           @RequestParam(defaultValue = "EMPLOYEE") String initialRole,
                                            @AuthenticationPrincipal CustomUserDetails actor,
                                            RedirectAttributes ra) {
-        EmailAllowlistService.BulkResult result = emailAllowlistService.addBulk(emails, actor.getUser().getId());
+        UserRole role = parseRole(initialRole);
+        EmailAllowlistService.BulkResult result = emailAllowlistService.addBulk(emails, role, actor.getUser().getId());
         ra.addFlashAttribute("successMessage",
                 result.added() + "개 등록 완료" + (result.skipped() > 0 ? " (" + result.skipped() + "개 건너뜀)" : ""));
+        ra.addFlashAttribute("activeTab", role == UserRole.SALES ? "sales" : "employee");
         return "redirect:/admin/allowed-emails";
     }
 
     @PostMapping("/allowed-emails/bulk-excel")
     public String addAllowedEmailsBulkExcel(@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+                                             @RequestParam(defaultValue = "EMPLOYEE") String initialRole,
                                              @AuthenticationPrincipal CustomUserDetails actor,
                                              RedirectAttributes ra) {
+        UserRole role = parseRole(initialRole);
         try {
-            EmailAllowlistService.BulkResult result = emailAllowlistService.addBulkFromExcel(file, actor.getUser().getId());
+            EmailAllowlistService.BulkResult result = emailAllowlistService.addBulkFromExcel(file, role, actor.getUser().getId());
             ra.addFlashAttribute("successMessage",
                     result.added() + "개 등록 완료" + (result.skipped() > 0 ? " (" + result.skipped() + "개 건너뜀)" : ""));
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "엑셀 파일 처리 중 오류: " + e.getMessage());
         }
+        ra.addFlashAttribute("activeTab", role == UserRole.SALES ? "sales" : "employee");
         return "redirect:/admin/allowed-emails";
     }
 
@@ -408,6 +417,11 @@ public class AdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/allowed-emails";
+    }
+
+    private UserRole parseRole(String value) {
+        try { return UserRole.valueOf(value.toUpperCase()); }
+        catch (Exception e) { return UserRole.EMPLOYEE; }
     }
 
     // ── GC 대시보드: /admin/gc ────────────────────────────────────

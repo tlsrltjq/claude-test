@@ -144,7 +144,7 @@ class E2ETest {
 
     @Test
     void EMPLOYEE권한으로_admin_접근시_403() throws Exception {
-        allowedEmailRepository.save(AllowedEmail.create("employee@e2e.com", "e2e test", null));
+        allowedEmailRepository.save(AllowedEmail.create("employee@e2e.com", "e2e test", null, null));
 
         // 회원가입 1단계
         MockHttpSession signupSession = new MockHttpSession();

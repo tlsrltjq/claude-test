@@ -12,10 +12,15 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-01: 전체 테스트 실행 확인 및 잔여 커밋 정리 완료.
+2026-06-01: 허용 이메일 등록 폼 분리 완료.
 
 완료 항목:
-- chore: 전체 테스트 실행 — 508개 전 통과 (failures:0, errors:0, skipped:0)
-- chore: Document.isExpired() 미커밋 잔여분 커밋 정리
+- feat: V228__allowed_emails_initial_role.sql — initial_role 컬럼 추가
+- feat: AllowedEmail.initialRole 필드 + create() 시그니처 변경
+- feat: EmailAllowlistService add/addBulk/addBulkFromExcel에 initialRole 파라미터 추가
+- feat: SignupService.completeSignup — allowedEmail.initialRole 읽어 SALES 등 자동 부여
+- feat: AdminController 엔드포인트 initialRole 파라미터 + activeTab flash
+- feat: allowed-emails.html 일반/영업 탭 분리, 목록 배지, 탭 복원
+- 빌드 BUILD SUCCESSFUL, 보안 린트 18/18 PASS, 테스트 508개 전 통과
 
 **다음 작업 없음 — 사용자 지시 대기**

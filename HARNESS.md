@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 508개 테스트 전 통과 (492→508). 이번 세션 완료: 전체 테스트 실행 확인 (508개 PASS) + Document.isExpired() 미커밋 잔여분 커밋.
+**현재 상태 (2026-06-01):** Flyway V228. BUILD SUCCESSFUL. security-lint 18/18 PASS. 508개 테스트 전 통과. 이번 세션 완료: 허용 이메일 등록 폼 분리 — 일반/영업 탭 2개, allowed_emails.initial_role 컬럼 추가(V228), 회원가입 시 SALES 권한 자동 부여.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 

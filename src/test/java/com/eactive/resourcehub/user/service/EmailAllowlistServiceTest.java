@@ -70,10 +70,10 @@ class EmailAllowlistServiceTest {
     void 새_이메일_추가_성공() {
         when(allowedEmailRepository.existsByEmail("new@eactive.co.kr")).thenReturn(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
-        AllowedEmail entity = AllowedEmail.create("new@eactive.co.kr", "메모", admin);
+        AllowedEmail entity = AllowedEmail.create("new@eactive.co.kr", "메모", null, admin);
         when(allowedEmailRepository.save(any())).thenReturn(entity);
 
-        AllowedEmail result = service.add("new@eactive.co.kr", "메모", 1L);
+        AllowedEmail result = service.add("new@eactive.co.kr", "메모", null, 1L);
         assertNotNull(result);
         verify(allowedEmailRepository).save(any());
     }
@@ -82,7 +82,7 @@ class EmailAllowlistServiceTest {
     void 중복_이메일_추가_시_예외() {
         when(allowedEmailRepository.existsByEmail("dup@eactive.co.kr")).thenReturn(true);
         assertThrows(IllegalArgumentException.class,
-                () -> service.add("dup@eactive.co.kr", null, 1L));
+                () -> service.add("dup@eactive.co.kr", null, null, 1L));
         verify(allowedEmailRepository, never()).save(any());
     }
 
@@ -90,10 +90,10 @@ class EmailAllowlistServiceTest {
     void 추가_시_이메일_소문자_정규화() {
         when(allowedEmailRepository.existsByEmail("hong@eactive.co.kr")).thenReturn(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
-        AllowedEmail entity = AllowedEmail.create("hong@eactive.co.kr", null, admin);
+        AllowedEmail entity = AllowedEmail.create("hong@eactive.co.kr", null, null, admin);
         when(allowedEmailRepository.save(any())).thenReturn(entity);
 
-        service.add("HONG@EACTIVE.CO.KR", null, 1L);
+        service.add("HONG@EACTIVE.CO.KR", null, null, 1L);
         verify(allowedEmailRepository).existsByEmail("hong@eactive.co.kr");
     }
 
