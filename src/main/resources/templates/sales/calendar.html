@@ -60,28 +60,6 @@
 
         <div id="cal-content" th:fragment="calendarContent">
 
-          <!-- 월 네비 + 프로젝트 등록 버튼 -->
-          <div class="cal-controls">
-            <div class="month-nav">
-              <button type="button" class="btn-month cal-nav-btn"
-                      th:attr="data-year=${prev.year},data-month=${prev.monthValue}"
-                      data-dir="prev" aria-label="이전 달">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <span class="month-title" th:text="|${ym.year}년 ${ym.monthValue}월|">2026년 5월</span>
-              <button type="button" class="btn-month cal-nav-btn"
-                      th:attr="data-year=${next.year},data-month=${next.monthValue}"
-                      data-dir="next" aria-label="다음 달">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
-            <div th:if="${currentUser.role.name() == 'ADMIN' or currentUser.role.name() == 'SALES'}">
-              <a th:href="@{/sales/projects/new}" class="btn btn-success btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>프로젝트 등록
-              </a>
-            </div>
-          </div>
-
           <!-- 전체 프로젝트 목록 (진행중 + 예정) -->
           <div class="list-card">
             <div class="card-head">
@@ -89,6 +67,11 @@
               <span>전체 프로젝트</span>
               <span class="ms-1 text-muted fw-400" style="font-size:.75rem;"
                     th:text="${'진행중·예정 ' + #lists.size(activeAndPlannedProjects) + '건'}"></span>
+              <div class="ms-auto" th:if="${currentUser.role.name() == 'ADMIN' or currentUser.role.name() == 'SALES'}">
+                <a th:href="@{/sales/projects/new}" class="btn btn-success btn-sm">
+                  <i class="bi bi-plus-lg me-1"></i>프로젝트 등록
+                </a>
+              </div>
             </div>
 
             <div th:if="${#lists.isEmpty(activeAndPlannedProjects)}" class="empty-state">
@@ -177,6 +160,23 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+
+          <!-- 월 네비 -->
+          <div class="cal-controls">
+            <div class="month-nav">
+              <button type="button" class="btn-month cal-nav-btn"
+                      th:attr="data-year=${prev.year},data-month=${prev.monthValue}"
+                      data-dir="prev" aria-label="이전 달">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <span class="month-title" th:text="|${ym.year}년 ${ym.monthValue}월|">2026년 5월</span>
+              <button type="button" class="btn-month cal-nav-btn"
+                      th:attr="data-year=${next.year},data-month=${next.monthValue}"
+                      data-dir="next" aria-label="다음 달">
+                <i class="bi bi-chevron-right"></i>
+              </button>
             </div>
           </div>
 
