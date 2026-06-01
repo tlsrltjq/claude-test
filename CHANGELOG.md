@@ -9,6 +9,8 @@
 2026-06-01 | Post-MVP3 | fix: getDeployStats findByStatus 전체 로드 → countByStatusAndRoleNot COUNT 쿼리
 2026-06-01 | Post-MVP3 | feat: 프로젝트 캘린더 직원 선택 UX 개선 (이름 검색·팀 필터·선택 태그·직원 추가 모달 검색형 전환)
 2026-06-01 | Post-MVP3 | feat: 프로젝트 등록 전용 페이지 신설 (GET /sales/projects/new, 2단 레이아웃·팀별 그룹·전체 선택)
+2026-06-01 | Post-MVP3 | fix: 문서 검토 UI(card-body 충돌·테이블 클래스), S3 NoSuchKeyException → 500 수정, SampleDataFixRunner 시드 경로 교체
+2026-06-01 | Post-MVP3 | fix: 직원 관리 정렬 버그 4개 (이름·팀·권한·직급), 인력 현황 전 컬럼 정렬 추가, 캘린더 월 네비 위치 이동
 
 ---
 

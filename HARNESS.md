@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 492개 테스트 전 통과 (41개 클래스). 이번 세션 완료: 프로젝트 등록 전용 페이지 신설(/sales/projects/new) — 좌우 2단 레이아웃, 이름 검색+팀 필터+팀별 그룹+전체 선택+태그 확인. 직원 추가 모달 검색형 전환. 인력 현황 팀 필터 추가.
+**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 492개 테스트 전 통과 (41개 클래스). 이번 세션 완료: 문서 검토 UI 수정·S3 NoSuchKeyException 500 에러 수정·SampleDataFixRunner(시드 경로 교체), 직원 관리 정렬 버그 4개 수정(이름/팀/권한/직급), 인력 현황 전 컬럼 정렬, 캘린더 월 네비 달력 위로 이동.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
