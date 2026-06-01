@@ -12,12 +12,10 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-01: 만료 문서 필터링 완료.
+2026-06-01: 전체 테스트 실행 확인 및 잔여 커밋 정리 완료.
 
 완료 항목:
-- fix: SalesProfileQueryService — findActiveWithVersionByFolderIds 결과에서 isExpired() 문서 제외,
-  동일 타입 여러 개면 issuedDate 최신 우선(null이면 id 최신) 선택 (putIfAbsent → merge 교체)
-- fix: SalesMemberService.getMemberAutofillData — GRADUATION_CERTIFICATE·LICENSE 필터에 !isExpired() 추가
-- 빌드 BUILD SUCCESSFUL, 492개 테스트 전 통과
+- chore: 전체 테스트 실행 — 508개 전 통과 (failures:0, errors:0, skipped:0)
+- chore: Document.isExpired() 미커밋 잔여분 커밋 정리
 
 **다음 작업 없음 — 사용자 지시 대기**

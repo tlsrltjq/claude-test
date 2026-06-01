@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 492개 테스트 전 통과 (41개 클래스). 이번 세션 완료: 만료 문서 필터링 — 인력표(SalesProfileQueryService) 및 경력계산기 autofill(SalesMemberService)에서 만료 문서 제외, 동일 타입 여러 개면 최신 발급일 우선 선택.
+**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 508개 테스트 전 통과 (492→508). 이번 세션 완료: 전체 테스트 실행 확인 (508개 PASS) + Document.isExpired() 미커밋 잔여분 커밋.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 

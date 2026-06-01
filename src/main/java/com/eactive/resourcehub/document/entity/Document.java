@@ -89,6 +89,10 @@ public class Document extends BaseEntity {
         }
     }
 
+    public boolean isExpired() {
+        return expiresAt != null && expiresAt.isBefore(java.time.LocalDate.now());
+    }
+
     public void updateExpiresAt(LocalDate expiresAt) {
         this.expiresAt = expiresAt;
     }
