@@ -12,21 +12,18 @@
 - `./gradlew build` BUILD SUCCESSFUL ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-01: 프로젝트 캘린더 직원 선택 UX 개선 완료.
+2026-06-01: 프로젝트 등록 전용 페이지 신설 완료.
 
 완료 항목:
-- feat: 프로젝트 등록 모달 (`calendar.html`)
-  - 이름 검색 input + 팀 필터 select 추가
-  - 체크박스 목록 높이 160→240px, modal-dialog-scrollable
-  - 선택 카운터 뱃지 + 선택 취소 태그 (✕ 클릭)
-  - 모달 닫힐 때 전체 초기화
-- feat: 직원 추가 모달 (`project-detail.html`)
-  - `<select>` → 이름 검색 + 팀 필터 + 클릭 선택 리스트 전환
-  - 선택된 직원 하이라이트 표시, 미선택 시 추가 버튼 disabled
-- feat: 인력 현황 탭 팀 필터 추가 (`calendar.html`)
-  - 팀 목록 JS 자동 수집 (서버 요청 없음)
-  - data-team 속성 테이블 행 추가
-- 서버 코드 변경 없음 — 순수 HTML + JS
+- feat: GET /sales/projects/new 엔드포인트 추가 (ProjectController)
+- feat: project-new.html 신규 — 좌우 2단 레이아웃
+  · 왼쪽: 프로젝트 정보 폼 + 선택된 직원 태그 요약
+  · 오른쪽: 이름 검색 + 팀 필터 + 팀별 그룹 헤더 + 전체 선택 버튼
+  · 직원 목록 max-height 420px (모달 대비 3배 공간)
+- feat: calendar.html — "프로젝트 등록" 버튼 → /sales/projects/new 링크 교체
+  기존 모달 HTML + 관련 JS 제거
+- feat: 직원 추가 모달 (project-detail.html) — select → 검색형 리스트 전환
+- feat: 인력 현황 탭 — 팀 필터 select 추가
 - 전체 빌드: BUILD SUCCESSFUL, security-lint 18/18 PASS
 
 **다음 작업 없음 — 사용자 지시 대기**

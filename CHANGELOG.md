@@ -8,6 +8,7 @@
 2026-06-01 | Post-MVP3 | test: Playwright E2E 16개, Repository 통합 4개, 단위 테스트 보강 (392→492개)
 2026-06-01 | Post-MVP3 | fix: getDeployStats findByStatus 전체 로드 → countByStatusAndRoleNot COUNT 쿼리
 2026-06-01 | Post-MVP3 | feat: 프로젝트 캘린더 직원 선택 UX 개선 (이름 검색·팀 필터·선택 태그·직원 추가 모달 검색형 전환)
+2026-06-01 | Post-MVP3 | feat: 프로젝트 등록 전용 페이지 신설 (GET /sales/projects/new, 2단 레이아웃·팀별 그룹·전체 선택)
 
 ---
 
