@@ -17,7 +17,7 @@
           ▼
   ┌────────────────┐      ┌────────────────────────┐
   │  Spring Boot   │◀────▶│  PostgreSQL 18         │
-  │  (Java 21)     │      │  + Flyway V1~V227      │
+  │  (Java 21)     │      │  + Flyway V1~V229      │
   └───┬────────┬───┘      └────────────────────────┘
       │        │
       │        └───────▶  Local FS (storage/) or S3/R2 (S3FileStorage)
@@ -201,8 +201,10 @@ com.eactive.resourcehub
 | V225 | 기능 개편 | users.join_date 컬럼 추가 (입사일, 선택) |
 | V226 | 기능 개편 | project_assignments user_name 스냅샷 + user_id SET NULL, 누락 FK 6개 수정 |
 | V227 | 테스트 | audit_logs 인덱스 추가 (created_at, action_type, user_id) |
+| V228 | 기능 개편 | allowed_emails.initial_role 추가 (일반/영업 탭 분리, SALES 자동 부여) |
+| V229 | 기능 개편 | users.privacy_consent_at, privacy_consent_version 추가 (개인정보 동의 기록) |
 
-> 새 마이그레이션은 V228부터.
+> 새 마이그레이션은 V230부터.
 
 ---
 
@@ -241,5 +243,5 @@ com.eactive.resourcehub
 
 ## 정적 분석 도구
 
-- `scripts/security-lint.sh` — 15개 항목 (JWT/Remember-me/CSRF/파일 노출/SQL 인젝션/XSS/UUID/role 직접비교/이메일 트랜잭션/TEAM_LEADER 잔존/ddl-auto/HTTP 헤더/리셋코드 로그/env 하드코딩 등). 0 FAIL 유지.
+- `scripts/security-lint.sh` — 18개 항목 (JWT/Remember-me/CSRF/파일 노출/SQL 인젝션/XSS/UUID/role 직접비교/이메일 트랜잭션/TEAM_LEADER 잔존/ddl-auto/HTTP 헤더/리셋코드 로그/env 하드코딩/safeReferer 중복·경로 탈출·예외 메시지 노출 등). 0 FAIL 유지.
 - `./gradlew build` — 컴파일 + Spring Boot 단위 테스트(`CareerCalculatorTest`).

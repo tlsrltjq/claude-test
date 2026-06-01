@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -62,6 +63,12 @@ public class User extends BaseEntity {
     @Column(name = "join_date")
     private LocalDate joinDate;
 
+    @Column(name = "privacy_consent_at")
+    private LocalDateTime privacyConsentAt;
+
+    @Column(name = "privacy_consent_version", length = 10)
+    private String privacyConsentVersion;
+
     public static User create(String loginId, String encodedPassword, String name,
                                String email, Team team, Position position,
                                LocalDate birthDate, String phone) {
@@ -111,6 +118,11 @@ public class User extends BaseEntity {
 
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public void recordConsent(LocalDateTime consentAt, String version) {
+        this.privacyConsentAt = consentAt;
+        this.privacyConsentVersion = version;
     }
 
     public void updateProfile(String name, String phone, LocalDate birthDate, String address, LocalDate joinDate) {

@@ -1,6 +1,6 @@
 # 데이터 모델
 
-> Flyway V1~V227 기준. 엔티티·테이블·관계·주요 제약조건.
+> Flyway V1~V229 기준. 엔티티·테이블·관계·주요 제약조건.
 > 참고 소스: `src/main/resources/db/migration/V*.sql`, `src/main/java/**/entity/*.java`
 
 ---
@@ -64,6 +64,8 @@ allowed_emails (독립 — 회원가입 사전 허용 이메일 목록)
 | role | VARCHAR(50) | NOT NULL DEFAULT 'EMPLOYEE' | UserRole enum |
 | status | VARCHAR(50) | NOT NULL DEFAULT 'PENDING' | UserStatus enum |
 | email_verified | BOOLEAN | NOT NULL DEFAULT FALSE | |
+| privacy_consent_at | TIMESTAMP | | 개인정보 동의 일시 (V229, 기존 계정 NULL) |
+| privacy_consent_version | VARCHAR(10) | | 동의 시점 약관 버전 (V229, 기존 계정 NULL) |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
 
@@ -275,12 +277,13 @@ UNIQUE: `(user_id, name)`
 | id | BIGSERIAL PK | |
 | email | VARCHAR(255) NOT NULL UNIQUE | 가입 허용 이메일 주소 |
 | note | VARCHAR(255) | 메모 (UI에서는 미사용) |
+| initial_role | VARCHAR(20) NOT NULL DEFAULT 'EMPLOYEE' | 회원가입 시 부여할 초기 역할 (V228 추가) |
 | created_at | TIMESTAMP NOT NULL | |
 | created_by | BIGINT FK → users.id, SET NULL | 등록한 관리자 |
 
 **인덱스:** `idx_allowed_emails_email`
 
-> V215 신설. 이 목록에 등록된 이메일만 회원가입 가능. 관리자가 `/admin/allowed-emails`에서 단건·텍스트 일괄·엑셀(.xlsx/.xls) 방식으로 추가·삭제.
+> V215 신설. 이 목록에 등록된 이메일만 회원가입 가능. 관리자가 `/admin/allowed-emails`에서 단건·텍스트 일괄·엑셀(.xlsx/.xls) 방식으로 추가·삭제. V228에서 `initial_role` 컬럼 추가 — 일반/영업 탭 분리, 영업 탭 등록 시 `SALES`로 지정하면 회원가입 완료 시 SALES 권한 자동 부여.
 
 ---
 
@@ -368,5 +371,7 @@ UNIQUE: `(user_id, name)`
 | V225 | users.join_date 컬럼 추가 (입사일, 선택) |
 | V226 | project_assignments user_name 스냅샷 추가 + user_id SET NULL 전환, 누락 FK 6개 수정 (email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL) |
 | V227 | audit_logs 인덱스 추가 (created_at, action_type, user_id) |
+| V228 | allowed_emails.initial_role VARCHAR(20) DEFAULT 'EMPLOYEE' 추가 (일반/영업 탭 분리) |
+| V229 | users.privacy_consent_at TIMESTAMP, privacy_consent_version VARCHAR(10) 추가 (개인정보 동의 기록) |
 
-> 다음 마이그레이션은 **V228**부터.
+> 다음 마이그레이션은 **V230**부터.

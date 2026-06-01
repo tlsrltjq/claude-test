@@ -33,6 +33,9 @@ public class SignupService {
     private static final DateTimeFormatter BIRTH_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter JOIN_FMT  = DateTimeFormatter.ofPattern("yyyyMMdd");
 
+    /** 동의서 버전 — 약관 본문 변경 시 올려야 함 */
+    static final String CONSENT_VERSION = "1.0";
+
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
@@ -79,6 +82,7 @@ public class SignupService {
         User user = User.create(email, encodedPassword, request.getName(), email, team,
                 request.getPosition(), birthDate, request.getPhone());
         user.verifyEmail();
+        user.recordConsent(java.time.LocalDateTime.now(), CONSENT_VERSION);
         allowedEmailRepository.findByEmail(email)
                 .map(AllowedEmail::getInitialRole)
                 .filter(role -> role != UserRole.EMPLOYEE)

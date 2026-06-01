@@ -165,6 +165,21 @@ class SignupServiceTest {
     }
 
     @Test
+    void completeSignup_동의일시와_버전이_저장된다() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        when(userRepository.save(userCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
+        when(folderRepository.existsByOwnerIdAndType(any(), eq(FolderType.PERSONAL))).thenReturn(false);
+        when(folderRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        signupService.completeSignup(validRequest);
+
+        User saved = userCaptor.getValue();
+        assertThat(saved.getPrivacyConsentAt()).isNotNull();
+        assertThat(saved.getPrivacyConsentVersion()).isEqualTo(SignupService.CONSENT_VERSION);
+    }
+
+    @Test
     void completeSignup_이미_폴더존재하면_폴더_미생성() {
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));

@@ -6,7 +6,7 @@
 
 ---
 
-## 현재 구현 범위 (V227 기준)
+## 현재 구현 범위 (V229 기준)
 
 | 도메인 | 주요 기능 |
 |--------|----------|
@@ -19,9 +19,9 @@
 | 투입 관리 | 캘린더(`/sales/calendar`), 프로젝트 CRUD·멤버 관리, 배정 삭제, 대시보드 통계, 프로젝트 바(bar) 렌더링, 하단 프로젝트 리스트 |
 | 관리자 | 직원·팀·팀 프로젝트 설정·문서 검토·만료 문서·통계·재직증명서·파일 GC·이메일 허용 목록 |
 
-기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
+기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V229 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-01):** Flyway V228. BUILD SUCCESSFUL. security-lint 18/18 PASS. 508개 테스트 전 통과. 이번 세션 완료: 허용 이메일 등록 폼 분리 — 일반/영업 탭 2개, allowed_emails.initial_role 컬럼 추가(V228), 회원가입 시 SALES 권한 자동 부여.
+**현재 상태 (2026-06-01):** Flyway V229. BUILD SUCCESSFUL. security-lint 18/18 PASS. 492개 테스트 전 통과. 최근 완료: V228 허용 이메일 일반/영업 탭 분리(initial_role 컬럼, SALES 자동 부여), V229 개인정보 동의 일시·버전 DB 저장(privacy_consent_at, privacy_consent_version).
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
@@ -73,7 +73,7 @@
 - 실제 구현된 코드와 일치해야 함
 - 미구현 기능은 "향후 계획"으로 분리
 - API 경로·DTO 필드명·화면 경로는 소스 기준
-- Flyway 버전: 현재 V227. 다음은 **V228**부터
+- Flyway 버전: 현재 V229. 다음은 **V230**부터
 - ADR 번호: 현재 ADR-039까지. 다음은 ADR-040부터
 
 ---

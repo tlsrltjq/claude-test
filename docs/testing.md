@@ -7,7 +7,7 @@
 
 ## 현재 테스트 범위
 
-### 자동화 (현재) — Java 테스트 393개, security-lint 15항목
+### 자동화 (현재) — Java 테스트 492개, security-lint 18항목
 
 **공통 유틸·서비스**
 
@@ -94,9 +94,9 @@
 
 | 도구 | 항목 수 | 비고 |
 |------|---------|------|
-| `scripts/security-lint.sh` | 15 | Bash grep 기반, 0 FAIL 유지 |
+| `scripts/security-lint.sh` | 18 | Bash grep 기반, 0 FAIL 유지 |
 
-> 총 자동화 테스트: **Java 393개** (37개 클래스) + security-lint 15항목
+> 총 자동화 테스트: **Java 492개** (46개 클래스) + security-lint 18항목
 
 ---
 
@@ -203,3 +203,6 @@ bash scripts/security-lint.sh
 | 13 | HTTP 보안 헤더 설정 확인 |
 | 14 | 비밀번호 재설정 코드 로그 노출 금지 |
 | 15 | 환경변수 기본값 하드코딩 금지 |
+| 16 | safeReferer 중복 구현 금지 (open redirect 방어 비대칭 위험) |
+| 17 | LocalFileStorage 경로 탈출 방어 (resolve 후 startsWith 검증 필수) |
+| 18 | 광범위한 예외 catch 내 예외 메시지 노출 금지 |

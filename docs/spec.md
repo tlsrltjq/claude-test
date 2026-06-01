@@ -23,7 +23,9 @@
 - 비밀번호 정책: 영문·숫자·특수문자 포함, 8자 이상
 - 인증 코드: 10분 TTL, 재발송 가능
 - 이메일: 전체 이메일 주소 입력. 사전 등록된 이메일(`allowed_emails` 테이블)에 없으면 가입 차단
-- 개인정보 동의: 필수 동의 없으면 가입 불가
+- 역할 자동 부여: `allowed_emails.initial_role`이 `SALES`인 경우 가입 완료 시 SALES 권한 자동 부여 (기본 EMPLOYEE)
+- 개인정보 동의: 5개 항목 필수 체크 (수집·이용, 문서 보관, 민감정보, 제3자 제공, 위탁 안내). 미동의 시 가입 불가
+- 동의 기록: 가입 완료 시 `privacy_consent_at`(일시), `privacy_consent_version`(약관 버전, 현재 "1.0") DB 저장 (V229)
 - 가입 완료 시: ACTIVE 상태 즉시 활성화 + 개인 폴더 자동 생성 + EmployeeProfile 자동 생성
 
 ### 1-2. 로그인
@@ -227,14 +229,22 @@
 - 고아 파일(1시간 이상 된 soft-delete 파일) 수동 실행
 - 자동: 매일 02:00 cron (`@Scheduled`)
 
+### 9-10. 프로젝트 상태 동기화
+
+- 경로: `POST /admin/project-status/sync`
+- 프로젝트·배정 상태를 현재 날짜 기준으로 일괄 재동기화 (`ProjectStatusScheduler.syncStatuses()`)
+- 관리자 대시보드(`/admin`)에서 실행 가능
+
 ### 9-9. 가입 허용 이메일 관리
 
 - 경로: `GET /admin/allowed-emails`, `POST /admin/allowed-emails/{id}/delete`
-- 단건 등록: `POST /admin/allowed-emails` (email 파라미터)
-- 텍스트 일괄 등록: `POST /admin/allowed-emails/bulk` (쉼표·공백·줄바꿈 구분)
-- 엑셀 일괄 등록: `POST /admin/allowed-emails/bulk-excel` (.xlsx / .xls, 첫 번째 열 이메일)
+- 단건 등록: `POST /admin/allowed-emails` (email, initialRole 파라미터)
+- 텍스트 일괄 등록: `POST /admin/allowed-emails/bulk` (쉼표·공백·줄바꿈 구분, initialRole 파라미터)
+- 엑셀 일괄 등록: `POST /admin/allowed-emails/bulk-excel` (.xlsx / .xls, 첫 번째 열 이메일, initialRole 파라미터)
 - 결과 flash: 추가 N건 / 건너뜀 K건 안내
 - 사전 등록된 이메일만 회원가입 허용 (`allowed_emails` 테이블). 등록되지 않은 이메일은 가입 폼 제출 시 차단
+- 탭 분리: 일반 직원(EMPLOYEE) / 영업(SALES) — 영업 탭으로 등록 시 `initial_role = SALES` 저장, 해당 이메일로 가입하면 SALES 권한 자동 부여 (V228)
+- 목록 배지: 영업 등록 이메일에 [영업] 배지 표시
 
 ---
 

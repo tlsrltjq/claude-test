@@ -14,6 +14,8 @@
 2026-06-01 | Post-MVP3 | feat: 허용 이메일 등록 폼 일반/영업 탭 분리 — V228 initial_role 컬럼, 회원가입 시 SALES 권한 자동 부여
 2026-06-01 | Post-MVP3 | chore: 전체 테스트 492→508개 확인, Document.isExpired() 미커밋 잔여분 정리
 2026-06-01 | Post-MVP3 | fix: 만료 문서 필터링 — 인력표·경력계산기 autofill에서 expiresAt 초과 문서 제외, 동일 타입 여러 개면 최신 발급일 우선 선택
+2026-06-01 | Post-MVP3 | feat: 개인정보 동의 일시·버전 DB 저장 — V229 privacy_consent_at/version 컬럼, SignupService.recordConsent(), 테스트 1개 추가 (492개 전 통과)
+2026-06-01 | Post-MVP3 | docs: 전체 문서 V229 기준 최신화 + 감사 결과 반영 — testing.md(492개·18항목), spec.md(project-status/sync 누락 추가)
 2026-06-01 | Post-MVP3 | chore: 개발자 등급 DB 정비 — 영어값 한국어 변환, NULL 경영본부 랜덤 배분 (특급12·고급18·중급37·초급34)
 
 ---

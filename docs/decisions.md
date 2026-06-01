@@ -42,7 +42,7 @@
 ## ADR-007: 스키마 변경은 Flyway 만, `ddl-auto: validate`
 - 결정: JPA 엔티티 변경 시 무조건 Flyway 마이그레이션 추가. `ddl-auto` 는 항상 `validate` (운영도 동일).
 - 이유: Hibernate auto-DDL 의 실수로 인한 운영 데이터 손실 방지. 마이그레이션은 코드 리뷰 대상.
-- 번호 규칙: V1–V6=MVP1, V100~=MVP2, V200~=MVP3·post-MVP3. 새 변경은 V228부터.
+- 번호 규칙: V1–V6=MVP1, V100~=MVP2, V200~=MVP3·post-MVP3. 새 변경은 V230부터.
 - 정적 검사: `scripts/security-lint.sh [12]`.
 
 ## ADR-008: 감사 로그는 REQUIRES_NEW
