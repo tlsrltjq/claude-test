@@ -29,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -52,7 +53,8 @@ public class EmployeeManagementService {
     }
 
     private static final int PAGE_SIZE = 30;
-    private static final List<String> ALLOWED_SORTS = List.of("name", "email", "position", "role", "status");
+    private static final List<String> ALLOWED_SORTS =
+            List.of("name", "email", "position", "role", "team", "status");
 
     @Transactional(readOnly = true)
     public Page<User> findActiveFilteredPaged(String q, String position, String role, Long teamId,
@@ -62,11 +64,53 @@ public class EmployeeManagementService {
         UserRole roleEnum = parseRole(role);
         String safeSort = ALLOWED_SORTS.contains(sort) ? sort : "name";
         Sort.Direction dir = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
-        // 관리자(ADMIN)는 항상 최상단 고정 — role ASC = "ADMIN" < "EMPLOYEE" < "SALES"
-        Sort combinedSort = Sort.by(Sort.Direction.ASC, "role").and(Sort.by(dir, safeSort));
+        int safePage = Math.max(page, 0);
+
+        // position 정렬: DB의 VARCHAR 알파벳 순 ≠ 실제 직급 순 → 전체 조회 후 Java 정렬·페이징
+        if ("position".equals(safeSort)) {
+            return sortByPositionInMemory(qLike, pos, roleEnum, teamId, safePage, dir);
+        }
+
+        Sort dbSort = buildSort(safeSort, dir);
         return userRepository.findFilteredPage(
                 MANAGED_STATUSES, qLike, pos, roleEnum, teamId,
-                PageRequest.of(Math.max(page, 0), PAGE_SIZE, combinedSort));
+                PageRequest.of(safePage, PAGE_SIZE, dbSort));
+    }
+
+    /** position은 enum 선언 순서(ordinal)가 실제 직급 순 — 전체 조회 후 정렬·수동 페이징 */
+    private org.springframework.data.domain.Page<User> sortByPositionInMemory(
+            String qLike, Position pos, UserRole roleEnum, Long teamId,
+            int page, Sort.Direction dir) {
+
+        List<User> all = userRepository.findFilteredPage(
+                MANAGED_STATUSES, qLike, pos, roleEnum, teamId,
+                PageRequest.of(0, 10_000, Sort.by(Sort.Direction.ASC, "name")))
+                .getContent();
+
+        Comparator<User> comp = Comparator.comparingInt(u -> u.getPosition().ordinal());
+        if (dir == Sort.Direction.DESC) comp = comp.reversed();
+        // 직급 동일 시 이름 ASC 보조 정렬
+        Comparator<User> full = comp.thenComparing(User::getName);
+        all = all.stream().sorted(full).toList();
+
+        int start = page * PAGE_SIZE;
+        int end   = Math.min(start + PAGE_SIZE, all.size());
+        List<User> slice = start >= all.size() ? List.of() : all.subList(start, end);
+
+        return new org.springframework.data.domain.PageImpl<>(
+                slice, PageRequest.of(page, PAGE_SIZE), all.size());
+    }
+
+    private Sort buildSort(String sortField, Sort.Direction dir) {
+        return switch (sortField) {
+            case "name"   -> Sort.by(dir, "name");
+            case "email"  -> Sort.by(dir, "email");
+            case "role"   -> Sort.by(dir, "role").and(Sort.by(Sort.Direction.ASC, "name"));
+            case "status" -> Sort.by(dir, "status").and(Sort.by(Sort.Direction.ASC, "name"));
+            // team: JPA 연관 탐색 "team.name" — LEFT JOIN FETCH u.team 환경에서 동작
+            case "team"   -> Sort.by(dir, "team.name").and(Sort.by(Sort.Direction.ASC, "name"));
+            default       -> Sort.by(dir, "name");
+        };
     }
 
     private Position parsePosition(String value) {

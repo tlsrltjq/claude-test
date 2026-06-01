@@ -84,7 +84,15 @@
                 </a>
               </th>
               <th><span class="sort-btn" style="cursor:default">이메일</span></th>
-              <th><span class="sort-btn" style="cursor:default">팀</span></th>
+              <th>
+                <a th:href="@{/admin/employees(q=${q},position=${position},role=${role},teamId=${teamId},sort='team',direction=${sort=='team' and direction=='asc'?'desc':'asc'},page=0)}"
+                   th:classappend="${sort=='team'} ? 'sort-btn active' : 'sort-btn'">
+                  팀
+                  <i th:if="${sort=='team' and direction=='asc'}"  class="bi bi-arrow-up"></i>
+                  <i th:if="${sort=='team' and direction=='desc'}" class="bi bi-arrow-down"></i>
+                  <i th:if="${sort!='team'}" class="bi bi-arrow-down-up" style="opacity:.35"></i>
+                </a>
+              </th>
               <th>
                 <a th:href="@{/admin/employees(q=${q},position=${position},role=${role},teamId=${teamId},sort='position',direction=${sort=='position' and direction=='asc'?'desc':'asc'},page=0)}"
                    th:classappend="${sort=='position'} ? 'sort-btn active' : 'sort-btn'">
