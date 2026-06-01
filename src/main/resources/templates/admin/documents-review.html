@@ -91,7 +91,8 @@
                   th:text="${#temporals.format(v.createdAt, 'yy.MM.dd')}"></td>
               <td>
                 <div class="d-flex gap-1">
-                  <a th:href="@{/documents/{id}/preview(id=${v.id})}"
+                  <a th:if="${v.previewSupported}"
+                     th:href="@{/documents/{id}/preview(id=${v.id})}"
                      target="_blank"
                      class="btn btn-sm btn-outline-secondary"
                      style="font-size:.75rem;border-radius:6px;padding:.2rem .5rem"

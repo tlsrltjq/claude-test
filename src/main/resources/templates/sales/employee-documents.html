@@ -78,7 +78,8 @@
             </div>
             <!-- 액션 버튼 -->
             <div class="card-footer d-flex gap-1" th:if="${doc.currentVersion != null}">
-              <a th:href="@{/documents/{id}/preview(id=${doc.currentVersion.id})}"
+              <a th:if="${doc.currentVersion.previewSupported}"
+                 th:href="@{/documents/{id}/preview(id=${doc.currentVersion.id})}"
                  target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">
                 <i class="bi bi-eye"></i>
               </a>

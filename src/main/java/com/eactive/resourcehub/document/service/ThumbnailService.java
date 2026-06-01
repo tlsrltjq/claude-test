@@ -45,7 +45,8 @@ public class ThumbnailService {
     private static final int  THUMBNAIL_WIDTH         = 240;
     private static final long MAX_THUMBNAIL_FILE_BYTES = 30L * 1024 * 1024; // 30MB 초과 시 건너뜀
     private static final Set<String> IMAGE_EXTS  = Set.of("jpg", "jpeg", "png");
-    private static final Set<String> OFFICE_EXTS = Set.of("docx", "hwp", "hwpx");
+    // hwp 제외 — LibreOffice 변환 불안정, 미리보기 미지원
+    private static final Set<String> OFFICE_EXTS = Set.of("docx", "hwpx", "pptx", "ppt", "xlsx", "xls");
 
     private final FileStorage fileStorage;
     private final DocumentVersionRepository documentVersionRepository;

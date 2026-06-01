@@ -12,11 +12,24 @@ COPY src ./src
 RUN ./gradlew bootJar -x test --no-daemon -q
 
 # ── Stage 2: Runtime ───────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine
+# Debian 기반 — LibreOffice 패키지 지원을 위해 Alpine 대신 사용
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # 전용 시스템 유저 (root 비실행)
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
+# LibreOffice + 한글 폰트 (오피스 파일 PDF 변환용)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libreoffice-core \
+        libreoffice-writer \
+        libreoffice-calc \
+        libreoffice-impress \
+        fonts-nanum \
+        fonts-nanum-coding \
+        fontconfig \
+    && fc-cache -f \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
@@ -26,7 +39,7 @@ RUN mkdir -p /data/uploads && chown -R appuser:appgroup /data /app
 USER appuser
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
   CMD wget -qO- http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["java", \

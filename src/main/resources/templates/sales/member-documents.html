@@ -111,7 +111,7 @@
                    th:with="ext=${lv != null ? lv.originalFileName.substring(lv.originalFileName.lastIndexOf('.')+1).toLowerCase() : 'etc'}">
 
                   <!-- 썸네일 / 아이콘 -->
-                  <a th:if="${lv != null}"
+                  <a th:if="${lv != null and lv.previewSupported}"
                      th:href="@{/documents/{id}/preview(id=${lv.id})}"
                      target="_blank" class="text-decoration-none d-block">
                       <img th:if="${lv.thumbnailStoragePath != null}"
@@ -142,7 +142,7 @@
                   </div>
 
                   <div class="doc-footer">
-                      <a th:if="${lv != null}"
+                      <a th:if="${lv != null and lv.previewSupported}"
                          th:href="@{/documents/{id}/preview(id=${lv.id})}"
                          target="_blank"
                          class="btn btn-outline-secondary flex-fill">
@@ -199,7 +199,7 @@
                           th:text="${lv != null ? #temporals.format(lv.createdAt, 'yy.MM.dd') : '-'}"></td>
                       <td>
                           <div class="d-flex gap-1">
-                              <a th:if="${lv != null}"
+                              <a th:if="${lv != null and lv.previewSupported}"
                                  th:href="@{/documents/{id}/preview(id=${lv.id})}"
                                  target="_blank"
                                  class="btn btn-outline-secondary btn-sm" title="미리보기">

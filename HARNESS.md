@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 393개 테스트 전 통과 (37개 클래스). 이번 세션 완료 항목: 전체 테스트·린트 점검 후 보안 린트 3개 항목 추가(#16 safeReferer 중복, #17 LocalFileStorage 경로 탈출 방어, #18 광범위 예외 catch 메시지 노출) + 코드 수정(RedirectUtils 유틸 추출, LocalFileStorage resolveAndValidate) + 문의 이메일 환경변수화(RESOURCEHUB_CONTACT_EMAIL).
+**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 392개 테스트 전 통과 (37개 클래스). 진행 중: 오피스 파일(docx·hwpx·pptx·ppt·xlsx·xls) LibreOffice PDF 변환 미리보기 구현. HWP는 미리보기 미지원(버튼 숨김). Dockerfile Alpine→Debian 전환 포함.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 

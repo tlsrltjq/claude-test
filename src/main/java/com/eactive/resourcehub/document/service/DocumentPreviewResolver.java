@@ -10,7 +10,8 @@ import java.util.Set;
 public class DocumentPreviewResolver {
 
     private static final Set<String> IMAGE_EXTS  = Set.of("jpg", "jpeg", "png");
-    private static final Set<String> OFFICE_EXTS = Set.of("docx", "hwp", "hwpx");
+    // hwp: LibreOffice 변환 품질 불안정 — 미리보기 미지원
+    private static final Set<String> OFFICE_EXTS = Set.of("docx", "hwpx", "pptx", "ppt", "xlsx", "xls");
 
     public String resolve(DocumentVersion version) {
         if (version == null) return "none";

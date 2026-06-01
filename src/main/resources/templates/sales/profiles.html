@@ -372,7 +372,7 @@
                           <td class="doc-cell" data-col="resume">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>
@@ -383,7 +383,7 @@
                           <td class="doc-cell" data-col="careerDescription">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>
@@ -394,7 +394,7 @@
                           <td class="doc-cell" data-col="license">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>
@@ -405,7 +405,7 @@
                           <td class="doc-cell" data-col="graduationCertificate">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>
@@ -416,7 +416,7 @@
                           <td class="doc-cell" data-col="nationalPensionCertificate">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>
@@ -427,7 +427,7 @@
                           <td class="doc-cell" data-col="healthInsuranceCertificate">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>
@@ -438,7 +438,7 @@
                           <td class="doc-cell" data-col="healthInsuranceEligibility">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>
@@ -449,7 +449,7 @@
                           <td class="doc-cell" data-col="etc">
                               <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
                               <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
+                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
                                   <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
                               </span>
                           </td>

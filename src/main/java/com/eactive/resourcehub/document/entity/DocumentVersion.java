@@ -1,6 +1,7 @@
 package com.eactive.resourcehub.document.entity;
 
 import com.eactive.resourcehub.common.entity.BaseEntity;
+import com.eactive.resourcehub.common.util.FileUtils;
 import com.eactive.resourcehub.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -95,6 +96,19 @@ public class DocumentVersion extends BaseEntity {
     private String thumbnailContentType;
 
     private LocalDateTime thumbnailGeneratedAt;
+
+    /**
+     * 미리보기 가능 여부 — 템플릿에서 th:if="${version.previewSupported}"로 사용.
+     * hwp·zip 등은 false 반환해 미리보기 버튼을 숨긴다.
+     */
+    public boolean isPreviewSupported() {
+        String ext = FileUtils.extension(originalFileName);
+        return switch (ext) {
+            case "pdf", "jpg", "jpeg", "png" -> true;
+            case "docx", "hwpx", "pptx", "ppt", "xlsx", "xls" -> previewStoragePath != null;
+            default -> false;
+        };
+    }
 
     public void setPreview(String previewFileName, String previewStoragePath) {
         this.previewFileName = previewFileName;

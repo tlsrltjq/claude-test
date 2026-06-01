@@ -52,6 +52,7 @@ public class DocumentUploadService {
     private final UserRepository userRepository;
     private final AuditService auditService;
     private final ThumbnailService thumbnailService;
+    private final OfficePreviewService officePreviewService;
 
     @Value("${resourcehub.upload.allowed-extensions:pdf,jpg,jpeg,png,docx,hwp,hwpx}")
     private String allowedExtensionsRaw;
@@ -195,10 +196,16 @@ public class DocumentUploadService {
     }
 
     private void generateThumbnailSilently(DocumentVersion version) {
-        try {
-            thumbnailService.generateAndSave(version);
-        } catch (Exception e) {
-            log.warn("썸네일 생성 실패 (업로드는 성공): {}", e.getMessage());
+        String ext = FileUtils.extension(version.getOriginalFileName());
+        if (officePreviewService.supports(ext)) {
+            // 오피스 파일: PDF 변환 후 썸네일 생성까지 OfficePreviewService에서 처리
+            officePreviewService.convertAndSave(version);
+        } else {
+            try {
+                thumbnailService.generateAndSave(version);
+            } catch (Exception e) {
+                log.warn("썸네일 생성 실패 (업로드는 성공): {}", e.getMessage());
+            }
         }
     }
 

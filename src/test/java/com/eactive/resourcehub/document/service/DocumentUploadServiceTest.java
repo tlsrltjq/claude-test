@@ -51,6 +51,7 @@ class DocumentUploadServiceTest {
     @Mock UserRepository           userRepository;
     @Mock AuditService             auditService;
     @Mock ThumbnailService         thumbnailService;
+    @Mock OfficePreviewService     officePreviewService;
     @Mock HttpServletRequest       httpReq;
 
     @InjectMocks DocumentUploadService uploadService;

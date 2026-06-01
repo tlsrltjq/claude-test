@@ -184,7 +184,7 @@
                   th:data-title="${doc.title.toLowerCase()}"
                   th:data-file="${cv != null ? cv.originalFileName.toLowerCase() : ''}">
                 <td>
-                  <a th:if="${cv != null}" th:href="@{/documents/{id}/preview(id=${cv.id})}" target="_blank">
+                  <a th:if="${cv != null and cv.previewSupported}" th:href="@{/documents/{id}/preview(id=${cv.id})}" target="_blank">
                     <img th:if="${cv.thumbnailStoragePath != null}"
                          th:src="@{/documents/{id}/thumbnail(id=${cv.id})}"
                          class="doc-thumb" alt=""
@@ -210,7 +210,7 @@
                     th:text="${cv != null ? #temporals.format(cv.createdAt, 'yyyy-MM-dd') : '-'}"></td>
                 <td>
                   <div class="d-flex gap-1">
-                    <a th:if="${cv != null}" th:href="@{/documents/{id}/preview(id=${cv.id})}"
+                    <a th:if="${cv != null and cv.previewSupported}" th:href="@{/documents/{id}/preview(id=${cv.id})}"
                        target="_blank" class="btn btn-outline-secondary btn-sm py-0 px-2">
                       <i class="bi bi-eye"></i>
                     </a>

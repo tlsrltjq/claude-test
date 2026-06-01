@@ -56,6 +56,8 @@ resourcehub:
     base-dir: ${RESOURCEHUB_UPLOAD_BASE_DIR:./storage/uploads}
     allowed-extensions: pdf,jpg,jpeg,png,docx,hwp,hwpx,ppt,pptx,zip,xlsx,xls
   contact-email: ${RESOURCEHUB_CONTACT_EMAIL:}
+  libreoffice:
+    enabled: ${RESOURCEHUB_LIBREOFFICE_ENABLED:true}
   admin:
     email: ${RESOURCEHUB_ADMIN_EMAIL:admin@eactive.co.kr}
     password: ${RESOURCEHUB_ADMIN_PASSWORD}
