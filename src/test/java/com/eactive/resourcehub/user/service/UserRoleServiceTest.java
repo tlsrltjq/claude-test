@@ -63,13 +63,6 @@ class UserRoleServiceTest {
     }
 
     @Test
-    void TEAM_LEADER로_변경_시_예외() {
-        assertThrows(IllegalArgumentException.class,
-                () -> service.changeRole(10L, UserRole.TEAM_LEADER, 1L, request));
-        assertEquals(UserRole.EMPLOYEE, target.getRole());
-    }
-
-    @Test
     void 존재하지_않는_사용자_역할_변경_시_예외() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class,

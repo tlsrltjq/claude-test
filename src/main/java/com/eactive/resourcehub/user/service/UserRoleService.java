@@ -21,10 +21,6 @@ public class UserRoleService {
     @Transactional
     public void changeRole(Long targetUserId, UserRole newRole, Long actorUserId,
                            HttpServletRequest request) {
-        if (newRole == UserRole.TEAM_LEADER) {
-            throw new IllegalArgumentException("TEAM_LEADER는 더 이상 사용되지 않습니다. SALES를 사용하세요.");
-        }
-
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 

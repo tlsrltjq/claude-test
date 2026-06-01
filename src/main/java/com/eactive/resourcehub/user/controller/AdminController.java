@@ -76,8 +76,7 @@ public class AdminController {
         model.addAttribute("currentPage", result.getNumber());
         model.addAttribute("totalPages", Math.max(1, result.getTotalPages()));
         model.addAttribute("positions", Position.values());
-        model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
-                .filter(r -> r != UserRole.TEAM_LEADER).toList());
+        model.addAttribute("roles", java.util.Arrays.asList(UserRole.values()));
         model.addAttribute("teams", teamService.findAll());
         model.addAttribute("q", q);
         model.addAttribute("position", position);
@@ -99,8 +98,7 @@ public class AdminController {
         model.addAttribute("hasFolder", employeeService.hasPersonalFolder(userId));
         model.addAttribute("positions", Position.values());
 
-        model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
-                .filter(r -> r != UserRole.TEAM_LEADER).toList());
+        model.addAttribute("roles", java.util.Arrays.asList(UserRole.values()));
 
         model.addAttribute("documents", employeeService.findPersonalDocuments(userId));
 
@@ -228,9 +226,7 @@ public class AdminController {
     public String roleForm(@PathVariable Long userId, Model model) {
         User user = employeeService.findById(userId);
         model.addAttribute("user", user);
-        model.addAttribute("roles", java.util.Arrays.stream(UserRole.values())
-                .filter(r -> r != UserRole.TEAM_LEADER)
-                .toList());
+        model.addAttribute("roles", java.util.Arrays.asList(UserRole.values()));
         return "admin/user-role";
     }
 
