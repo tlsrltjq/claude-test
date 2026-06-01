@@ -7,6 +7,7 @@
 2026-06-01 | Post-MVP3 | feat: 오피스 파일 LibreOffice PDF 변환 미리보기, hwp·zip 버튼 숨김, Dockerfile Alpine→Debian
 2026-06-01 | Post-MVP3 | test: Playwright E2E 16개, Repository 통합 4개, 단위 테스트 보강 (392→492개)
 2026-06-01 | Post-MVP3 | fix: getDeployStats findByStatus 전체 로드 → countByStatusAndRoleNot COUNT 쿼리
+2026-06-01 | Post-MVP3 | feat: 프로젝트 캘린더 직원 선택 UX 개선 (이름 검색·팀 필터·선택 태그·직원 추가 모달 검색형 전환)
 
 ---
 

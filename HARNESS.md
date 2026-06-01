@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V227 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 492개 테스트 전 통과 (41개 클래스). 이번 세션 완료: 오피스 미리보기(LibreOffice PDF 변환·미지원 버튼 숨김), Playwright E2E 16개, Repository DB 통합 테스트 4개, getDeployStats N+1 수정(countByStatusAndRoleNot), 단위 테스트 보강(RedirectUtils·LocalFileStorage·DocumentVersion·OfficePreviewService).
+**현재 상태 (2026-06-01):** Flyway V227. BUILD SUCCESSFUL. security-lint 18/18 PASS. 492개 테스트 전 통과 (41개 클래스). 이번 세션 완료: 프로젝트 캘린더 직원 선택 UX 개선 — 프로젝트 등록 모달(이름 검색+팀 필터+선택 태그), 직원 추가 모달(select→검색형 리스트), 인력 현황 팀 필터 추가. 서버 변경 없음, 순수 HTML+JS.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
 
