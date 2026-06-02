@@ -20,4 +20,9 @@
 - chore: data-model.md Flyway 이력 요약 섹션 제거 (377→332줄, git log로 대체)
 - chore: docs/CALENDAR_REDESIGN.md → docs/archive/ 이동
 
-**다음 작업 없음 — 사용자 지시 대기**
+## 다음 작업 (백로그)
+
+| 순서 | 작업 | 비고 |
+|------|------|------|
+| 1 | 고정 도메인 구매·적용 | 도메인 확정 후 Caddyfile·application-prod.yml·HSTS 설정 연동 |
+| 2 | NAS 저장소 연동 | 현재 LocalFileStorage → NAS 마운트 경로 또는 SMB/NFS 연동으로 교체 (`docs/archive/storage-nas-migration.md` 참고) |

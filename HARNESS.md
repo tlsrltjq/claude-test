@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V229 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-02):** Flyway V229. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: 하네스 정비 — ADR 번호 동기화(ADR-044), data-model.md Flyway 이력 섹션 제거(377→332줄), CALENDAR_REDESIGN.md archive 이동.
+**현재 상태 (2026-06-02):** Flyway V229. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: 하네스 정비 — ADR 번호 동기화(ADR-044), data-model.md Flyway 이력 섹션 제거(377→332줄), CALENDAR_REDESIGN.md archive 이동. 다음 예정: 고정 도메인 구매·적용, NAS 저장소 연동.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~044).
 
