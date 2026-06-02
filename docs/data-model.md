@@ -1,7 +1,8 @@
 # 데이터 모델
 
-> Flyway V1~V229 기준. 엔티티·테이블·관계·주요 제약조건.
+> Flyway V229 기준. 엔티티·테이블·관계·주요 제약조건.
 > 참고 소스: `src/main/resources/db/migration/V*.sql`, `src/main/java/**/entity/*.java`
+> Flyway 이력 상세는 `git log src/main/resources/db/migration/` 참조.
 
 ---
 
@@ -328,50 +329,4 @@ UNIQUE: `(user_id, name)`
 
 ---
 
-## Flyway 마이그레이션 이력 요약
-
-| 버전 | 주요 내용 |
-|------|----------|
-| V1 | 기본 테이블 (teams, users, employee_profiles, folders, documents, document_versions, permissions, audit_logs) |
-| V2 | email_verification_tokens |
-| V3 | document_versions 썸네일·미리보기 컬럼 |
-| V4 | document_versions 검토 컬럼 (review_status, reviewed_by, reviewed_at, reject_reason) |
-| V5 | documents.expires_at |
-| V6 | tags, document_tags |
-| V100 | users.role 'TEAM_LEADER' → 'SALES' 마이그레이션 |
-| V102 | users.birth_date, phone 추가. position 정규화 |
-| V103 | employee_profiles.developer_grade, career_months 추가 |
-| V104 | resume_templates 테이블 |
-| V106 | employee_profiles.career_total_days 추가 |
-| V200 | Position MANAGING_DIRECTOR(상무) 추가 |
-| V201 | password_reset_tokens 테이블 |
-| V202 | DocumentType PROFILE_PHOTO 추가 (enum 신규 값) |
-| V203 | folders.type 컬럼 추가 (PERSONAL/SHARED_PUBLIC) |
-| V204 | career_total_days 백필 |
-| V205 | column_view_preferences 테이블 |
-| V206 | documents soft-delete (deleted_at, deleted_by) |
-| V207 | SHARED_PUBLIC 공용 폴더 시드 |
-| V208 | documents 메타 컬럼 (issued_date, degree_type, cert_type_meta) |
-| V209 | 학위·자격증 초기 문서 시드 |
-| V210 | documents.files_purged_at (GC 완료 추적) |
-| V211 | partial unique index (folder_id, document_type, title) WHERE status <> 'DELETED' |
-| V212 | teams.project_team 컬럼. 영업본부·경영본부 = FALSE |
-| V213 | 기존 HEALTH_INSURANCE_PROOF 문서 일괄 soft-delete |
-| V214 | users.address 컬럼 추가 |
-| V215 | allowed_emails 테이블 신설 (이메일 사전등록 방식) |
-| V216 | project_assignments 테이블 신설 (프로젝트 투입 관리) |
-| V217 | tags, document_tags 테이블 DROP |
-| V218 | project_assignments.allocation_rate SMALLINT → INTEGER 타입 수정 |
-| V219 | project_assignments.allocation_rate 컬럼 삭제 |
-| V220 | projects 테이블 신설 (프로젝트 CRUD 분리) |
-| V221 | project_assignments.project_id FK 컬럼 추가 |
-| V222 | 기존 배정 데이터 → projects 테이블 마이그레이션 |
-| V223 | project_assignments 비정규화 컬럼 제거 (project_name·client_name·memo), project_id NOT NULL 확정 |
-| V224 | 직원 삭제 대비 FK 정비 (audit_logs·document_versions·permissions·employee_profiles·folders SET NULL/CASCADE) |
-| V225 | users.join_date 컬럼 추가 (입사일, 선택) |
-| V226 | project_assignments user_name 스냅샷 추가 + user_id SET NULL 전환, 누락 FK 6개 수정 (email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL) |
-| V227 | audit_logs 인덱스 추가 (created_at, action_type, user_id) |
-| V228 | allowed_emails.initial_role VARCHAR(20) DEFAULT 'EMPLOYEE' 추가 (일반/영업 탭 분리) |
-| V229 | users.privacy_consent_at TIMESTAMP, privacy_consent_version VARCHAR(10) 추가 (개인정보 동의 기록) |
-
-> 다음 마이그레이션은 **V230**부터.
+> Flyway 마이그레이션 이력은 `git log src/main/resources/db/migration/` 또는 파일 직접 참조.

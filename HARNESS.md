@@ -21,9 +21,9 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V229 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-02):** Flyway V229. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: 보안 강화 — 인증코드 5회 실패제한, 로그인 10회 실패 시 비밀번호 재설정 유도, CSP nonce(script-src unsafe-inline 제거), 엑셀 업로드 매직바이트 검증, SampleDataFixRunner @Profile("!prod"), security-lint 21항목으로 확장.
+**현재 상태 (2026-06-02):** Flyway V229. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: 하네스 정비 — ADR 번호 동기화(ADR-044), data-model.md Flyway 이력 섹션 제거(377→332줄), CALENDAR_REDESIGN.md archive 이동.
 
-상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~043).
+상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~044).
 
 ---
 
@@ -57,7 +57,7 @@
 
 ```
 1. 관련 파일 목록 파악 (Controller·Service·Repository·Template·Migration)
-2. Flyway 마이그레이션 작성 (V218부터, 기존 번호 수정 금지)
+2. Flyway 마이그레이션 작성 (V230부터, 기존 번호 수정 금지)
 3. JPA 엔티티 → Service → Controller 순으로 구현
 4. 테스트 작성 (순수 로직은 단위 테스트, Service는 Mockito, Controller는 @WebMvcTest)
 5. 보안 정적 분석: bash scripts/security-lint.sh (0 FAIL 유지)
@@ -74,7 +74,7 @@
 - 미구현 기능은 "향후 계획"으로 분리
 - API 경로·DTO 필드명·화면 경로는 소스 기준
 - Flyway 버전: 현재 V229. 다음은 **V230**부터
-- ADR 번호: 현재 ADR-039까지. 다음은 ADR-040부터
+- ADR 번호: 현재 ADR-044까지. 다음은 ADR-045부터
 
 ---
 

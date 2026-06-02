@@ -3,6 +3,7 @@
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
 
+2026-06-02 | Harness | chore: 하네스 정비 — ADR 번호 동기화(ADR-044), data-model.md Flyway 이력 섹션 제거(377→332줄), CALENDAR_REDESIGN.md archive 이동
 2026-06-02 | Security | test: LoginAttemptService·EmailAllowlistService(엑셀검증)·ForgotPasswordController·SignupControllerVerify 테스트 17개 신규 (514→531개), security-lint 21항목 확장
 2026-06-02 | Security | feat: CSP nonce 방식 도입(CspNonceFilter·HeaderWriter·Interceptor), script-src unsafe-inline 제거, 인라인 script 41개 nonce 적용
 2026-06-02 | Security | fix: SampleDataFixRunner @Profile("!prod"), 엑셀 업로드 매직바이트·행수 검증, SignupController 5회 초과 시 redirect:/signup?toomany(loadFormModel 누락 버그 수정)
