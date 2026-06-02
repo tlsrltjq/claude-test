@@ -193,7 +193,7 @@
   </div>
 </div>
 
-<script>
+<script th:attr="nonce=${cspNonce}">
 (function () {
   // 모든 팀 데이터 로드 (모달 드롭다운용)
   var allTeams = Array.from(document.querySelectorAll('.team-datum')).map(function (el) {

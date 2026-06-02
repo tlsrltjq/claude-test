@@ -208,7 +208,7 @@
   </div>
 </div>
 
-<script>
+<script th:attr="nonce=${cspNonce}">
 (function () {
   // ── 직원 이름 autocomplete ──────────────────────────────
   var allNames = Array.from(document.querySelectorAll('#userData')).map(function (el) {

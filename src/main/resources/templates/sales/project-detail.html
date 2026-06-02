@@ -350,7 +350,7 @@
     <span class="visually-hidden">처리 중...</span>
   </div>
 </div>
-<script>
+<script th:attr="nonce=${cspNonce}">
 /* ── 직원 추가 모달 — 검색 + 팀 필터 ── */
 (function() {
   var searchEl  = document.getElementById('am-search');

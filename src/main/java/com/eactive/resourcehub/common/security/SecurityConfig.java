@@ -1,5 +1,6 @@
 package com.eactive.resourcehub.common.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,7 +15,10 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final LoginAttemptService loginAttemptService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -39,15 +43,7 @@ public class SecurityConfig {
                 .contentTypeOptions(c -> {})
                 .referrerPolicy(ref -> ref.policy(
                     ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                .contentSecurityPolicy(csp -> csp.policyDirectives(
-                    "default-src 'self'; " +
-                    "script-src 'self' cdn.jsdelivr.net *.daumcdn.net *.kakao.com 'unsafe-inline'; " +
-                    "style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
-                    "img-src 'self' data: *.daumcdn.net *.kakao.com *.kakaocdn.net; " +
-                    "font-src 'self' cdn.jsdelivr.net; " +
-                    "frame-src 'self' *.daumcdn.net *.kakao.com; " +
-                    "connect-src 'self' *.daumcdn.net *.kakao.com"
-                ))
+                .addHeaderWriter(new CspNonceHeaderWriter())
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
@@ -63,8 +59,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .successHandler(new LoginSuccessHandler("/dashboard"))
-                .failureUrl("/login?error")
+                .successHandler(new LoginSuccessHandler("/dashboard", loginAttemptService))
+                .failureHandler(new LoginFailureHandler(loginAttemptService))
                 .permitAll()
             )
             .logout(logout -> logout

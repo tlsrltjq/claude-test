@@ -80,7 +80,7 @@
     <span class="visually-hidden">처리 중...</span>
   </div>
 </div>
-<script>
+<script th:attr="nonce=${cspNonce}">
 (function(){
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
@@ -92,7 +92,7 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+<script th:attr="nonce=${cspNonce}">
 function handleRoleChange(radio) {
     document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
     radio.closest('.role-option').classList.add('selected');

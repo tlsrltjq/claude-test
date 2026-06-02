@@ -189,6 +189,31 @@
 - 트레이드오프: 컨트롤러 파일이 하나 늘어남. public 도우미 클래스가 아니므로 외부 패키지 접근 불가.
 - 적용 범위: 주 1회 빌드 실패 방지보다 테스트 가능성(testability) 이 높은 가치임. 향후 캘린더 로직 변경 시 `CalendarGridBuilderTest` 먼저 수정.
 
+## ADR-044: SampleDataFixRunner @Profile("!prod") 격리
+- 결정: `SampleDataFixRunner` 에 `@Profile("!prod")` 를 추가해 prod 프로파일에서는 빈 자체가 등록되지 않도록 한다.
+- 이유: 앱 재시작 시마다 `demo/*` 경로 DB 쿼리·파일 업로드가 실행됨. 운영 환경에는 demo 데이터가 없어 즉시 종료되더라도 불필요한 코드가 매번 실행되는 것은 안전하지 않음.
+- 트레이드오프: local/dev/test 환경에서는 여전히 실행됨. prod 배포 시 `spring.profiles.active=prod` 가 반드시 설정되어야 함.
+
+## ADR-043: 엑셀 업로드 확장자·매직바이트·행수 삼중 검증
+- 결정: `/admin/allowed-emails/bulk-excel` 의 `addBulkFromExcel()` 에서 (1) 확장자 xlsx/xls 검사, (2) `FileMagicValidator` 매직바이트 검증, (3) 1,000행 초과 시 파싱 중단.
+- 이유: Apache POI `WorkbookFactory.create()` 는 파일 내용을 검증 없이 파싱하려 시도. ZIP Bomb(압축 폭탄) XLSX 파일이 올라오면 메모리 고갈 가능. 관리자 전용 기능이지만 내부 위협도 대비해야 함.
+- 트레이드오프: xlsx/xls 만 허용. csv 방식은 텍스트 일괄 입력(`addBulk`)으로 대체.
+
+## ADR-042: CSP script-src nonce 방식 도입, unsafe-inline 제거
+- 결정: `CspNonceFilter`(요청마다 16바이트 nonce 생성) + `CspNonceHeaderWriter`(동적 CSP 헤더) + `CspNonceInterceptor`(Thymeleaf 모델 주입) 3-레이어 구조. 모든 인라인 `<script>` 태그에 `th:attr="nonce=${cspNonce}"` 추가. style-src `unsafe-inline` 은 인라인 style 속성 558개로 인해 유지.
+- 이유: XSS 취약점이 발생하더라도 nonce를 모르는 공격자의 인라인 스크립트가 실행되지 않음. 기존 `unsafe-inline`은 이 2차 방어선을 완전히 무력화.
+- 트레이드오프: 새 인라인 `<script>` 추가 시 nonce 속성 누락하면 스크립트가 차단됨. security-lint [19]가 이를 감지.
+
+## ADR-041: 로그인 브루트포스 — 잠금 없이 비밀번호 재설정 유도
+- 결정: 10회 실패 시 계정 잠금(15분 대기) 대신 카운터를 리셋하고 `/login/forgot?toomany` 로 리다이렉트. `LoginAttemptService` 인메모리, `LoginFailureHandler` + `LoginSuccessHandler` 연동. 성공 로그인 시 카운터 즉시 초기화.
+- 이유: 계정 잠금은 공격자가 의도적으로 타인 계정을 잠글 수 있는 DoS 공격 벡터가 됨. 비밀번호 재설정 유도는 합법적 사용자 접근성을 유지하면서 브루트포스 실효성을 낮춤. 인메모리 저장이라 서버 재시작 시 카운터 리셋되지만 사내 포털 규모에서는 수용 가능.
+- 트레이드오프: 서버 재시작 시 카운터 초기화. 다중 서버 환경에서는 Redis 기반으로 교체 필요.
+
+## ADR-040: 인증코드 5회 실패 시 즉시 무효화
+- 결정: 비밀번호 재설정(`POST /login/forgot/verify`) 및 회원가입 이메일 인증(`POST /signup/verify`) 모두 5회 코드 불일치 시 토큰/세션을 즉시 무효화하고 처음부터 재시작 요구. 남은 시도 횟수 안내.
+- 이유: 6자리 숫자 코드(100만 가지)를 5분/10분 내에 브루트포스 가능. 시도 횟수 제한 없이 자동화 스크립트로 계정 탈취 가능.
+- 트레이드오프: 정당한 사용자가 실수로 5회 틀리면 재발송 필요. 회원가입의 경우 `?toomany` 리다이렉트로 UX 안내.
+
 ## ADR-039: 계정 삭제 시 프로젝트 배정 이름 보존 (SET NULL + 스냅샷)
 - 결정: 직원 계정 삭제 시 `project_assignments.user_id` 는 CASCADE DELETE 가 아닌 SET NULL 처리. 삭제 전 `user_name` 컬럼에 이름 스냅샷을 저장. `ProjectAssignment.getDisplayName()` 은 `user != null` 이면 `user.getName()`, null 이면 `userName` 스냅샷, 그것도 없으면 "(삭제된 계정)" 반환.
 - 이유: 프로젝트 인력 투입 이력은 계정 삭제 후에도 보존 가치가 있음. 고객사·경영진이 과거 프로젝트 인력 구성을 조회할 때 "(삭제된 계정)" 만 표시되면 의미 없음. 이름 스냅샷으로 이력 가독성 유지. CASCADE 삭제 시 캘린더·상세 페이지의 배정 행이 사라져 데이터 손실이 발생.

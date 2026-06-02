@@ -1,5 +1,7 @@
 package com.eactive.resourcehub.user.service;
 
+import com.eactive.resourcehub.common.util.FileMagicValidator;
+import com.eactive.resourcehub.common.util.FileUtils;
 import com.eactive.resourcehub.user.entity.AllowedEmail;
 import com.eactive.resourcehub.user.entity.User;
 import com.eactive.resourcehub.user.entity.UserRole;
@@ -50,14 +52,28 @@ public class EmailAllowlistService {
         return saveBulk(emails, initialRole, admin);
     }
 
+    private static final int MAX_EXCEL_ROWS = 1_000;
+
     /** 엑셀 일괄 등록: 첫 번째 열의 이메일 추출 */
     @Transactional
     public BulkResult addBulkFromExcel(MultipartFile file, UserRole initialRole, Long adminUserId) throws IOException {
+        String ext = FileUtils.extension(file.getOriginalFilename() != null ? file.getOriginalFilename() : "");
+        if (!ext.equals("xlsx") && !ext.equals("xls")) {
+            throw new IllegalArgumentException("xlsx 또는 xls 파일만 업로드할 수 있습니다.");
+        }
+        if (!FileMagicValidator.validate(file, ext)) {
+            throw new IllegalArgumentException("파일 형식이 올바르지 않습니다.");
+        }
+
         User admin = userRepository.findById(adminUserId).orElseThrow();
         List<String> emails = new ArrayList<>();
         try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = wb.getSheetAt(0);
+            int rowCount = 0;
             for (Row row : sheet) {
+                if (++rowCount > MAX_EXCEL_ROWS) {
+                    throw new IllegalArgumentException("엑셀 파일은 최대 " + MAX_EXCEL_ROWS + "행까지 처리할 수 있습니다.");
+                }
                 Cell cell = row.getCell(0);
                 if (cell == null) continue;
                 String val = cell.getCellType() == CellType.STRING

@@ -10,6 +10,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ import java.io.InputStream;
  * 앱 기동 시 1회 실행. demo/* 경로가 없으면 즉시 종료(멱등).
  */
 @Slf4j
+@Profile("!prod")
 @Component
 @RequiredArgsConstructor
 public class SampleDataFixRunner {

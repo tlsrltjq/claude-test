@@ -93,7 +93,7 @@
 
 </div>
 
-<script>
+<script th:attr="nonce=${cspNonce}">
 (function () {
     /* 이메일 기억하기 복원 */
     var em = document.cookie.split('; ').find(function (r) { return r.startsWith('RESOURCEHUB_LAST_EMAIL='); });

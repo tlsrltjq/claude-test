@@ -3,16 +3,21 @@ package com.eactive.resourcehub.user.service;
 import com.eactive.resourcehub.user.entity.AllowedEmail;
 import com.eactive.resourcehub.user.entity.Position;
 import com.eactive.resourcehub.user.entity.User;
+import com.eactive.resourcehub.user.entity.UserRole;
 import com.eactive.resourcehub.user.repository.AllowedEmailRepository;
 import com.eactive.resourcehub.user.repository.UserRepository;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -111,5 +116,47 @@ class EmailAllowlistServiceTest {
         when(allowedEmailRepository.existsById(99L)).thenReturn(false);
         assertThrows(IllegalArgumentException.class, () -> service.remove(99L));
         verify(allowedEmailRepository, never()).deleteById(any());
+    }
+
+    // ── addBulkFromExcel — 보안 검증 ────────────────────────────
+
+    @Test
+    void xlsx_아닌_확장자_업로드_거부() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "emails.pdf", "application/pdf",
+                new byte[]{0x25, 0x50, 0x44, 0x46});
+        assertThrows(IllegalArgumentException.class,
+                () -> service.addBulkFromExcel(file, UserRole.EMPLOYEE, 1L));
+        verify(allowedEmailRepository, never()).save(any());
+    }
+
+    @Test
+    void xlsx_위장_파일_매직바이트_불일치_거부() {
+        // PDF 매직바이트를 .xlsx 확장자로 위장
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "emails.xlsx", "application/octet-stream",
+                new byte[]{0x25, 0x50, 0x44, 0x46, 0x2D});
+        assertThrows(IllegalArgumentException.class,
+                () -> service.addBulkFromExcel(file, UserRole.EMPLOYEE, 1L));
+        verify(allowedEmailRepository, never()).save(any());
+    }
+
+    @Test
+    void 행_1000초과_업로드_거부() throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet();
+            for (int i = 0; i <= 1001; i++) {
+                sheet.createRow(i).createCell(0).setCellValue("e" + i + "@test.com");
+            }
+            wb.write(out);
+        }
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "emails.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                out.toByteArray());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.addBulkFromExcel(file, UserRole.EMPLOYEE, 1L));
     }
 }

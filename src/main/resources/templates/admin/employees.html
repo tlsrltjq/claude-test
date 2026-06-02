@@ -225,7 +225,7 @@
     <span class="visually-hidden">처리 중...</span>
   </div>
 </div>
-<script>
+<script th:attr="nonce=${cspNonce}">
 (function(){
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){

@@ -7,7 +7,7 @@
 
 ## 현재 테스트 범위
 
-### 자동화 (현재) — Java 테스트 492개, security-lint 18항목
+### 자동화 (현재) — Java 테스트 531개, security-lint 21항목
 
 **공통 유틸·서비스**
 
@@ -26,7 +26,10 @@
 | `SignupServiceTest.java` | 16 | 이메일 중복·허용 목록 차단·인증 코드 발급·완료·미래 생년월일 차단 |
 | `PasswordResetTokenTest.java` | 8 | 토큰 만료·재사용 불가·consumed 상태 |
 | `PasswordResetServiceTest.java` | 13 | 코드 발급·검증·비밀번호 변경 흐름 |
-| `EmailAllowlistServiceTest.java` | 9 | 허용 이메일 추가·삭제·조회 |
+| `LoginAttemptServiceTest.java` | 8 | 10회 초과 판정·카운터 초기화·이메일 정규화·독립 카운터 |
+| `EmailAllowlistServiceTest.java` | 12 | 허용 이메일 추가·삭제·조회, 엑셀 확장자·매직바이트·행수 검증 |
+| `ForgotPasswordControllerTest.java` | 3 | 5회 실패 시 토큰 무효화·리다이렉트, 이미 초과된 경우 즉시 차단 |
+| `SignupControllerVerifyTest.java` | 3 | 5회 실패 시 세션 초기화·리다이렉트, 남은 시도 안내 |
 | `SettingsServiceTest.java` | 6 | 이름·주소·팀·비밀번호 변경 |
 | `UserRoleServiceTest.java` | 5 | 역할 변경, TEAM_LEADER 차단 |
 | `EmployeeManagementServiceTest.java` | 12 | 상태 전환(ADMIN 보호·ACTIVE↔DISABLED), 직원 삭제, 팀·직급 변경 |
@@ -94,9 +97,9 @@
 
 | 도구 | 항목 수 | 비고 |
 |------|---------|------|
-| `scripts/security-lint.sh` | 18 | Bash grep 기반, 0 FAIL 유지 |
+| `scripts/security-lint.sh` | 21 | Bash grep 기반, 0 FAIL 유지 |
 
-> 총 자동화 테스트: **Java 492개** (46개 클래스) + security-lint 18항목
+> 총 자동화 테스트: **Java 531개** (50개 클래스) + security-lint 21항목
 
 ---
 
@@ -206,3 +209,6 @@ bash scripts/security-lint.sh
 | 16 | safeReferer 중복 구현 금지 (open redirect 방어 비대칭 위험) |
 | 17 | LocalFileStorage 경로 탈출 방어 (resolve 후 startsWith 검증 필수) |
 | 18 | 광범위한 예외 catch 내 예외 메시지 노출 금지 |
+| 19 | 인라인 `<script>` nonce 누락 금지 |
+| 20 | CSP script-src unsafe-inline 재삽입 금지 |
+| 21 | SampleDataFixRunner @Profile 누락 금지 |

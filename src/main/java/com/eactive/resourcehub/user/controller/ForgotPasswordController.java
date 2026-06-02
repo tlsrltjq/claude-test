@@ -17,8 +17,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class ForgotPasswordController {
 
-    private static final String SESSION_RESET_EMAIL = "RESET_EMAIL";
+    private static final String SESSION_RESET_EMAIL    = "RESET_EMAIL";
     private static final String SESSION_RESET_VERIFIED = "RESET_VERIFIED";
+    private static final String SESSION_RESET_FAIL_CNT = "RESET_FAIL_COUNT";
+    private static final int    MAX_VERIFY_ATTEMPTS    = 5;
 
     private final PasswordResetService passwordResetService;
 
@@ -34,6 +36,7 @@ public class ForgotPasswordController {
         passwordResetService.requestReset(email.trim().toLowerCase());
         session.setAttribute(SESSION_RESET_EMAIL, email.trim().toLowerCase());
         session.removeAttribute(SESSION_RESET_VERIFIED);
+        session.removeAttribute(SESSION_RESET_FAIL_CNT);
         ra.addFlashAttribute("infoMessage", "인증코드를 발송했습니다. 이메일을 확인해 주세요. (로컬: 서버 로그 확인)");
         return "redirect:/login/forgot/verify";
     }
@@ -58,20 +61,40 @@ public class ForgotPasswordController {
 
         model.addAttribute("email", email);
 
+        Integer failCountAttr = (Integer) session.getAttribute(SESSION_RESET_FAIL_CNT);
+        int failCount = failCountAttr == null ? 0 : failCountAttr;
+        if (failCount >= MAX_VERIFY_ATTEMPTS) {
+            passwordResetService.invalidateCurrentToken(email);
+            clearResetSession(session);
+            model.addAttribute("errorMessage",
+                    "인증코드 입력 횟수(" + MAX_VERIFY_ATTEMPTS + "회)를 초과했습니다. 처음부터 다시 시도해 주세요.");
+            return "login-forgot";
+        }
+
         if (!newPassword.equals(newPasswordConfirm)) {
             model.addAttribute("errorMessage", "새 비밀번호가 일치하지 않습니다.");
             return "login-forgot-verify";
         }
 
         if (!passwordResetService.verifyCode(email, code)) {
-            model.addAttribute("errorMessage", "인증코드가 올바르지 않거나 만료되었습니다.");
+            int newCount = failCount + 1;
+            session.setAttribute(SESSION_RESET_FAIL_CNT, newCount);
+            int remaining = MAX_VERIFY_ATTEMPTS - newCount;
+            if (remaining <= 0) {
+                passwordResetService.invalidateCurrentToken(email);
+                clearResetSession(session);
+                model.addAttribute("errorMessage",
+                        "인증코드 입력 횟수(" + MAX_VERIFY_ATTEMPTS + "회)를 초과했습니다. 처음부터 다시 시도해 주세요.");
+                return "login-forgot";
+            }
+            model.addAttribute("errorMessage",
+                    "인증코드가 올바르지 않거나 만료되었습니다. (남은 시도: " + remaining + "회)");
             return "login-forgot-verify";
         }
 
         try {
             passwordResetService.resetPassword(email, newPassword, request);
-            session.removeAttribute(SESSION_RESET_EMAIL);
-            session.removeAttribute(SESSION_RESET_VERIFIED);
+            clearResetSession(session);
             return "redirect:/login?reset";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
@@ -80,5 +103,11 @@ public class ForgotPasswordController {
             model.addAttribute("errorMessage", "재설정에 실패했습니다. 다시 시도해 주세요.");
             return "login-forgot-verify";
         }
+    }
+
+    private void clearResetSession(HttpSession session) {
+        session.removeAttribute(SESSION_RESET_EMAIL);
+        session.removeAttribute(SESSION_RESET_VERIFIED);
+        session.removeAttribute(SESSION_RESET_FAIL_CNT);
     }
 }

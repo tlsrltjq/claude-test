@@ -305,6 +305,50 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 19. 인라인 <script> nonce 누락 금지
+#     src 없는 <script> 태그는 반드시 th:attr="nonce=..." 포함 필수 (CSP nonce 정책)
+# ─────────────────────────────────────────────
+echo "[19] 인라인 <script> nonce 누락 금지"
+hits=$(echo "$HTML_FILES" | xargs grep -lnE '^<script>$' 2>/dev/null || true)
+if [ -n "$hits" ]; then
+  err "nonce 없는 인라인 <script> 태그 감지 — th:attr=\"nonce=\${cspNonce}\" 추가 필요:"
+  echo "$hits" | sed 's/^/         /'
+else
+  ok "인라인 스크립트 nonce 설정 확인"
+fi
+
+# ─────────────────────────────────────────────
+# 20. CSP script-src unsafe-inline 재삽입 금지
+#     nonce 방식 도입 이후 script-src에 unsafe-inline은 CSP 무력화
+# ─────────────────────────────────────────────
+echo "[20] CSP script-src unsafe-inline 금지"
+hits=$(echo "$JAVA_FILES" | xargs grep -nE "script-src[^;']*'unsafe-inline'" 2>/dev/null || true)
+if [ -n "$hits" ]; then
+  err "script-src에 unsafe-inline 감지 — nonce 방식을 사용해야 합니다 (docs/decisions.md ADR-040):"
+  echo "$hits" | sed 's/^/         /'
+else
+  ok "script-src unsafe-inline 없음"
+fi
+
+# ─────────────────────────────────────────────
+# 21. SampleDataFixRunner @Profile 누락 금지
+#     ApplicationReadyEvent 리스너를 가진 SampleDataFixRunner는
+#     @Profile("!prod") 없으면 프로덕션에서도 실행됨
+# ─────────────────────────────────────────────
+echo "[21] SampleDataFixRunner @Profile 누락 금지"
+RUNNER_FILE=$(echo "$JAVA_FILES" | grep "SampleDataFixRunner\.java" | head -1)
+if [ -n "$RUNNER_FILE" ]; then
+  if grep -q "ApplicationReadyEvent" "$RUNNER_FILE" && ! grep -q "@Profile" "$RUNNER_FILE"; then
+    err "SampleDataFixRunner에 @Profile 없음 — 프로덕션 기동 시마다 실행됩니다:"
+    echo "$RUNNER_FILE" | sed 's/^/         /'
+  else
+    ok "SampleDataFixRunner @Profile 설정 확인"
+  fi
+else
+  ok "SampleDataFixRunner 없음"
+fi
+
+# ─────────────────────────────────────────────
 # 결과 요약
 # ─────────────────────────────────────────────
 echo

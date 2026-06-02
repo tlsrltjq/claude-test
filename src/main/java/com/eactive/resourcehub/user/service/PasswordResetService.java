@@ -95,6 +95,13 @@ public class PasswordResetService {
         log.info("[PASSWORD_RESET] 완료 — email={}", email);
     }
 
+    /** 5회 실패 시 컨트롤러에서 호출 — 현재 토큰을 즉시 만료시킨다. */
+    @Transactional
+    public void invalidateCurrentToken(String email) {
+        tokenRepository.findTopByEmailOrderByCreatedAtDesc(email)
+                .ifPresent(PasswordResetToken::invalidate);
+    }
+
     private String generateCode() {
         return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
     }

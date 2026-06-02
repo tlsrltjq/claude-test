@@ -16,7 +16,10 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     private static final String COOKIE_NAME = "RESOURCEHUB_LAST_EMAIL";
     private static final int MAX_AGE_30_DAYS = 60 * 60 * 24 * 30;
 
-    public LoginSuccessHandler(String defaultTargetUrl) {
+    private final LoginAttemptService loginAttemptService;
+
+    public LoginSuccessHandler(String defaultTargetUrl, LoginAttemptService loginAttemptService) {
+        this.loginAttemptService = loginAttemptService;
         setDefaultTargetUrl(defaultTargetUrl);
         setAlwaysUseDefaultTargetUrl(true);
     }
@@ -28,6 +31,7 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
             throws ServletException, IOException {
         String rememberEmail = request.getParameter("rememberEmail");
         String username = request.getParameter("username");
+        loginAttemptService.loginSucceeded(username);
 
         if ("on".equals(rememberEmail) && username != null && !username.isBlank()) {
             Cookie cookie = new Cookie(COOKIE_NAME,

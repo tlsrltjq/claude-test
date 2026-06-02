@@ -323,7 +323,7 @@
     <span class="visually-hidden">처리 중...</span>
   </div>
 </div>
-<script>
+<script th:attr="nonce=${cspNonce}">
 (function(){
     document.querySelectorAll('form').forEach(function(f){
         if(f.id === 'publicUploadForm') return;
@@ -336,7 +336,7 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+<script th:attr="nonce=${cspNonce}">
 var currentView = localStorage.getItem('publicFolderView') || 'card';
 
 function setView(mode) {

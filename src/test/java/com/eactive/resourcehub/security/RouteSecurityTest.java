@@ -2,6 +2,7 @@ package com.eactive.resourcehub.security;
 
 import com.eactive.resourcehub.common.security.CustomUserDetails;
 import com.eactive.resourcehub.common.security.CustomUserDetailsService;
+import com.eactive.resourcehub.common.security.LoginAttemptService;
 import com.eactive.resourcehub.common.security.SecurityConfig;
 import com.eactive.resourcehub.document.controller.SearchController;
 import com.eactive.resourcehub.document.service.SearchService;
@@ -38,6 +39,7 @@ class RouteSecurityTest {
 
     @MockitoBean SearchService            searchService;
     @MockitoBean CustomUserDetailsService customUserDetailsService;
+    @MockitoBean LoginAttemptService      loginAttemptService;
 
     // ── 미인증 접근 — form login 설정으로 /login 으로 302 리다이렉트 ──
 

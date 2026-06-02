@@ -3,6 +3,10 @@
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
 
+2026-06-02 | Security | test: LoginAttemptService·EmailAllowlistService(엑셀검증)·ForgotPasswordController·SignupControllerVerify 테스트 17개 신규 (514→531개), security-lint 21항목 확장
+2026-06-02 | Security | feat: CSP nonce 방식 도입(CspNonceFilter·HeaderWriter·Interceptor), script-src unsafe-inline 제거, 인라인 script 41개 nonce 적용
+2026-06-02 | Security | fix: SampleDataFixRunner @Profile("!prod"), 엑셀 업로드 매직바이트·행수 검증, SignupController 5회 초과 시 redirect:/signup?toomany(loadFormModel 누락 버그 수정)
+2026-06-02 | Security | feat: 인증코드 5회 실패제한(비번재설정·회원가입), 로그인 10회 실패 시 비밀번호 재설정 유도(LoginAttemptService), ADR-040~044 추가
 2026-06-01 | Post-MVP3 | test: SalesMemberServiceTest 20케이스 — 만료 필터링(졸업증명서·자격증) 회귀 보호, findActiveMembers 정렬·필터, autofill 8케이스 (492→512개)
 2026-06-01 | Post-MVP3 | chore: 보안 린트 #16~18 추가 (safeReferer 중복·경로 탈출·예외 메시지 노출), RedirectUtils 추출, LocalFileStorage resolveAndValidate, 문의 이메일 환경변수화
 2026-06-01 | Post-MVP3 | feat: 오피스 파일 LibreOffice PDF 변환 미리보기, hwp·zip 버튼 숨김, Dockerfile Alpine→Debian

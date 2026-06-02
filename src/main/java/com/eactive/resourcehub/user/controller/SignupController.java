@@ -27,10 +27,12 @@ import java.time.ZoneId;
 @RequiredArgsConstructor
 public class SignupController {
 
-    private static final String SESSION_REQUEST   = "PENDING_SIGNUP_REQUEST";
-    private static final String SESSION_CODE      = "PENDING_SIGNUP_CODE";
-    private static final String SESSION_EXPIRY    = "PENDING_SIGNUP_EXPIRY";
-    private static final String SESSION_HASHED_PW = "PENDING_SIGNUP_HASHED_PW";
+    private static final String SESSION_REQUEST    = "PENDING_SIGNUP_REQUEST";
+    private static final String SESSION_CODE       = "PENDING_SIGNUP_CODE";
+    private static final String SESSION_EXPIRY     = "PENDING_SIGNUP_EXPIRY";
+    private static final String SESSION_HASHED_PW  = "PENDING_SIGNUP_HASHED_PW";
+    private static final String SESSION_FAIL_CNT   = "PENDING_SIGNUP_FAIL_COUNT";
+    private static final int    MAX_VERIFY_ATTEMPTS = 5;
 
     private final SignupService signupService;
     private final TeamService teamService;
@@ -63,6 +65,7 @@ public class SignupController {
         }
 
         if (bindingResult.hasErrors()) {
+            model.addAttribute("signupRequest", new SignupRequest());
             loadFormModel(model);
             return "signup";
         }
@@ -79,6 +82,7 @@ public class SignupController {
             return "redirect:/signup/verify";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("signupRequest", new SignupRequest());
             loadFormModel(model);
             return "signup";
         }
@@ -134,8 +138,23 @@ public class SignupController {
             return "signup-verify";
         }
 
+        Integer failAttr = (Integer) session.getAttribute(SESSION_FAIL_CNT);
+        int failCount = failAttr == null ? 0 : failAttr;
+        if (failCount >= MAX_VERIFY_ATTEMPTS) {
+            clearPendingSession(session);
+            return "redirect:/signup?toomany";
+        }
+
         if (!savedCode.equals(code.trim())) {
-            model.addAttribute("errorMessage", "인증 코드가 올바르지 않습니다.");
+            int newCount = failCount + 1;
+            session.setAttribute(SESSION_FAIL_CNT, newCount);
+            int remaining = MAX_VERIFY_ATTEMPTS - newCount;
+            if (remaining <= 0) {
+                clearPendingSession(session);
+                return "redirect:/signup?toomany";
+            }
+            model.addAttribute("errorMessage",
+                    "인증 코드가 올바르지 않습니다. (남은 시도: " + remaining + "회)");
             model.addAttribute("pendingEmail", pendingEmail);
             return "signup-verify";
         }
@@ -175,5 +194,6 @@ public class SignupController {
         session.removeAttribute(SESSION_CODE);
         session.removeAttribute(SESSION_EXPIRY);
         session.removeAttribute(SESSION_HASHED_PW);
+        session.removeAttribute(SESSION_FAIL_CNT);
     }
 }

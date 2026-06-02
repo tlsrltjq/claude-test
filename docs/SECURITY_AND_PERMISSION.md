@@ -56,8 +56,11 @@
 
 - `SecurityConfig.securityFilterChain` — CSRF on, 세션 30분, sessionFixation `changeSessionId`, maximumSessions(-1) + SessionRegistry
 - `CustomUserDetailsService` → `CustomUserDetails` (Spring Security)
-- HTTP 헤더: `X-Frame-Options=DENY`, `X-Content-Type-Options=nosniff`, `Referrer-Policy=strict-origin-when-cross-origin`, CSP
+- HTTP 헤더: `X-Frame-Options=sameOrigin`, `X-Content-Type-Options=nosniff`, `Referrer-Policy=strict-origin-when-cross-origin`, CSP(nonce 방식)
 - **세션 즉시 만료**: 역할·계정 상태 변경 시 `SessionRegistry`로 기존 세션 강제 만료
+- **로그인 브루트포스 방어**: `LoginAttemptService` — 10회 실패 시 카운터 리셋 후 `/login/forgot?toomany`로 유도, 성공 시 카운터 초기화
+- **인증코드 브루트포스 방어**: 비밀번호 재설정·회원가입 인증코드 모두 5회 실패 시 토큰/세션 무효화 후 처음부터 재시도 요구
+- **CSP nonce**: `CspNonceFilter` → 요청마다 랜덤 16바이트 nonce 생성 → `CspNonceHeaderWriter`가 `script-src 'nonce-{값}'` 헤더 동적 생성 → `CspNonceInterceptor`가 Thymeleaf 모델에 `cspNonce` 주입
 
 ---
 
@@ -81,3 +84,8 @@
 | 스키마 변경은 Flyway만 (`ddl-auto: validate`) | ADR-007 |
 | 이메일 발송: `@Transactional` 내 `try/catch` 필수 | ADR-010 |
 | 감사 로그 `REQUIRES_NEW` 트랜잭션 필수 | ADR-022 |
+| 인증코드 5회 실패 시 토큰/세션 무효화 | ADR-040 |
+| 로그인 10회 실패 시 비밀번호 재설정 유도 (잠금 없음) | ADR-041 |
+| CSP script-src: nonce 방식, unsafe-inline 금지 | ADR-042 |
+| 엑셀 업로드: 확장자·매직바이트·1,000행 제한 | ADR-043 |
+| SampleDataFixRunner: `@Profile("!prod")` 필수 | ADR-044 |

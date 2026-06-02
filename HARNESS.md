@@ -21,9 +21,9 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V229 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-01):** Flyway V229. BUILD SUCCESSFUL. security-lint 18/18 PASS. 512개 테스트 전 통과. 최근 완료: V228 허용 이메일 일반/영업 탭 분리, V229 개인정보 동의 일시·버전 DB 저장, SalesMemberServiceTest 20개 추가(만료 문서 필터링 회귀 보호 포함).
+**현재 상태 (2026-06-02):** Flyway V229. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: 보안 강화 — 인증코드 5회 실패제한, 로그인 10회 실패 시 비밀번호 재설정 유도, CSP nonce(script-src unsafe-inline 제거), 엑셀 업로드 매직바이트 검증, SampleDataFixRunner @Profile("!prod"), security-lint 21항목으로 확장.
 
-상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~038).
+상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~043).
 
 ---
 
@@ -85,7 +85,7 @@
 | 단위 테스트 | JUnit 5 + Mockito | 순수 로직, 외부 의존 없음 |
 | 서비스 통합 | Mockito + @ExtendWith | Repository·외부 서비스 Mock |
 | 컨트롤러 슬라이스 | @WebMvcTest + MockMvc | HTTP 상태·CSRF·리다이렉트 |
-| 보안 정적 분석 | scripts/security-lint.sh | 18개 항목, 0 FAIL 유지 |
+| 보안 정적 분석 | scripts/security-lint.sh | 21개 항목, 0 FAIL 유지 |
 | 전체 빌드 | ./gradlew build | BUILD SUCCESSFUL 유지 |
 
 - 테스트가 깨지면 무시하지 말고 원인 분석
