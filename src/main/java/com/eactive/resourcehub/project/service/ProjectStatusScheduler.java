@@ -22,16 +22,20 @@ public class ProjectStatusScheduler {
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void syncStatuses() {
-        LocalDate today = LocalDate.now();
+        try {
+            LocalDate today = LocalDate.now();
 
-        int projEnded   = projectRepository.expireActive(today);
-        int projActived = projectRepository.activatePlanned(today);
-        int paEnded     = assignmentRepository.expireActive(today);
-        int paActived   = assignmentRepository.activatePlanned(today);
+            int projEnded   = projectRepository.expireActive(today);
+            int projActived = projectRepository.activatePlanned(today);
+            int paEnded     = assignmentRepository.expireActive(today);
+            int paActived   = assignmentRepository.activatePlanned(today);
 
-        if (projEnded + projActived + paEnded + paActived > 0) {
-            log.info("상태 자동 전환 — 프로젝트: +{}종료 +{}활성화 / 배정: +{}종료 +{}활성화",
-                    projEnded, projActived, paEnded, paActived);
+            if (projEnded + projActived + paEnded + paActived > 0) {
+                log.info("상태 자동 전환 — 프로젝트: +{}종료 +{}활성화 / 배정: +{}종료 +{}활성화",
+                        projEnded, projActived, paEnded, paActived);
+            }
+        } catch (Exception e) {
+            log.error("프로젝트 상태 자동 전환 실패: {}", e.getMessage(), e);
         }
     }
 }

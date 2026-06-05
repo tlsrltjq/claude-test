@@ -221,6 +221,20 @@
 - 영향: V224 에서 먼저 정비한 나머지 FK 6개(email_verification_tokens·password_reset_tokens·column_view_preferences CASCADE, resume_templates·document_versions.reviewed_by·documents.deleted_by SET NULL) 도 같이 수정.
 - 트레이드오프: 이름 변경 후 삭제 시 스냅샷이 구 이름을 유지 (최근 업데이트된 이름이 아닐 수 있음). 스냅샷 재동기화는 미구현.
 
+## ADR-045: 문서 만료 알림은 "임박 1회 + 만료 1회"만 발송 (발송 이력 컬럼)
+- 결정: 매일 09:00 cron(`DocumentExpiryService.sendExpiryNotifications`)이 문서당 만료 임박 알림 1회(만료 30일 전)와 만료 알림 1회만 발송한다. `documents.expiry_warn_sent_at`/`expired_notice_sent_at`(V230) 에 발송 시각을 기록하고, 알림 전용 쿼리(`findExpiringSoonNeedingWarn`/`findExpiredNeedingNotice`)가 이력 NULL인 문서만 조회한다.
+- 이유: 기존 구현은 30일 임박 구간·만료 후 내내 매일 동일 메일을 재발송해 사용자 받은편지함을 채웠다. 발송 이력 컬럼으로 정확히 2회만 보내 알림 피로를 제거.
+- 구현: 발송 성공 직후에만 `markExpiryWarnSent`/`markExpiredNoticeSent` 호출(실패 시 미기록 → 다음 실행 재시도). 작업 트랜잭션을 `@Transactional`(쓰기)로 변경해 dirty-checking 으로 플러시. 만료일 변경(`updateExpiresAt`) 시 두 이력을 NULL로 초기화해 새 만료 주기에 재알림.
+- 관리자 만료 현황 화면용 `findExpired`/`findExpiringSoon` 은 이력과 무관하게 전체를 보여줘야 하므로 그대로 두고, 알림 전용 쿼리를 별도 추가했다.
+- 배포 백필: V230에서 이미 임박 구간(만료 30일 이내)·만료된 ACTIVE 문서의 이력을 `now()`로 채워 배포 직후 대량 재발송을 방지(구버전에서 이미 매일 받던 문서들).
+- 트레이드오프: 임박 알림이 단 1회뿐이라 사용자가 놓치면 만료 시점까지 추가 리마인더가 없음(만료 알림이 보조). 향후 D-7 추가 알림이 필요하면 별도 컬럼·쿼리로 확장.
+
+## ADR-046: 파일 GC 정기 실행을 별도 스케줄러 빈으로 분리 (self-invocation 트랜잭션 우회 해소)
+- 결정: `DocumentFileGcService.scheduledGc()`(`@Scheduled`, 비트랜잭션)가 같은 빈의 `runGc()`/`runOrphanScan()`(`@Transactional`)을 직접 호출하던 구조를 폐기하고, 정기 실행 진입점을 새 빈 `DocumentFileGcScheduler`로 분리한다. 스케줄러는 `DocumentFileGcService`를 주입받아 호출한다.
+- 이유: 같은 빈 내부의 self-invocation 은 Spring AOP 프록시를 우회하므로 cron 경로에서 `@Transactional` 어드바이스가 적용되지 않았다. 관리자 수동 실행(`AdminController` → 프록시 경유)과 cron 경로의 트랜잭션 경계가 달라지는 비일관성이 있었다. 별도 빈에서 호출하면 프록시를 타 트랜잭션이 정상 적용된다.
+- 구현: `runGc`/`runOrphanScan` 시그니처·로직은 그대로 유지(AdminController·테스트 호출부 무변경). 스케줄러에 GC·고아스캔 독립 try-catch + `log.error` 가드를 둬 한쪽 실패가 다른 쪽을 막지 않게 했다. 기존 스케줄러 관례(`ProjectStatusScheduler`)와 동일한 형태.
+- 트레이드오프: 클래스가 하나 늘어남. 대신 트랜잭션 경계가 경로와 무관하게 일관되고, 스케줄링 책임과 GC 로직 책임이 분리된다.
+
 ## ADR-035: 옛 stage별 verify.sh 하네스 폐기 → 범용 양식
 - 결정: MVP1~MVP3·post-MVP3·19~21 단계별 `harness/*/verify.sh` + `progress.json` 방식을 폐기. 대신 `CLAUDE.md` + `HARNESS.md` + `tasks/current.md` + `docs/architecture.md` + `docs/decisions.md` + `CHANGELOG.md` 범용 양식 사용. 옛 자산은 `harness/archive/legacy/` 보존.
 - 이유: 121개 커밋 누적 후 단계별 verify 가 코드 변경을 따라가지 못해 false positive·outdated 메타데이터(progress.json) 가 누적. 검증은 `scripts/security-lint.sh` + `./gradlew build` 로 충분.

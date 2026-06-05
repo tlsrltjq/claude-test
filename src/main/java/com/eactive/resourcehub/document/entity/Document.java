@@ -60,6 +60,12 @@ public class Document extends BaseEntity {
     @Column(name = "files_purged_at")
     private LocalDateTime filesPurgedAt;
 
+    @Column(name = "expiry_warn_sent_at")
+    private LocalDateTime expiryWarnSentAt;
+
+    @Column(name = "expired_notice_sent_at")
+    private LocalDateTime expiredNoticeSentAt;
+
     public static Document create(Folder folder, DocumentType documentType, String title) {
         Document document = new Document();
         document.folder = folder;
@@ -95,6 +101,17 @@ public class Document extends BaseEntity {
 
     public void updateExpiresAt(LocalDate expiresAt) {
         this.expiresAt = expiresAt;
+        // 만료일이 바뀌면 다시 알림 대상이 되도록 발송 이력 초기화
+        this.expiryWarnSentAt = null;
+        this.expiredNoticeSentAt = null;
+    }
+
+    public void markExpiryWarnSent() {
+        this.expiryWarnSentAt = LocalDateTime.now();
+    }
+
+    public void markExpiredNoticeSent() {
+        this.expiredNoticeSentAt = LocalDateTime.now();
     }
 
     public void updateIssuedDate(LocalDate issuedDate) { this.issuedDate = issuedDate; }

@@ -49,6 +49,26 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findExpiringSoon(@Param("today") LocalDate today,
                                     @Param("threshold") LocalDate threshold);
 
+    // 만료 알림 미발송 대상 — 만료된 문서 중 만료 알림을 아직 보내지 않은 것
+    @Query("SELECT d FROM Document d " +
+           "JOIN FETCH d.folder f JOIN FETCH f.owner u " +
+           "LEFT JOIN FETCH u.team " +
+           "WHERE d.status = 'ACTIVE' AND d.expiresAt IS NOT NULL AND d.expiresAt < :today " +
+           "AND d.expiredNoticeSentAt IS NULL " +
+           "ORDER BY d.expiresAt ASC")
+    List<Document> findExpiredNeedingNotice(@Param("today") LocalDate today);
+
+    // 임박 알림 미발송 대상 — 만료 임박 구간 문서 중 임박 알림을 아직 보내지 않은 것
+    @Query("SELECT d FROM Document d " +
+           "JOIN FETCH d.folder f JOIN FETCH f.owner u " +
+           "LEFT JOIN FETCH u.team " +
+           "WHERE d.status = 'ACTIVE' AND d.expiresAt IS NOT NULL " +
+           "AND d.expiresAt >= :today AND d.expiresAt <= :threshold " +
+           "AND d.expiryWarnSentAt IS NULL " +
+           "ORDER BY d.expiresAt ASC")
+    List<Document> findExpiringSoonNeedingWarn(@Param("today") LocalDate today,
+                                               @Param("threshold") LocalDate threshold);
+
     // 본인 개인 폴더 문서 검색 — 제목·파일명 키워드, 종류·업로더·날짜 필터 (DB 처리)
     // from/to: null 불가 — 호출부에서 sentinel(LocalDateTime.MIN/MAX) 사용
     @Query("SELECT DISTINCT d FROM Document d " +

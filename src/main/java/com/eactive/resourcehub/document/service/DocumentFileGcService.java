@@ -8,7 +8,6 @@ import com.eactive.resourcehub.document.repository.DocumentVersionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,18 +39,9 @@ public class DocumentFileGcService {
     @Value("${resourcehub.gc.retention-days:7}")
     private int retentionDays;
 
-    /** 매일 새벽 2시 자동 실행 */
-    @Scheduled(cron = "0 0 2 * * *")
-    public void scheduledGc() {
-        log.info("[GC] 정기 파일 GC 시작 (보존 기간 {}일)", retentionDays);
-        int deleted = runGc();
-        int orphans = runOrphanScan();
-        log.info("[GC] 정기 파일 GC 완료 — DELETED 문서 {}건, 고아 파일 {}개 처리", deleted, orphans);
-    }
-
     /**
      * GC를 즉시 실행하고 처리한 문서 건수를 반환한다.
-     * 관리자 수동 실행 또는 테스트에서도 호출 가능.
+     * 정기 실행은 {@link DocumentFileGcScheduler}, 수동 실행은 AdminController, 테스트에서도 호출 가능.
      */
     @Transactional
     public int runGc() {

@@ -77,8 +77,8 @@ class DocumentExpiryServiceTest {
 
     @Test
     void sendExpiryNotifications_만료_문서에_이메일_발송() {
-        when(documentRepository.findExpired(any())).thenReturn(List.of(expiredDoc));
-        when(documentRepository.findExpiringSoon(any(), any())).thenReturn(List.of());
+        when(documentRepository.findExpiredNeedingNotice(any())).thenReturn(List.of(expiredDoc));
+        when(documentRepository.findExpiringSoonNeedingWarn(any(), any())).thenReturn(List.of());
 
         expiryService.sendExpiryNotifications();
 
@@ -87,18 +87,29 @@ class DocumentExpiryServiceTest {
     }
 
     @Test
+    void sendExpiryNotifications_발송_성공_시_만료_알림_시각_기록() {
+        when(documentRepository.findExpiredNeedingNotice(any())).thenReturn(List.of(expiredDoc));
+        when(documentRepository.findExpiringSoonNeedingWarn(any(), any())).thenReturn(List.of());
+
+        expiryService.sendExpiryNotifications();
+
+        assertThat(expiredDoc.getExpiredNoticeSentAt()).isNotNull();
+    }
+
+    @Test
     void sendExpiryNotifications_임박_문서에_이메일_발송() {
         Document soonDoc = Document.create(folder, DocumentType.LICENSE, "임박자격증");
         soonDoc.updateExpiresAt(LocalDate.now().plusDays(15));
         ReflectionTestUtils.setField(soonDoc, "id", 20L);
 
-        when(documentRepository.findExpired(any())).thenReturn(List.of());
-        when(documentRepository.findExpiringSoon(any(), any())).thenReturn(List.of(soonDoc));
+        when(documentRepository.findExpiredNeedingNotice(any())).thenReturn(List.of());
+        when(documentRepository.findExpiringSoonNeedingWarn(any(), any())).thenReturn(List.of(soonDoc));
 
         expiryService.sendExpiryNotifications();
 
         verify(emailSender).sendDocumentExpiringSoon(eq("hong@test.com"), eq("홍길동"),
                 eq("임박자격증"), any(), eq(30));
+        assertThat(soonDoc.getExpiryWarnSentAt()).isNotNull();
     }
 
     @Test
@@ -107,20 +118,23 @@ class DocumentExpiryServiceTest {
         doc2.updateExpiresAt(LocalDate.now().minusDays(2));
         ReflectionTestUtils.setField(doc2, "id", 30L);
 
-        when(documentRepository.findExpired(any())).thenReturn(List.of(expiredDoc, doc2));
-        when(documentRepository.findExpiringSoon(any(), any())).thenReturn(List.of());
+        when(documentRepository.findExpiredNeedingNotice(any())).thenReturn(List.of(expiredDoc, doc2));
+        when(documentRepository.findExpiringSoonNeedingWarn(any(), any())).thenReturn(List.of());
         doThrow(new RuntimeException("SMTP error"))
                 .when(emailSender).sendDocumentExpired(anyString(), anyString(), anyString(), any());
 
         expiryService.sendExpiryNotifications();
 
         verify(emailSender, times(2)).sendDocumentExpired(anyString(), anyString(), anyString(), any());
+        // 발송 실패한 문서는 시각을 기록하지 않아 다음 실행에서 재시도된다
+        assertThat(expiredDoc.getExpiredNoticeSentAt()).isNull();
+        assertThat(doc2.getExpiredNoticeSentAt()).isNull();
     }
 
     @Test
     void sendExpiryNotifications_대상_없으면_이메일_미발송() {
-        when(documentRepository.findExpired(any())).thenReturn(List.of());
-        when(documentRepository.findExpiringSoon(any(), any())).thenReturn(List.of());
+        when(documentRepository.findExpiredNeedingNotice(any())).thenReturn(List.of());
+        when(documentRepository.findExpiringSoonNeedingWarn(any(), any())).thenReturn(List.of());
 
         expiryService.sendExpiryNotifications();
 

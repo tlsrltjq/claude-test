@@ -211,6 +211,9 @@
 
 - 경로: `GET /admin/documents/expiry`
 - 만료된 문서 + 만료 임박 문서 목록
+- 만료 알림 이메일: 매일 09:00 cron(`@Scheduled`, `DocumentExpiryService`)이 문서 소유자에게 발송.
+  문서당 **임박 1회(만료 30일 전) + 만료 1회**만 발송하고 발송 시각(`expiry_warn_sent_at`/`expired_notice_sent_at`)을 기록해 중복 발송하지 않음.
+  발송 실패 시 시각을 기록하지 않아 다음 실행에서 재시도. 만료일 변경 시 발송 이력 초기화 → 새 주기로 재알림.
 
 ### 9-6. 통계
 

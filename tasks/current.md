@@ -1,7 +1,7 @@
 # 현재 작업 컨텍스트
 
 ## 건드리면 안 되는 파일
-- `src/main/resources/db/migration/V1~V229.sql` — 기존 마이그레이션 절대 수정 금지
+- `src/main/resources/db/migration/V1~V230.sql` — 기존 마이그레이션 절대 수정 금지
 - `src/main/java/com/eactive/resourcehub/common/security/SecurityConfig.java`
 - `.env`, `.env.example`
 - `Caddyfile`, `docker-compose.prod.yml`, `application-prod.yml`
@@ -13,12 +13,21 @@
 - 531개 테스트 전 통과 ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-02: 하네스 정비 완료.
+2026-06-05: 문서 만료 알림 정책 변경 + 스케줄러/예외 보강 완료.
 
 완료 항목:
-- chore: HARNESS.md ADR 번호 동기화 (ADR-039→ADR-044, Flyway V218→V230)
-- chore: data-model.md Flyway 이력 요약 섹션 제거 (377→332줄, git log로 대체)
-- chore: docs/CALENDAR_REDESIGN.md → docs/archive/ 이동
+- feat: V230__add_expiry_notice_tracking.sql — documents.expiry_warn_sent_at, expired_notice_sent_at 추가 + 배포 백필(기존 임박·만료 문서 발송 처리)
+- feat: Document.expiryWarnSentAt/expiredNoticeSentAt 필드 + mark 메서드, updateExpiresAt 시 이력 초기화
+- feat: DocumentRepository.findExpiringSoonNeedingWarn/findExpiredNeedingNotice 알림 전용 쿼리 추가 (관리자 목록용 findExpired/findExpiringSoon은 유지)
+- feat: DocumentExpiryService.sendExpiryNotifications — 임박 1회+만료 1회 고정, 발송 성공 시 마킹·실패 시 재시도, @Transactional(쓰기)로 변경 (ADR-045)
+- test: DocumentExpiryServiceTest — 새 쿼리 모킹 전환 + 발송 성공/실패 시 마킹 검증 추가
+- fix: 스케줄러·기동 초기화 예외 가드 — DocumentFileGcService(독립 try-catch)·ProjectStatusScheduler·AdminInitializer에 try-catch + log.error
+- refactor: DocumentFileGcScheduler 신설 — 파일 GC 정기실행 분리로 self-invocation @Transactional 우회 해소, runGc/runOrphanScan 시그니처 무변경 (ADR-046)
+- docs: HARNESS·data-model·spec·architecture·decisions(ADR-045·046)·CHANGELOG·tasks 최신화
+- chore: 미추적 파일 정리 (AGENTS.md, scripts/seed-demo-*.sql 2개 삭제)
+- 빌드 BUILD SUCCESSFUL, 보안 린트 21/21 PASS, 테스트 531개 전 통과
+
+리팩터링 미진행 후보(사용자에게 보고만 함): AdminController 분리(god controller), Flash 메시지 헬퍼, userDetails 추출 — 필요 시 재논의
 
 ## 다음 작업 (백로그)
 

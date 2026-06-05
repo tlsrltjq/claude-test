@@ -3,6 +3,10 @@
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
 
+2026-06-05 | Post-MVP3 | feat: 문서 만료 알림 임박 1회+만료 1회로 고정 — V230 발송이력 컬럼(expiry_warn_sent_at·expired_notice_sent_at), 알림 전용 쿼리 분리, 발송 성공 시 기록·실패 시 재시도 (ADR-045)
+2026-06-05 | Post-MVP3 | refactor: 파일 GC 정기실행을 DocumentFileGcScheduler로 분리 — self-invocation @Transactional 우회 해소 (ADR-046)
+2026-06-05 | Post-MVP3 | fix: 스케줄러·기동 초기화 예외 가드 — GC(독립 try-catch)·ProjectStatusScheduler·AdminInitializer에 try-catch + log.error
+2026-06-05 | Post-MVP3 | chore: 미추적 파일 정리 (AGENTS.md, scripts/seed-demo-*.sql 2개 삭제)
 2026-06-02 | Harness | chore: 백로그 추가 — 고정 도메인 구매·적용, NAS 저장소 연동 (tasks/current.md)
 2026-06-02 | Harness | chore: 하네스 정비 — ADR 번호 동기화(ADR-044), data-model.md Flyway 이력 섹션 제거(377→332줄), CALENDAR_REDESIGN.md archive 이동
 2026-06-02 | Security | test: LoginAttemptService·EmailAllowlistService(엑셀검증)·ForgotPasswordController·SignupControllerVerify 테스트 17개 신규 (514→531개), security-lint 21항목 확장

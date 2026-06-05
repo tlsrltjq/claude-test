@@ -6,7 +6,7 @@
 
 ---
 
-## 현재 구현 범위 (V229 기준)
+## 현재 구현 범위 (V230 기준)
 
 | 도메인 | 주요 기능 |
 |--------|----------|
@@ -19,11 +19,11 @@
 | 투입 관리 | 캘린더(`/sales/calendar`), 프로젝트 CRUD·멤버 관리, 배정 삭제, 대시보드 통계, 프로젝트 바(bar) 렌더링, 하단 프로젝트 리스트 |
 | 관리자 | 직원·팀·팀 프로젝트 설정·문서 검토·만료 문서·통계·재직증명서·파일 GC·이메일 허용 목록 |
 
-기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V229 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
+기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V230 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-02):** Flyway V229. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: 하네스 정비 — ADR 번호 동기화(ADR-044), data-model.md Flyway 이력 섹션 제거(377→332줄), CALENDAR_REDESIGN.md archive 이동. 다음 예정: 고정 도메인 구매·적용, NAS 저장소 연동.
+**현재 상태 (2026-06-05):** Flyway V230. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: V230 문서 만료 알림 임박 1회+만료 1회로 고정(발송이력 컬럼·알림 전용 쿼리, ADR-045), 스케줄러·기동 초기화 예외 가드(GC·상태전환·AdminInitializer), 파일 GC 정기실행 DocumentFileGcScheduler 분리(self-invocation 트랜잭션 우회 해소, ADR-046). 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
 
-상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~044).
+상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~046).
 
 ---
 
@@ -57,7 +57,7 @@
 
 ```
 1. 관련 파일 목록 파악 (Controller·Service·Repository·Template·Migration)
-2. Flyway 마이그레이션 작성 (V230부터, 기존 번호 수정 금지)
+2. Flyway 마이그레이션 작성 (V231부터, 기존 번호 수정 금지)
 3. JPA 엔티티 → Service → Controller 순으로 구현
 4. 테스트 작성 (순수 로직은 단위 테스트, Service는 Mockito, Controller는 @WebMvcTest)
 5. 보안 정적 분석: bash scripts/security-lint.sh (0 FAIL 유지)
@@ -73,8 +73,8 @@
 - 실제 구현된 코드와 일치해야 함
 - 미구현 기능은 "향후 계획"으로 분리
 - API 경로·DTO 필드명·화면 경로는 소스 기준
-- Flyway 버전: 현재 V229. 다음은 **V230**부터
-- ADR 번호: 현재 ADR-044까지. 다음은 ADR-045부터
+- Flyway 버전: 현재 V230. 다음은 **V231**부터
+- ADR 번호: 현재 ADR-046까지. 다음은 ADR-047부터
 
 ---
 

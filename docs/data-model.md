@@ -1,6 +1,6 @@
 # 데이터 모델
 
-> Flyway V229 기준. 엔티티·테이블·관계·주요 제약조건.
+> Flyway V230 기준. 엔티티·테이블·관계·주요 제약조건.
 > 참고 소스: `src/main/resources/db/migration/V*.sql`, `src/main/java/**/entity/*.java`
 > Flyway 이력 상세는 `git log src/main/resources/db/migration/` 참조.
 
@@ -126,6 +126,8 @@ allowed_emails (독립 — 회원가입 사전 허용 이메일 목록)
 | deleted_at | TIMESTAMP | | soft-delete 시각 (V206 추가) |
 | deleted_by | BIGINT | | soft-delete 수행자 (V206 추가) |
 | files_purged_at | TIMESTAMP | | GC 완료 시각 (V210 추가) |
+| expiry_warn_sent_at | TIMESTAMP | | 만료 임박(30일 전) 알림 발송 시각 (V230 추가, NULL=미발송) |
+| expired_notice_sent_at | TIMESTAMP | | 만료 알림 발송 시각 (V230 추가, NULL=미발송) |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
 

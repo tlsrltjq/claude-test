@@ -27,7 +27,7 @@
 
 - 인증: Spring Security 세션, 쿠키 `RESOURCEHUB_SESSION` (HttpOnly + SameSite=Strict, 운영 `Secure=true`)
 - 비동기: `@EnableAsync` — 썸네일 생성, GC 등
-- 스케줄링: `@EnableScheduling` — 파일 GC `@Scheduled(cron="0 0 2 * * *")`
+- 스케줄링: `@EnableScheduling` — 파일 GC `@Scheduled(cron="0 0 2 * * *")`, 문서 만료 알림 `@Scheduled(cron="0 0 9 * * *")` (임박 1회+만료 1회)
 - 로그: 운영 프로파일에서 logback 롤링 파일 (`/data/logs/resourcehub.log`, 50MB/30일/1GB 상한)
 
 ---
@@ -61,7 +61,7 @@ com.eactive.resourcehub
 │  ├─ service/                       # DocumentUploadService, DocumentDeleteService,
 │  │                                 # DocumentAccessService, FolderAccessService,
 │  │                                 # DocumentReviewService, DocumentExpiryService,
-│  │                                 # DocumentFileGcService (cron 0 0 2 * * *),
+│  │                                 # DocumentFileGcService + DocumentFileGcScheduler (cron 0 0 2 * * *),
 │  │                                 # FolderService, MyFolderService, SearchService,
 │  │                                 # SharedFolderService, ThumbnailService (@Async)
 │  ├─ entity/                        # Document, DocumentVersion, Folder, FolderType,

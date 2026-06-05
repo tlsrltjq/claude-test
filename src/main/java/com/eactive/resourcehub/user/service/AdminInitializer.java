@@ -40,11 +40,15 @@ public class AdminInitializer {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void init() {
-        User admin = ensureSeedUser(adminEmail, adminPassword, "관리자", UserRole.ADMIN, Position.REPRESENTATIVE);
-        if (testPassword != null && !testPassword.isBlank()) {
-            ensureSeedUser(testEmail, testPassword, "테스트영업", UserRole.SALES, Position.MANAGER);
+        try {
+            User admin = ensureSeedUser(adminEmail, adminPassword, "관리자", UserRole.ADMIN, Position.REPRESENTATIVE);
+            if (testPassword != null && !testPassword.isBlank()) {
+                ensureSeedUser(testEmail, testPassword, "테스트영업", UserRole.SALES, Position.MANAGER);
+            }
+            ensurePublicFolder(admin);
+        } catch (Exception e) {
+            log.error("관리자/시드 계정 초기화 실패: {}", e.getMessage(), e);
         }
-        ensurePublicFolder(admin);
     }
 
     private void ensurePublicFolder(User admin) {
