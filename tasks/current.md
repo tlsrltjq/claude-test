@@ -13,7 +13,7 @@
 - 531개 테스트 전 통과 ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-08: 팀 삭제 모달 CSP 버그 수정 완료(d144176). 원인: admin/teams.html의 onclick 인라인 이벤트 핸들러가 CSP script-src nonce 정책에 차단됨 → addEventListener로 교체. 인력표(SalesProfileQueryService:87) 팀 미배정자 포함 여부 정책 미결 — 사용자가 세션 종료 요청으로 다음 세션에서 결정 필요.
+2026-06-08: CSP 인라인 이벤트 핸들러 전면 수정 완료(8a631dc). prod 프로파일 CSP(script-src 'nonce-...') 정책에 차단되는 onclick/onsubmit/onchange/oninput/onfocus/onblur/onkeydown/onerror 속성을 20개 템플릿에서 제거하고 nonce'd 스크립트 블록의 addEventListener로 대체. 인력표(SalesProfileQueryService:87) 팀 미배정자 포함 여부 정책 미결 — 다음 세션에서 결정 필요.
 
 완료 항목:
 - feat: V230__add_expiry_notice_tracking.sql — documents.expiry_warn_sent_at, expired_notice_sent_at 추가 + 배포 백필(기존 임박·만료 문서 발송 처리)
