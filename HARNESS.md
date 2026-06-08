@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V230 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-05):** Flyway V230. BUILD SUCCESSFUL. security-lint 21/21 PASS. 531개 테스트 전 통과. 최근 완료: V230 문서 만료 알림 임박 1회+만료 1회로 고정(발송이력 컬럼·알림 전용 쿼리, ADR-045), 스케줄러·기동 초기화 예외 가드(GC·상태전환·AdminInitializer), 파일 GC 정기실행 DocumentFileGcScheduler 분리(self-invocation 트랜잭션 우회 해소, ADR-046). 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
+**현재 상태 (2026-06-08):** Flyway V230(V209 삭제). BUILD SUCCESSFUL. Docker 로컬 환경 구성 완료(PostgreSQL 18 + 앱 컨테이너). 최근 완료: 로컬 Docker 환경 초기 세팅 — .env 생성(R2·Gmail SMTP 포함), V209 시드 마이그레이션 제거(불필요한 하드코딩 시드 삭제), 빈 DB에서 정상 기동 확인. 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~046).
 
