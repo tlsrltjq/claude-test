@@ -32,8 +32,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,7 +61,7 @@ public class ThumbnailService {
             byte[] thumbBytes = generate(version);
             if (thumbBytes == null) return;
 
-            String subPath = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
+            String subPath = parentFolder(version.getStoragePath());
             String thumbName = UUID.randomUUID() + ".png";
             String thumbPath = fileStorage.store(
                     new ByteArrayInputStreamResource(thumbBytes, "thumbnail.png", thumbBytes.length),
@@ -150,6 +148,11 @@ public class ThumbnailService {
         } finally {
             Files.deleteIfExists(tempFile);
         }
+    }
+
+    private static String parentFolder(String storagePath) {
+        int idx = (storagePath == null) ? -1 : storagePath.lastIndexOf('/');
+        return idx > 0 ? storagePath.substring(0, idx) : "thumbnails";
     }
 
     private byte[] imageThumbnail(InputStream in) throws IOException {

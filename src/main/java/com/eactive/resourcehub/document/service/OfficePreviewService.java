@@ -15,8 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -101,7 +99,7 @@ public class OfficePreviewService {
 
             // 스토리지에 저장
             byte[] pdfBytes = Files.readAllBytes(pdfFile);
-            String subPath   = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
+            String subPath   = parentFolder(version.getStoragePath());
             String pdfName   = UUID.randomUUID() + ".pdf";
             String storedPath = fileStorage.store(
                     new BytesMultipartFile(pdfBytes, pdfName, "application/pdf"),
@@ -127,6 +125,11 @@ public class OfficePreviewService {
             // 변환 성공 여부와 관계없이 썸네일 생성 시도 (previewStoragePath 설정된 경우 활용)
             thumbnailService.generateAndSave(version);
         }
+    }
+
+    private static String parentFolder(String storagePath) {
+        int idx = (storagePath == null) ? -1 : storagePath.lastIndexOf('/');
+        return idx > 0 ? storagePath.substring(0, idx) : "previews";
     }
 
     private void deleteTempSilently(Path path) {

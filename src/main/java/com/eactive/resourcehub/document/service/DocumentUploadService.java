@@ -29,8 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -147,15 +145,15 @@ public class DocumentUploadService {
 
     private DocumentVersion buildAndSaveVersion(Document document, int versionNo,
                                                 MultipartFile file, String checksum, Long uploaderId) {
-        String subPath      = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
-        String storedName   = UUID.randomUUID() + "." + FileUtils.extension(file.getOriginalFilename());
-        String storagePath  = storeFile(file, subPath, storedName);
+        User uploader = userRepository.findById(uploaderId)
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
+
+        String subPath     = buildSubPath(uploader);
+        String storedName  = UUID.randomUUID() + "." + FileUtils.extension(file.getOriginalFilename());
+        String storagePath = storeFile(file, subPath, storedName);
 
         boolean committed = false;
         try {
-            User uploader = userRepository.findById(uploaderId)
-                    .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
-
             DocumentVersion version = DocumentVersion.create(
                     document, versionNo,
                     file.getOriginalFilename(),
@@ -172,6 +170,36 @@ public class DocumentUploadService {
         } finally {
             if (!committed) deleteSilently(storagePath);
         }
+    }
+
+    /** {팀폴더}/{사람폴더} 형태의 저장 경로 세그먼트를 반환한다. */
+    private static String buildSubPath(User user) {
+        return teamFolder(user) + "/" + personFolder(user);
+    }
+
+    private static String teamFolder(User user) {
+        if (user.getTeam() == null) return "no-team";
+        String name = sanitizeFolderName(user.getTeam().getName());
+        return name != null ? name : "no-team";
+    }
+
+    private static String personFolder(User user) {
+        String byName = sanitizeFolderName(user.getName());
+        if (byName != null) return byName;
+        String email = user.getEmail();
+        if (email != null && email.contains("@")) {
+            String byEmail = sanitizeFolderName(email.substring(0, email.indexOf('@')));
+            if (byEmail != null) return byEmail;
+        }
+        return "user-" + user.getId();
+    }
+
+    /** 파일 시스템 경로에 위험한 문자를 제거하고 공백을 밑줄로 치환한다. */
+    private static String sanitizeFolderName(String s) {
+        if (s == null || s.isBlank()) return null;
+        String cleaned = s.replaceAll("[/\\\\:*?\"<>|\\x00-\\x1f]", "").trim();
+        cleaned = cleaned.replaceAll("\\s+", "_");
+        return cleaned.isEmpty() ? null : cleaned;
     }
 
     private void handleApproval(Document document, DocumentVersion version) {
