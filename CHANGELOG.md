@@ -2,6 +2,7 @@
 
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
+2026-06-08 | 기능 | feat: 파일 저장 경로를 팀/사람 폴더 계층 구조로 변경 — {팀명}/{이름}/UUID.ext, 썸네일·프리뷰도 동일 폴더
 2026-06-08 | 버그수정 | fix: 전 템플릿 인라인 이벤트 핸들러 → addEventListener 변환 (CSP nonce 위반 전면 수정, 20개 파일)
 2026-06-08 | 버그수정 | fix: 팀 삭제 모달 CSP 위반 수정 — onclick 인라인 이벤트 핸들러 → addEventListener (admin/teams.html)
 2026-06-08 | 환경설정 | chore: 로컬 Docker 환경 세팅 — .env 생성(R2·Gmail SMTP), V208_5·V209 시드 마이그레이션 삭제(불필요한 하드코딩 제거), 빈 DB 정상 기동 확인
