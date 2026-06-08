@@ -2,6 +2,7 @@
 
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
+2026-06-09 | 버그수정 | fix: 내폴더·공용폴더 500 에러 수정 — img class 속성 중복·태그 미닫힘(5개 템플릿) → class="doc-thumb doc-thumb-img" 병합
 2026-06-09 | 시드 | feat: 인력표 전 사원(100명) 문서 시드 데이터 생성 — PDFKit+맑은고딕 한글 PDF 586개, Cloudflare R2 업로드, 만료/임박/검토대기/반려 다양성 포함
 2026-06-08 | 기능 | feat: 파일 저장 경로를 팀/사람 폴더 계층 구조로 변경 — {팀명}/{이름}/UUID.ext, 썸네일·프리뷰도 동일 폴더
 2026-06-08 | 버그수정 | fix: 전 템플릿 인라인 이벤트 핸들러 → addEventListener 변환 (CSP nonce 위반 전면 수정, 20개 파일)

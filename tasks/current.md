@@ -15,6 +15,8 @@
 ## 이전 세션에서 멈춘 곳
 2026-06-09: 인력표 전 사원(100명) 문서 시드 데이터 생성 완료. scripts/seed_documents.js 신설 — PDFKit+malgun.ttf(한글) PDF 생성, @aws-sdk/client-s3로 Cloudflare R2 직접 업로드, {팀명}/{이름}/UUID.pdf 저장 경로. 586개 문서·버전 DB 삽입, 577 APPROVED·6 PENDING_REVIEW·3 REJECTED, 만료 61·임박 64·유효 133. scripts/package.json(pdfkit, @aws-sdk/client-s3, dotenv) 추가. .gitignore에 scripts/node_modules 추가. 인력표 팀 미배정자 포함 여부 정책 미결(다음 세션 결정 필요).
 
+2026-06-09: 내폴더·공용폴더 500 에러 긴급 수정 완료. 원인: 이전 CSP 수정 세션에서 img 태그에 class 속성 중복 추가 + 태그 미닫힘 → Thymeleaf ParseException. 수정 파일: public-folder.html, my/folder.html, admin/employee-documents.html, admin/employee-detail.html, sales/member-documents.html (class="doc-thumb doc-thumb-img" 병합, > 닫힘 추가).
+
 완료 항목:
 - feat: V230__add_expiry_notice_tracking.sql — documents.expiry_warn_sent_at, expired_notice_sent_at 추가 + 배포 백필(기존 임박·만료 문서 발송 처리)
 - feat: Document.expiryWarnSentAt/expiredNoticeSentAt 필드 + mark 메서드, updateExpiresAt 시 이력 초기화
