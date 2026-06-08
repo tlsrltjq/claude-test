@@ -13,7 +13,7 @@
 - 531개 테스트 전 통과 ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-08: 로컬 Docker 환경 초기 세팅 완료. .env 구성(PostgreSQL·R2·Gmail SMTP·관리자 계정), V209 시드 마이그레이션 삭제(불필요한 하드코딩 제거), 빈 DB에서 앱 정상 기동 확인(http://localhost:8080).
+2026-06-08: 로컬 Docker 환경 세팅 완료. docker-compose.yml SEED_TEST 환경변수 추가, 전 주요 페이지(admin·sales·my/folder·공용폴더 등) 동작 검증 완료. admin@eactive.co.kr / Admin1234!, test@eactive.co.kr / Test1234! 모두 정상.
 
 완료 항목:
 - feat: V230__add_expiry_notice_tracking.sql — documents.expiry_warn_sent_at, expired_notice_sent_at 추가 + 배포 백필(기존 임박·만료 문서 발송 처리)

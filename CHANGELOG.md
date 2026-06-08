@@ -3,6 +3,7 @@
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
 2026-06-08 | 환경설정 | chore: 로컬 Docker 환경 세팅 — .env 생성(R2·Gmail SMTP), V208_5·V209 시드 마이그레이션 삭제(불필요한 하드코딩 제거), 빈 DB 정상 기동 확인
+2026-06-08 | 환경설정 | chore: docker-compose.yml에 SEED_TEST_EMAIL·SEED_TEST_PASSWORD 환경변수 추가
 
 2026-06-05 | Post-MVP3 | feat: 문서 만료 알림 임박 1회+만료 1회로 고정 — V230 발송이력 컬럼(expiry_warn_sent_at·expired_notice_sent_at), 알림 전용 쿼리 분리, 발송 성공 시 기록·실패 시 재시도 (ADR-045)
 2026-06-05 | Post-MVP3 | refactor: 파일 GC 정기실행을 DocumentFileGcScheduler로 분리 — self-invocation @Transactional 우회 해소 (ADR-046)
