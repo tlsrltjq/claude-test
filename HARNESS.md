@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V230 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-08):** Flyway V230(V209 삭제). BUILD SUCCESSFUL. Docker 로컬 환경 구성 완료(PostgreSQL 18 + 앱 컨테이너). Playwright 브라우저 테스트 19/19 전 통과 확인. CSP 인라인 이벤트 핸들러 전면 수정 완료(20개 템플릿, 8a631dc). 파일 저장 경로 팀/사람 폴더 구조 변경 완료(46be2f2). 미결: 인력표 팀 미배정자 노출 여부(현재 포함 상태, 정책 결정 필요). 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
+**현재 상태 (2026-06-09):** Flyway V230(V209 삭제). BUILD SUCCESSFUL. Docker 로컬 환경 구성 완료(PostgreSQL 18 + 앱 컨테이너). Playwright 브라우저 테스트 19/19 전 통과 확인. CSP 인라인 이벤트 핸들러 전면 수정 완료(20개 템플릿). 파일 저장 경로 팀/사람 폴더 구조 변경 완료. 앱 스토리지 Cloudflare R2 사용 중(STORAGE_TYPE=s3). 인력표 전 사원(100명) 문서 시드 완료 — PDFKit+맑은고딕 한글 PDF 586개(이력서·경력증명서·졸업증명서·자격증·4대보험·증명사진), 만료 61개·임박 64개·유효 133개·검토대기 6개·반려 3개. scripts/seed_documents.js 작성(pdfkit+@aws-sdk/client-s3). 미결: 인력표 팀 미배정자 노출 여부(현재 포함 상태, 정책 결정 필요). 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~046).
 

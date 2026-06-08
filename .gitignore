@@ -35,5 +35,7 @@ Thumbs.db
 
 # E2E Tests
 e2e/node_modules/
+scripts/node_modules/
+scripts/package-lock.json
 e2e/test-results/
 e2e/playwright-report/
