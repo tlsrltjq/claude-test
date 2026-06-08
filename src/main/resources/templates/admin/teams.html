@@ -111,12 +111,11 @@
                     <i class="bi bi-pencil me-1"></i>이름 수정
                   </a>
                   <button type="button"
-                          class="btn btn-outline-danger btn-sm flex-fill fw-semibold"
+                          class="btn btn-outline-danger btn-sm flex-fill fw-semibold team-delete-btn"
                           style="font-size:.82rem"
                           th:data-team-id="${t.id}"
                           th:data-team-name="${t.name}"
-                          th:data-member-count="${memberCounts[t.id]}"
-                          onclick="openDeleteModal(this)">
+                          th:data-member-count="${memberCounts[t.id]}">
                     <i class="bi bi-trash me-1"></i>삭제
                   </button>
                 </div>
@@ -157,21 +156,20 @@
             <p class="fw-semibold mb-2" style="font-size:.87rem">직원 처리 방법 선택</p>
             <div class="form-check mb-2">
               <input class="form-check-input" type="radio" name="reassignType"
-                     id="radioNone" value="none" checked onchange="onReassignChange(this.value)">
+                     id="radioNone" value="none" checked>
               <label class="form-check-label" for="radioNone" style="font-size:.87rem">
                 팀 해제 <span class="text-muted">(미설정으로 변경)</span>
               </label>
             </div>
             <div class="form-check mb-2">
               <input class="form-check-input" type="radio" name="reassignType"
-                     id="radioTeam" value="team" onchange="onReassignChange(this.value)">
+                     id="radioTeam" value="team">
               <label class="form-check-label" for="radioTeam" style="font-size:.87rem">
                 다른 팀으로 이동
               </label>
             </div>
             <select id="targetTeamSelect" class="form-select form-select-sm ms-4 mt-1"
-                    style="width:calc(100% - 1.5rem);display:none"
-                    onchange="document.getElementById('targetTeamIdInput').value = this.value">
+                    style="width:calc(100% - 1.5rem);display:none">
               <option value="">팀 선택</option>
             </select>
           </div>
@@ -195,14 +193,13 @@
 
 <script th:attr="nonce=${cspNonce}">
 (function () {
-  // 모든 팀 데이터 로드 (모달 드롭다운용)
   var allTeams = Array.from(document.querySelectorAll('.team-datum')).map(function (el) {
     return { id: el.getAttribute('data-id'), name: el.getAttribute('data-name') };
   });
 
   var currentDeleteTeamId = null;
 
-  window.openDeleteModal = function (btn) {
+  function openDeleteModal(btn) {
     currentDeleteTeamId = btn.getAttribute('data-team-id');
     var teamName    = btn.getAttribute('data-team-name');
     var memberCount = parseInt(btn.getAttribute('data-member-count'), 10);
@@ -212,16 +209,13 @@
     document.getElementById('targetTeamIdInput').value = '';
     document.getElementById('targetTeamSelect').value  = '';
 
-    // 라디오 초기화
     document.getElementById('radioNone').checked = true;
     document.getElementById('targetTeamSelect').style.display = 'none';
 
-    // 소속 인원 여부
     var reassignSection = document.getElementById('reassignSection');
     if (memberCount > 0) {
       document.getElementById('modalMemberCount').textContent = memberCount;
       reassignSection.style.display = '';
-      // 타 팀 목록 채우기 (현재 삭제 팀 제외)
       var sel = document.getElementById('targetTeamSelect');
       sel.innerHTML = '<option value="">팀 선택</option>';
       allTeams.forEach(function (t) {
@@ -238,20 +232,33 @@
 
     var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();
-  };
+  }
 
-  window.onReassignChange = function (value) {
-    var sel = document.getElementById('targetTeamSelect');
-    if (value === 'team') {
-      sel.style.display = '';
-      document.getElementById('targetTeamIdInput').value = sel.value;
-    } else {
-      sel.style.display = 'none';
-      document.getElementById('targetTeamIdInput').value = '';
-    }
-  };
+  // 삭제 버튼 이벤트 — 인라인 onclick 대신 addEventListener
+  document.querySelectorAll('.team-delete-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { openDeleteModal(btn); });
+  });
 
-  // 폼 제출 시 "다른 팀으로 이동" 선택했는데 팀 미선택이면 막기
+  // reassign 라디오 변경
+  document.querySelectorAll('input[name="reassignType"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      var sel = document.getElementById('targetTeamSelect');
+      if (this.value === 'team') {
+        sel.style.display = '';
+        document.getElementById('targetTeamIdInput').value = sel.value;
+      } else {
+        sel.style.display = 'none';
+        document.getElementById('targetTeamIdInput').value = '';
+      }
+    });
+  });
+
+  // targetTeamSelect 변경 시 hidden 동기화
+  document.getElementById('targetTeamSelect').addEventListener('change', function () {
+    document.getElementById('targetTeamIdInput').value = this.value;
+  });
+
+  // 폼 제출 유효성 + 오버레이
   document.getElementById('deleteForm').addEventListener('submit', function (e) {
     var radioTeam = document.getElementById('radioTeam');
     if (radioTeam && radioTeam.checked) {
