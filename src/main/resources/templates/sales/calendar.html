@@ -33,10 +33,10 @@
         </div>
         <div class="page-hd-actions">
           <div class="view-tabs">
-            <button id="tab-calendar" class="tab-btn active" onclick="switchMode('calendar')">
+            <button id="tab-calendar" class="tab-btn active">
               <i class="bi bi-calendar3 me-1"></i>캘린더 뷰
             </button>
-            <button id="tab-personnel" class="tab-btn" onclick="switchMode('personnel')">
+            <button id="tab-personnel" class="tab-btn">
               <i class="bi bi-people me-1"></i>인력 현황
             </button>
           </div>
@@ -386,7 +386,8 @@
     document.getElementById('tab-personnel').classList.toggle('active', mode === 'personnel');
     localStorage.setItem('calendarMode', mode);
   }
-  window.switchMode = switchMode;
+  document.getElementById('tab-calendar').addEventListener('click', function () { switchMode('calendar'); });
+  document.getElementById('tab-personnel').addEventListener('click', function () { switchMode('personnel'); });
   switchMode(localStorage.getItem('calendarMode') || 'calendar');
 
   /* ── AJAX 월 이동 ── */

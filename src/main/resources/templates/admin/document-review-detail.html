@@ -63,10 +63,9 @@
           </div>
 
           <!-- 승인 버튼 -->
-          <form th:action="@{/admin/documents/review/{id}/approve(id=${version.id})}" method="post" class="mb-2">
+          <form th:action="@{/admin/documents/review/{id}/approve(id=${version.id})}" method="post" class="mb-2" id="approveForm">
             <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-            <button type="submit" class="btn btn-success w-100 fw-semibold"
-                    onclick="return confirm('이 문서를 승인하시겠습니까?')">
+            <button type="submit" class="btn btn-success w-100 fw-semibold">
               <i class="bi bi-check-circle-fill me-1"></i>승인
             </button>
           </form>
@@ -127,6 +126,12 @@
 </div>
 <script th:attr="nonce=${cspNonce}">
 (function(){
+    var approveForm = document.getElementById('approveForm');
+    if (approveForm) {
+        approveForm.addEventListener('submit', function(e) {
+            if (!confirm('이 문서를 승인하시겠습니까?')) e.preventDefault();
+        });
+    }
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

@@ -95,10 +95,6 @@
                   <div class="cert-ac mb-2">
                     <input type="text" id="nameSearch" class="form-control form-control-sm"
                            placeholder="직원 이름 검색"
-                           oninput="onNameInput(this.value)"
-                           onfocus="onNameFocus()"
-                           onblur="setTimeout(closeNameDrop,160)"
-                           onkeydown="onNameKey(event)"
                            autocomplete="off">
                     <ul class="cert-ac-dropdown" id="nameDrop"></ul>
                   </div>
@@ -125,8 +121,7 @@
                             th:value="${p.id}"
                             th:text="${p.name}"></option>
                   </select>
-                  <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-semibold"
-                          onclick="return confirm('선택한 프로젝트의 모든 멤버에게 재직증명서를 발급하시겠습니까?')">
+                  <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-semibold" id="projectSubmitBtn">
                     <i class="bi bi-people me-1"></i>프로젝트 전원 발급
                   </button>
                 </form>
@@ -238,7 +233,6 @@
   }
 
   function closeDrop() { dropEl.style.display = 'none'; acIdx = -1; }
-  window.closeNameDrop = closeDrop;
 
   function selectName(name) {
     document.getElementById('nameSearch').value = name;
@@ -254,21 +248,25 @@
     document.getElementById('singleLabel').textContent = '이름을 선택하세요';
   }
 
-  window.onNameInput = function (q) {
+  var nameSearch = document.getElementById('nameSearch');
+
+  nameSearch.addEventListener('input', function () {
     clearName();
-    q = q.trim();
+    var q = this.value.trim();
     if (!q) { closeDrop(); return; }
-    var filtered = allNames.filter(function (n) { return n.includes(q); });
-    buildDrop(filtered);
-  };
+    buildDrop(allNames.filter(function (n) { return n.includes(q); }));
+  });
 
-  window.onNameFocus = function () {
-    var q = document.getElementById('nameSearch').value.trim();
-    var list = q ? allNames.filter(function (n) { return n.includes(q); }) : allNames.slice();
-    buildDrop(list);
-  };
+  nameSearch.addEventListener('focus', function () {
+    var q = this.value.trim();
+    buildDrop(q ? allNames.filter(function (n) { return n.includes(q); }) : allNames.slice());
+  });
 
-  window.onNameKey = function (e) {
+  nameSearch.addEventListener('blur', function () {
+    setTimeout(closeDrop, 160);
+  });
+
+  nameSearch.addEventListener('keydown', function (e) {
     var items = dropEl.querySelectorAll('li[data-idx]');
     if (!items.length) return;
     if (e.key === 'ArrowDown') {
@@ -287,7 +285,17 @@
     items.forEach(function (li, i) {
       li.classList.toggle('ac-active', i === acIdx);
     });
-  };
+  });
+
+  // ── 프로젝트 일괄 발급 confirm ─────────────────────────
+  var projectSubmitBtn = document.getElementById('projectSubmitBtn');
+  if (projectSubmitBtn) {
+    projectSubmitBtn.closest('form').addEventListener('submit', function (e) {
+      if (!confirm('선택한 프로젝트의 모든 멤버에게 재직증명서를 발급하시겠습니까?')) {
+        e.preventDefault();
+      }
+    });
+  }
 
   // ── loading overlay ────────────────────────────────────
   document.querySelectorAll('form').forEach(function (f) {

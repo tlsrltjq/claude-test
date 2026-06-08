@@ -52,7 +52,7 @@
                 <i class="bi bi-download me-1"></i>다운로드
               </a>
               <form th:action="@{/admin/documents/{id}/delete(id=${document.id})}"
-                    method="post" onsubmit="return confirm('문서를 영구 삭제하시겠습니까? 디스크 파일과 모든 버전이 삭제됩니다.')">
+                    method="post" id="adminDeleteDocForm"
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <button type="submit" class="btn btn-outline-danger btn-sm w-100">
                   <i class="bi bi-trash me-1"></i>문서 삭제
@@ -114,6 +114,12 @@
 </div>
 <script th:attr="nonce=${cspNonce}">
 (function(){
+    var adminDeleteDocForm = document.getElementById('adminDeleteDocForm');
+    if (adminDeleteDocForm) {
+        adminDeleteDocForm.addEventListener('submit', function(e) {
+            if (!confirm('문서를 영구 삭제하시겠습니까? 디스크 파일과 모든 버전이 삭제됩니다.')) e.preventDefault();
+        });
+    }
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

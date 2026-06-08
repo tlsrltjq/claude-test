@@ -95,8 +95,7 @@
                 </ul>
               </div>
               <div class="mt-auto">
-                <form th:action="@{/admin/gc/run}" method="post"
-                      onsubmit="return confirm('GC를 지금 실행하시겠습니까?\n보존 기간이 지난 삭제 문서의 파일이 영구 제거됩니다.');">
+                <form th:action="@{/admin/gc/run}" method="post" id="gcRunForm">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <button type="submit" class="btn btn-danger">
                     <i class="bi bi-trash3 me-1"></i> 지금 GC 실행
@@ -168,6 +167,12 @@
 </div>
 <script th:attr="nonce=${cspNonce}">
 (function(){
+    var gcForm = document.getElementById('gcRunForm');
+    if (gcForm) {
+        gcForm.addEventListener('submit', function(e) {
+            if (!confirm('GC를 지금 실행하시겠습니까?\n보존 기간이 지난 삭제 문서의 파일이 영구 제거됩니다.')) e.preventDefault();
+        });
+    }
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

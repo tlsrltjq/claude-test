@@ -40,7 +40,7 @@
 
       <!-- 필터 바 -->
       <div class="filter-card d-flex gap-2 flex-wrap align-items-center mb-3">
-        <select id="filterType" class="form-select form-select-sm" style="width:auto;" onchange="applyFilter()">
+        <select id="filterType" class="form-select form-select-sm" style="width:auto;">
           <option value="">전체 종류</option>
           <option value="이력서">이력서</option>
           <option value="SW기술자 경력증명서">SW기술자 경력증명서</option>
@@ -54,9 +54,9 @@
         </select>
         <div class="input-group input-group-sm" style="width:220px;">
           <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-          <input id="searchBox" class="form-control border-start-0" placeholder="제목 또는 파일명" oninput="applyFilter()">
+          <input id="searchBox" class="form-control border-start-0" placeholder="제목 또는 파일명">
         </div>
-        <select id="sortOrder" class="form-select form-select-sm" style="width:auto;" onchange="applySort()">
+        <select id="sortOrder" class="form-select form-select-sm" style="width:auto;">
           <option value="date">최근 업로드</option>
           <option value="type">종류</option>
           <option value="title">제목</option>
@@ -80,7 +80,7 @@
             <div th:if="${doc.currentVersion != null and doc.currentVersion.thumbnailStoragePath != null}">
               <img th:src="@{/documents/{id}/thumbnail(id=${doc.currentVersion.id})}"
                    class="doc-thumb" alt=""
-                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                   class="doc-thumb-img"
               <div class="doc-icon-area" style="display:none;"
                    th:with="ext=${(doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase()}">
                 <div th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
@@ -116,8 +116,7 @@
                 <i class="bi bi-download"></i>
               </a>
               <form th:action="@{/admin/documents/{id}/delete(id=${doc.id})}" method="post"
-                    onsubmit="return confirm('문서를 영구 삭제하시겠습니까?')"
-                    class="d-inline">
+                    class="d-inline delete-doc-form">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <button type="submit" class="btn btn-outline-danger btn-sm">
                   <i class="bi bi-trash"></i>
@@ -173,6 +172,21 @@ function applySort() {
     });
     cols.forEach(c => grid.appendChild(c));
 }
+
+document.getElementById('filterType').addEventListener('change', applyFilter);
+document.getElementById('searchBox').addEventListener('input', applyFilter);
+document.getElementById('sortOrder').addEventListener('change', applySort);
+document.querySelectorAll('img.doc-thumb-img').forEach(function(img) {
+    img.addEventListener('error', function() {
+        this.style.display = 'none';
+        this.nextElementSibling.style.display = 'flex';
+    });
+});
+document.querySelectorAll('.delete-doc-form').forEach(function(f) {
+    f.addEventListener('submit', function(e) {
+        if (!confirm('문서를 영구 삭제하시겠습니까?')) e.preventDefault();
+    });
+});
 </script>
 </body>
 </html>

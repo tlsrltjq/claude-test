@@ -159,12 +159,11 @@
                         th:action="@{/admin/employees/{id}/toggle-status(id=${emp.id})}"
                         class="d-inline">
                     <button type="submit"
-                            class="btn btn-sm"
+                            class="btn btn-sm toggle-status-btn"
                             style="font-size:.75rem;border-radius:6px;padding:.2rem .55rem;min-width:4.5rem"
                             th:classappend="${emp.status.name() == 'ACTIVE'} ? 'btn-outline-danger' : 'btn-outline-success'"
                             th:text="${emp.status.name() == 'ACTIVE'} ? '비활성화' : '활성화'"
-                            th:attr="data-name=${emp.name},data-active=${emp.status.name() == 'ACTIVE'}"
-                            onclick="if(this.dataset.active==='true' && !confirm(this.dataset.name+' 계정을 비활성화하시겠습니까?')) return false;"></button>
+                            th:attr="data-name=${emp.name},data-active=${emp.status.name() == 'ACTIVE'}"></button>
                   </form>
                 </div>
               </td>
@@ -235,6 +234,12 @@
         }
     });
 })();
+
+document.querySelectorAll('.toggle-status-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        if (this.dataset.active === 'true' && !confirm(this.dataset.name + ' 계정을 비활성화하시겠습니까?')) e.preventDefault();
+    });
+});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -42,7 +42,7 @@
 
                   <div class="mb-3">
                       <label class="form-label">문서 종류 <span class="req">*</span></label>
-                      <select name="documentType" id="docTypeSelect" class="form-select" required onchange="onTypeChange()">
+                      <select name="documentType" id="docTypeSelect" class="form-select" required>
                           <option value="">선택하세요</option>
                           <option th:each="dt : ${documentTypes}"
                                   th:value="${dt.name()}"
@@ -91,14 +91,14 @@
                   <!-- ── 파일 ── -->
                   <div class="section-label"><i class="bi bi-paperclip"></i> 파일</div>
 
-                  <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+                  <div class="file-drop" id="fileDrop">
                       <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                       <div class="drop-text">클릭하거나 파일을 끌어다 놓으세요</div>
                       <div class="drop-sub">PDF, JPG, PNG, DOCX, HWP, PPT, ZIP, XLSX, XLS · 20MB 이하 즉시 승인 / 100MB 이하 검토 후 승인</div>
                   </div>
                   <input type="file" id="fileInput" name="file" class="d-none" required
                          accept=".pdf,.jpg,.jpeg,.png,.docx,.hwp,.hwpx,.ppt,.pptx,.zip,.xlsx,.xls"
-                         onchange="onFileChange(this)">
+                         >
                   <div class="file-name-display" id="fileNameDisplay">
                       <i class="bi bi-file-earmark-fill text-primary"></i>
                       <span id="fileNameText"></span>
@@ -134,7 +134,7 @@
                       <button type="submit" id="uploadBtn" class="btn btn-primary flex-fill btn-upload">
                           <i class="bi bi-cloud-upload me-1"></i>업로드
                       </button>
-                      <button type="button" id="cancelBtn" class="btn btn-outline-secondary" onclick="onCancelClick()">취소</button>
+                      <button type="button" id="cancelBtn" class="btn btn-outline-secondary">취소</button>
                   </div>
               </form>
           </div>
@@ -214,6 +214,11 @@ function onCancelClick() {
         window.location.href = '/my/folder';
     }
 }
+
+document.getElementById('docTypeSelect').addEventListener('change', onTypeChange);
+document.getElementById('fileDrop').addEventListener('click', function() { document.getElementById('fileInput').click(); });
+document.getElementById('fileInput').addEventListener('change', function() { onFileChange(this); });
+document.getElementById('cancelBtn').addEventListener('click', onCancelClick);
 
 /* ── 제출 처리 (XHR + 진행률) ── */
 const ALLOWED_EXTS = ['pdf','jpg','jpeg','png','docx','hwp','hwpx','ppt','pptx','zip','xlsx','xls'];

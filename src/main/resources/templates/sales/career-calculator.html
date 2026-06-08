@@ -71,11 +71,7 @@
                           <div class="input-group input-group-sm">
                               <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
                               <input type="text" id="memberSearch" class="form-control border-start-0"
-                                     placeholder="이름 또는 팀으로 검색" autocomplete="off"
-                                     oninput="filterMembers(this.value)"
-                                     onfocus="openDropdown()"
-                                     onblur="setTimeout(closeDropdown,160)"
-                                     onkeydown="handleMemberKey(event)">
+                                     placeholder="이름 또는 팀으로 검색" autocomplete="off">
                           </div>
                           <ul class="member-dropdown" id="memberDropdown"></ul>
                       </div>
@@ -116,7 +112,6 @@
                                   <div class="d-flex align-items-center gap-2">
                                       <div class="form-check mb-0">
                                           <input class="form-check-input" type="checkbox" id="certCheck"
-                                                 onchange="toggleCertDate()"
                                                  th:checked="${certType != null and certType != 'NONE'}">
                                           <label class="form-check-label" for="certCheck" style="font-size:.83rem;">정보처리기사</label>
                                       </div>
@@ -217,18 +212,16 @@
                                           </td>
                                           <td>
                                               <input type="date" name="startDates" class="form-control"
-                                                     th:value="${startDate}" onchange="refreshRows()">
+                                                     th:value="${startDate}">
                                           </td>
                                           <td>
                                               <input type="date" name="endDates" class="form-control"
-                                                     th:value="${endDates != null and stat.index < #lists.size(endDates)} ? ${endDates[stat.index]} : ''"
-                                                     onchange="refreshRows()">
+                                                     th:value="${endDates != null and stat.index < #lists.size(endDates)} ? ${endDates[stat.index]} : ''">
                                           </td>
                                           <td class="text-center align-middle days-cell" style="font-size:.8rem">-</td>
                                           <td class="text-center align-middle overlap-cell" style="font-size:.78rem">-</td>
                                           <td class="text-center align-middle">
                                               <button type="button" class="btn btn-sm btn-outline-danger px-2 py-0"
-                                                      onclick="removeRow(this)"
                                                       style="font-size:.85rem;border-radius:6px">−</button>
                                           </td>
                                       </tr>
@@ -243,7 +236,7 @@
                               </table>
                           </div>
                           <div class="p-3">
-                              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addRow()"
+                              <button type="button" id="addRowBtn" class="btn btn-sm btn-outline-secondary"
                                       style="font-size:.82rem;border-radius:7px">
                                   <i class="bi bi-plus-lg me-1"></i>기간 추가
                               </button>
@@ -333,10 +326,8 @@
                            th:data-cert-label="${result.certResult.basisLabel()}">
                           <div class="btn-group w-100" role="group">
                               <button type="button" id="btnBasisEdu" class="btn btn-outline-primary btn-sm"
-                                      onclick="selectBasis('edu')"
                                       th:text="${result.educationResult.basisLabel() + ' 기준'}"></button>
                               <button type="button" id="btnBasisCert" class="btn btn-outline-primary btn-sm"
-                                      onclick="selectBasis('cert')"
                                       th:text="${result.certResult.basisLabel() + ' 기준'}"></button>
                           </div>
                       </div>
@@ -614,12 +605,12 @@ function addRow() {
     tr.innerHTML = `
         <td class="text-center text-muted align-middle" style="font-size:.78rem">${no}</td>
         <td><input type="text" name="companies" class="form-control" placeholder="회사명"></td>
-        <td><input type="date" name="startDates" class="form-control" onchange="refreshRows()"></td>
-        <td><input type="date" name="endDates"   class="form-control" onchange="refreshRows()"></td>
+        <td><input type="date" name="startDates" class="form-control"></td>
+        <td><input type="date" name="endDates"   class="form-control"></td>
         <td class="text-center align-middle days-cell" style="font-size:.8rem">-</td>
         <td class="text-center align-middle overlap-cell" style="font-size:.78rem">-</td>
         <td class="text-center align-middle">
-            <button type="button" class="btn btn-sm btn-outline-danger px-2 py-0" onclick="removeRow(this)"
+            <button type="button" class="btn btn-sm btn-outline-danger px-2 py-0"
                     style="font-size:.85rem;border-radius:6px">−</button>
         </td>`;
     body.appendChild(tr);
@@ -704,6 +695,32 @@ document.addEventListener('DOMContentLoaded', () => {
                          (certCard && certCard.classList.contains('compare-card-selected')) ? 'cert' : 'edu';
         selectBasis(initKey);
     }
+
+    const ms = document.getElementById('memberSearch');
+    if (ms) {
+        ms.addEventListener('input', function() { filterMembers(this.value); });
+        ms.addEventListener('focus', openDropdown);
+        ms.addEventListener('blur', function() { setTimeout(closeDropdown, 160); });
+        ms.addEventListener('keydown', handleMemberKey);
+    }
+    const certCheck = document.getElementById('certCheck');
+    if (certCheck) certCheck.addEventListener('change', toggleCertDate);
+    const periodBody = document.getElementById('periodBody');
+    if (periodBody) {
+        periodBody.addEventListener('change', function(e) {
+            if (e.target.matches('input[name="startDates"], input[name="endDates"]')) refreshRows();
+        });
+        periodBody.addEventListener('click', function(e) {
+            var btn = e.target.closest('button[type="button"]');
+            if (btn) removeRow(btn);
+        });
+    }
+    const addRowBtn = document.getElementById('addRowBtn');
+    if (addRowBtn) addRowBtn.addEventListener('click', addRow);
+    const btnBasisEdu = document.getElementById('btnBasisEdu');
+    if (btnBasisEdu) btnBasisEdu.addEventListener('click', function() { selectBasis('edu'); });
+    const btnBasisCert = document.getElementById('btnBasisCert');
+    if (btnBasisCert) btnBasisCert.addEventListener('click', function() { selectBasis('cert'); });
 });
 </script>
 </body>

@@ -92,8 +92,7 @@
               <div class="d-flex gap-2 mb-2">
                   <input type="text" id="addrPostcode" class="form-control" style="width:110px;flex:none;"
                          placeholder="우편번호" readonly>
-                  <button type="button" class="btn btn-outline-secondary btn-sm"
-                          onclick="openAddressSearch()">주소 검색</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="addrSearchBtn">주소 검색</button>
               </div>
               <input type="text" id="addrRoad" class="form-control mb-2" placeholder="도로명 주소" readonly>
               <input type="text" id="addrDetail" class="form-control" placeholder="상세 주소">
@@ -556,6 +555,7 @@ function openAddressSearch() {
         }
     }).open();
 }
+document.getElementById('addrSearchBtn').addEventListener('click', openAddressSearch);
 </script>
 </body>
 </html>

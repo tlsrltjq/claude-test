@@ -103,7 +103,7 @@
                   </div>
                   <div class="p-3 border-top" th:if="${isOwner}">
                       <form th:action="@{/my/folder/documents/{id}/delete(id=${document.id})}" method="post"
-                            onsubmit="return confirm('문서를 삭제하시겠습니까? 모든 버전과 파일이 영구 삭제됩니다.')">
+                            id="deleteMyDocForm"
                           <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                           <button type="submit" class="btn btn-outline-danger btn-sm w-100">
                               <i class="bi bi-trash me-1"></i>문서 삭제
@@ -181,6 +181,12 @@
 </div>
 <script th:attr="nonce=${cspNonce}">
 (function(){
+    var deleteMyDocForm = document.getElementById('deleteMyDocForm');
+    if (deleteMyDocForm) {
+        deleteMyDocForm.addEventListener('submit', function(e) {
+            if (!confirm('문서를 삭제하시겠습니까? 모든 버전과 파일이 영구 삭제됩니다.')) e.preventDefault();
+        });
+    }
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

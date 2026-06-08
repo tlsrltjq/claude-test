@@ -113,11 +113,10 @@
                 <form th:if="${user.role.name() != 'ADMIN'}" method="post"
                       th:action="@{/admin/employees/{id}/toggle-status(id=${user.id})}"
                       class="d-inline">
-                  <button type="submit" class="btn btn-sm py-0 px-2"
+                  <button type="submit" class="btn btn-sm py-0 px-2" id="toggleStatusBtn"
                           th:classappend="${user.status.name() == 'ACTIVE'} ? 'btn-outline-danger' : 'btn-outline-success'"
                           th:text="${user.status.name() == 'ACTIVE'} ? '비활성화' : '활성화'"
-                          th:attr="data-active=${user.status.name() == 'ACTIVE'}"
-                          onclick="if(this.dataset.active==='true' && !confirm('이 계정을 비활성화하시겠습니까?')) return false;"></button>
+                          th:attr="data-active=${user.status.name() == 'ACTIVE'}"></button>
                 </form>
               </span>
             </div>
@@ -125,8 +124,7 @@
 
             <!-- 삭제 (관리자 제외) -->
             <div th:if="${user.role.name() != 'ADMIN'}" class="mt-4 pt-3" style="border-top:1px solid #f5e5e5">
-              <form th:action="@{/admin/employees/{id}/delete(id=${user.id})}" method="post"
-                    onsubmit="return confirm('정말로 이 계정을 삭제하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.')">
+              <form th:action="@{/admin/employees/{id}/delete(id=${user.id})}" method="post" id="deleteAccountForm">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <button type="submit" class="btn btn-sm btn-danger">
                   <i class="bi bi-trash me-1"></i>계정 완전 삭제
@@ -151,7 +149,7 @@
             <div class="input-group input-group-sm mb-3" style="max-width:300px;">
               <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
               <input type="text" id="docSearch" class="form-control border-start-0"
-                     placeholder="제목 또는 파일명 검색" oninput="filterDocs(this.value)">
+                     placeholder="제목 또는 파일명 검색">
             </div>
           </div>
           <div class="table-responsive">
@@ -188,7 +186,7 @@
                     <img th:if="${cv.thumbnailStoragePath != null}"
                          th:src="@{/documents/{id}/thumbnail(id=${cv.id})}"
                          class="doc-thumb" alt=""
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
+                         class="doc-thumb-img"
                     <span th:with="ext=${cv.thumbnailStoragePath != null ? '' : (cv.originalFileName.substring(cv.originalFileName.lastIndexOf('.')+1)).toLowerCase()}"
                           th:if="${cv.thumbnailStoragePath == null}"
                           th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
@@ -352,6 +350,27 @@ document.querySelectorAll('.role-option').forEach(opt => {
         this.classList.add('selected');
         const radio = this.querySelector('input[type=radio]');
         if (radio) radio.checked = true;
+    });
+});
+
+var toggleBtn = document.getElementById('toggleStatusBtn');
+if (toggleBtn) {
+    toggleBtn.addEventListener('click', function(e) {
+        if (this.dataset.active === 'true' && !confirm('이 계정을 비활성화하시겠습니까?')) e.preventDefault();
+    });
+}
+var deleteAccountForm = document.getElementById('deleteAccountForm');
+if (deleteAccountForm) {
+    deleteAccountForm.addEventListener('submit', function(e) {
+        if (!confirm('정말로 이 계정을 삭제하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.')) e.preventDefault();
+    });
+}
+var docSearch = document.getElementById('docSearch');
+if (docSearch) docSearch.addEventListener('input', function() { filterDocs(this.value); });
+document.querySelectorAll('img.doc-thumb-img').forEach(function(img) {
+    img.addEventListener('error', function() {
+        this.style.display = 'none';
+        this.nextElementSibling.style.display = 'inline-flex';
     });
 });
 </script>

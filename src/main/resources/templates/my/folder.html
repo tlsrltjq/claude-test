@@ -59,8 +59,7 @@
           <div class="filter-bar">
               <i class="bi bi-funnel text-muted" style="flex-shrink:0"></i>
 
-              <select id="filterType" class="form-select form-select-sm" style="width:auto;min-width:120px"
-                      onchange="applyFilter()">
+              <select id="filterType" class="form-select form-select-sm" style="width:auto;min-width:120px">
                   <option value="">전체 종류</option>
                   <option value="이력서">이력서</option>
                   <option value="SW기술자 경력증명서">SW기술자 경력증명서</option>
@@ -76,11 +75,10 @@
 
               <div class="input-group input-group-sm" style="width:220px;flex-shrink:0">
                   <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                  <input id="searchBox" class="form-control border-start-0" placeholder="제목 또는 파일명" oninput="applyFilter()">
+                  <input id="searchBox" class="form-control border-start-0" placeholder="제목 또는 파일명">
               </div>
 
-              <select id="sortOrder" class="form-select form-select-sm" style="width:auto;min-width:110px"
-                      onchange="applySort()">
+              <select id="sortOrder" class="form-select form-select-sm" style="width:auto;min-width:110px">
                   <option value="date">최근 업로드</option>
                   <option value="type">종류</option>
                   <option value="title">제목</option>
@@ -88,12 +86,10 @@
 
               <!-- 뷰 토글 -->
               <div class="ms-auto view-toggle btn-group btn-group-sm" role="group">
-                  <button id="btnCard" type="button" class="btn btn-outline-secondary active"
-                          onclick="setView('card')" title="카드 보기">
+                  <button id="btnCard" type="button" class="btn btn-outline-secondary active" title="카드 보기">
                       <i class="bi bi-grid-3x3-gap"></i>
                   </button>
-                  <button id="btnList" type="button" class="btn btn-outline-secondary"
-                          onclick="setView('list')" title="목록 보기">
+                  <button id="btnList" type="button" class="btn btn-outline-secondary" title="목록 보기">
                       <i class="bi bi-list-ul"></i>
                   </button>
               </div>
@@ -132,7 +128,7 @@
                           <img th:if="${lv.thumbnailStoragePath != null}"
                                th:src="@{/documents/{id}/thumbnail(id=${lv.id})}"
                                class="doc-thumb" alt="미리보기"
-                               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                               class="doc-thumb-img"
                           <div th:classappend="${lv.thumbnailStoragePath != null} ? 'd-none'" class="doc-icon-area">
                               <div th:class="'doc-ext ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
                                    th:text="${ext.toUpperCase()}"></div>
@@ -311,6 +307,18 @@ function applySort() {
     if (!cardGrid || !listView) return;
     setView(currentView);
 })();
+
+document.getElementById('filterType').addEventListener('change', applyFilter);
+document.getElementById('searchBox').addEventListener('input', applyFilter);
+document.getElementById('sortOrder').addEventListener('change', applySort);
+document.getElementById('btnCard').addEventListener('click', function() { setView('card'); });
+document.getElementById('btnList').addEventListener('click', function() { setView('list'); });
+document.querySelectorAll('img.doc-thumb-img').forEach(function(img) {
+    img.addEventListener('error', function() {
+        this.style.display = 'none';
+        this.nextElementSibling.style.display = 'flex';
+    });
+});
 </script>
 </body>
 </html>

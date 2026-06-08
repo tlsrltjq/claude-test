@@ -60,7 +60,7 @@
                                          name="teamIds" th:value="${team.id}"
                                          th:id="'chk-team-' + ${team.id}"
                                          th:checked="${query.teamIds != null and #lists.contains(query.teamIds, team.id)}"
-                                         onchange="updateTeamLabel()">
+>
                                   <label class="form-check-label small"
                                          th:for="'chk-team-' + ${team.id}"
                                          th:text="${team.name}"></label>
@@ -93,7 +93,7 @@
                                          name="developerGrades" th:value="${grade}"
                                          th:id="'chk-grade-' + ${grade}"
                                          th:checked="${query.developerGrades != null and #lists.contains(query.developerGrades, grade)}"
-                                         onchange="updateGradeLabel()">
+>
                                   <label class="form-check-label small"
                                          th:for="'chk-grade-' + ${grade}"
                                          th:text="${grade}"></label>
@@ -105,7 +105,7 @@
               <div>
                   <div class="filter-label">경력 표시</div>
                   <select name="careerDisplay" class="form-select form-select-sm" id="careerDisplaySel"
-                          onchange="this.form.submit()" style="min-width:80px">
+                          style="min-width:80px">
                       <option value="ymd" th:selected="${query.careerDisplay == 'ymd'}">년월일</option>
                       <option value="m"   th:selected="${query.careerDisplay == 'm'}">개월</option>
                       <option value="d"   th:selected="${query.careerDisplay == 'd'}">일</option>
@@ -115,7 +115,7 @@
               <input type="hidden" name="direction" th:value="${query.direction}">
               <div class="d-flex gap-1 align-items-center">
                   <button type="submit" class="btn btn-primary btn-sm fw-semibold px-3">검색</button>
-                  <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetAll()">초기화</button>
+                  <button type="button" id="resetAllBtn" class="btn btn-outline-secondary btn-sm">초기화</button>
                   <div class="grade-stats-inline flex-shrink-0">
                       <div class="grade-stat grade-stat-special">
                           <strong th:text="${gradeCounts != null and gradeCounts['특급'] != null ? gradeCounts['특급'] : 0}">0</strong>
@@ -148,20 +148,20 @@
                   data-bs-toggle="collapse" data-bs-target="#column-toggle">
               <i class="bi bi-layout-three-columns me-1"></i>컬럼 설정
           </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="downloadExcel()">
+          <button type="button" id="downloadExcelBtn" class="btn btn-outline-success btn-sm">
               <i class="bi bi-file-earmark-excel me-1"></i>전체 엑셀
           </button>
           <button type="button" class="btn btn-success btn-sm" id="exportSelectedBtn"
-                  disabled onclick="submitSelectedExport()">
+                  disabled>
               <i class="bi bi-file-earmark-excel me-1"></i>선택 엑셀 (<span id="selectedCount">0</span>명)
           </button>
           <button type="button" class="btn btn-outline-secondary btn-sm" id="bundleDownloadBtn"
-                  disabled onclick="submitBundleDownload()">
+                  disabled>
               <i class="bi bi-file-zip me-1"></i>ZIP 묶음 (<span id="bundleCount">0</span>명)
           </button>
           <div style="width:1px;background:var(--border);align-self:stretch;margin:0 .25rem;flex-shrink:0"></div>
           <select id="presetSelect" class="form-select form-select-sm" style="min-width:130px;max-width:160px"
-                  onchange="applyPreset(this.value)">
+>
               <option value="">프리셋 선택</option>
               <option th:each="p : ${presets}"
                       th:value="${p.id}"
@@ -181,24 +181,24 @@
           <div class="col-panel mb-2">
               <div class="col-label"><i class="bi bi-toggles me-1"></i>표시할 컬럼 선택</div>
               <div class="d-flex flex-wrap gap-3" style="font-size:.82rem">
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-team" onchange="toggleCol('team',this.checked)"> 팀</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-position" onchange="toggleCol('position',this.checked)"> 직급</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-age" onchange="toggleCol('age',this.checked)"> 나이</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-birthDate" onchange="toggleCol('birthDate',this.checked)"> 생년월일</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-phone" onchange="toggleCol('phone',this.checked)"> 연락처</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-email" onchange="toggleCol('email',this.checked)"> 이메일</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-developerGrade" onchange="toggleCol('developerGrade',this.checked)"> 개발자 등급</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-career" onchange="toggleCol('career',this.checked)"> 경력</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-resume" onchange="toggleCol('resume',this.checked)"> 이력서</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-careerDescription" onchange="toggleCol('careerDescription',this.checked)"> SW기술자 경력증명서</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-license" onchange="toggleCol('license',this.checked)"> 정보처리기사</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-graduationCertificate" onchange="toggleCol('graduationCertificate',this.checked)"> 졸업증명서</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-nationalPensionCertificate" onchange="toggleCol('nationalPensionCertificate',this.checked)"> 국민연금가입증명서</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceCertificate" onchange="toggleCol('healthInsuranceCertificate',this.checked)"> 건강보험가입증명서</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceEligibility" onchange="toggleCol('healthInsuranceEligibility',this.checked)"> 건강보험자격득실확인서</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-etc" onchange="toggleCol('etc',this.checked)"> 기타자료</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-updatedAt" onchange="toggleCol('updatedAt',this.checked)"> 업데이트</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-assignmentInfo" onchange="toggleCol('assignmentInfo',this.checked)"> 투입 정보</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-team"> 팀</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-position"> 직급</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-age"> 나이</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-birthDate"> 생년월일</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-phone"> 연락처</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-email"> 이메일</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-developerGrade"> 개발자 등급</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-career"> 경력</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-resume"> 이력서</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-careerDescription"> SW기술자 경력증명서</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-license"> 정보처리기사</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-graduationCertificate"> 졸업증명서</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-nationalPensionCertificate"> 국민연금가입증명서</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceCertificate"> 건강보험가입증명서</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceEligibility"> 건강보험자격득실확인서</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-etc"> 기타자료</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-updatedAt"> 업데이트</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-assignmentInfo"> 투입 정보</label>
               </div>
           </div>
       </div>
@@ -214,7 +214,7 @@
                   <input type="hidden" name="careerDisplay" th:value="${query.careerDisplay}">
                   <input type="text" name="presetName" class="form-control form-control-sm" style="max-width:180px"
                          placeholder="프리셋 이름" required>
-                  <button type="submit" class="btn btn-primary btn-sm" onclick="captureColsForPreset()">
+                  <button type="submit" id="presetSaveBtn" class="btn btn-primary btn-sm">
                       <i class="bi bi-bookmark-check me-1"></i>저장
                   </button>
                   <small class="text-muted" style="white-space:nowrap">컬럼·정렬·경력표시 저장</small>
@@ -222,8 +222,7 @@
               <div th:if="${!#lists.isEmpty(presets)}" class="mt-2 d-flex flex-wrap gap-1">
                   <form th:each="p : ${presets}"
                         th:action="@{/sales/profiles/preset/{id}/delete(id=${p.id})}"
-                        method="post" class="d-inline"
-                        onsubmit="return confirm('프리셋을 삭제하시겠습니까?')">
+                        method="post" class="d-inline delete-preset-form">
                       <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                       <button type="submit" class="btn btn-outline-danger btn-xs"
                               th:text="'✕ ' + ${p.name}"></button>
@@ -278,7 +277,7 @@
                   <thead>
                   <tr>
                       <th style="width:36px;text-align:center">
-                          <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)">
+                          <input type="checkbox" id="selectAll">
                       </th>
                       <th data-col="team">
                           <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='team',direction=${query.sort == 'team' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
@@ -323,7 +322,7 @@
                   <tr th:each="row : ${rows}">
                       <td style="text-align:center">
                           <input type="checkbox" class="row-chk"
-                                 th:value="${row.user.id}" onchange="updateSelectedCount()">
+                                 th:value="${row.user.id}">
                       </td>
                       <td data-col="team">
                           <span th:if="${row.user.team != null}"
@@ -646,6 +645,43 @@ document.addEventListener('DOMContentLoaded', function() {
             sel.value = savedPreset;
         }
     }
+
+    document.querySelectorAll('.team-chk').forEach(function(cb) {
+        cb.addEventListener('change', updateTeamLabel);
+    });
+    document.querySelectorAll('.grade-chk').forEach(function(cb) {
+        cb.addEventListener('change', updateGradeLabel);
+    });
+    var careerDisplaySel = document.getElementById('careerDisplaySel');
+    if (careerDisplaySel) careerDisplaySel.addEventListener('change', function() { this.form.submit(); });
+    var resetAllBtn = document.getElementById('resetAllBtn');
+    if (resetAllBtn) resetAllBtn.addEventListener('click', resetAll);
+    var downloadExcelBtn = document.getElementById('downloadExcelBtn');
+    if (downloadExcelBtn) downloadExcelBtn.addEventListener('click', downloadExcel);
+    var exportSelectedBtn = document.getElementById('exportSelectedBtn');
+    if (exportSelectedBtn) exportSelectedBtn.addEventListener('click', submitSelectedExport);
+    var bundleDownloadBtn = document.getElementById('bundleDownloadBtn');
+    if (bundleDownloadBtn) bundleDownloadBtn.addEventListener('click', submitBundleDownload);
+    var presetSelect = document.getElementById('presetSelect');
+    if (presetSelect) presetSelect.addEventListener('change', function() { applyPreset(this.value); });
+    COLS.forEach(function(col) {
+        var cb = document.getElementById('chk-' + col);
+        if (cb) cb.addEventListener('change', function() { toggleCol(col, this.checked); });
+    });
+    var presetSaveBtn = document.getElementById('presetSaveBtn');
+    if (presetSaveBtn) {
+        presetSaveBtn.closest('form').addEventListener('submit', function() { captureColsForPreset(); });
+    }
+    document.querySelectorAll('.delete-preset-form').forEach(function(f) {
+        f.addEventListener('submit', function(e) {
+            if (!confirm('프리셋을 삭제하시겠습니까?')) e.preventDefault();
+        });
+    });
+    var selectAll = document.getElementById('selectAll');
+    if (selectAll) selectAll.addEventListener('change', function() { toggleSelectAll(this.checked); });
+    document.querySelectorAll('.row-chk').forEach(function(cb) {
+        cb.addEventListener('change', updateSelectedCount);
+    });
 });
 </script>
 </body>

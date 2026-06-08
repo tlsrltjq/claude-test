@@ -59,8 +59,7 @@
                         method="post" class="d-inline">
                     <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                     <input type="hidden" name="folderId" th:value="${perm.targetId}">
-                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2"
-                            onclick="return confirm('권한을 회수하시겠습니까?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2 revoke-btn">
                       <i class="bi bi-trash me-1"></i>회수
                     </button>
                   </form>
@@ -110,6 +109,11 @@
 </div>
 <script th:attr="nonce=${cspNonce}">
 (function(){
+    document.querySelectorAll('.revoke-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            if (!confirm('권한을 회수하시겠습니까?')) e.preventDefault();
+        });
+    });
     document.querySelectorAll('form').forEach(function(f){
         if((f.getAttribute('method')||'get').toLowerCase()!=='get'){
             f.addEventListener('submit',function(){

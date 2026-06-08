@@ -162,8 +162,7 @@
                           <div class="d-flex gap-2 mb-2">
                               <input type="text" id="addrPostcode" class="form-control" style="width:110px;flex:none;"
                                      placeholder="우편번호" readonly>
-                              <button type="button" class="btn btn-outline-secondary btn-sm"
-                                      onclick="openAddressSearch()">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="addrSearchBtn">
                                   <i class="bi bi-search me-1"></i>주소 검색
                               </button>
                           </div>
@@ -230,8 +229,7 @@
                       <div class="mb-4">
                           <label class="form-label">새 비밀번호 확인 <span class="req">*</span></label>
                           <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" required
-                                 autocomplete="new-password" placeholder="새 비밀번호 재입력" minlength="8"
-                                 oninput="checkMatch()">
+                                 autocomplete="new-password" placeholder="새 비밀번호 재입력" minlength="8">
                           <div id="matchFeedback" class="form-text" style="display:none;"></div>
                       </div>
 
@@ -305,6 +303,8 @@ function openAddressSearch() {
         }
     }).open();
 }
+document.getElementById('addrSearchBtn').addEventListener('click', openAddressSearch);
+document.getElementById('confirmPassword').addEventListener('input', checkMatch);
 </script>
 </body>
 </html>
