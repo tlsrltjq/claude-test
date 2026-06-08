@@ -124,7 +124,7 @@ public class SalesProfileController {
 
         String filename = "투입인력서_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".zip";
         auditService.log(userDetails.getUser().getId(), AuditActionType.BUNDLE_DOWNLOAD,
-                AuditTargetType.USER, null, "selected:" + rows.size() + "명", request);
+                AuditTargetType.USER, 0L, "selected:" + rows.size() + "명", request);
 
         StreamingResponseBody body = out -> bundleDownloadService.buildZip(rows, out);
 
@@ -140,7 +140,7 @@ public class SalesProfileController {
             CustomUserDetails userDetails, HttpServletRequest request) {
         String filename = "인력프로필_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
         auditService.log(userDetails.getUser().getId(), AuditActionType.EXPORT_PROFILES,
-                AuditTargetType.USER, null,
+                AuditTargetType.USER, 0L,
                 "selected:" + rows.size() + "명 / cols:" + cols.size(), request);
         StreamingResponseBody body = out -> excelExportService.export(rows, cols, careerDisplay, out);
         return ResponseEntity.ok()
