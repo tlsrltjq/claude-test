@@ -112,8 +112,7 @@
                      target="_blank" class="text-decoration-none d-block">
                       <img th:if="${lv.thumbnailStoragePath != null}"
                            th:src="@{/documents/{id}/thumbnail(id=${lv.id})}"
-                           class="doc-thumb" alt="미리보기"
-                           class="doc-thumb-img"
+                           class="doc-thumb doc-thumb-img" alt="미리보기">
                       <div th:classappend="${lv.thumbnailStoragePath != null} ? 'd-none'" class="doc-icon-area">
                           <div th:class="'doc-ext ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
                                th:text="${ext.toUpperCase()}"></div>

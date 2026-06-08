@@ -79,8 +79,7 @@
             <!-- 썸네일 이미지 -->
             <div th:if="${doc.currentVersion != null and doc.currentVersion.thumbnailStoragePath != null}">
               <img th:src="@{/documents/{id}/thumbnail(id=${doc.currentVersion.id})}"
-                   class="doc-thumb" alt=""
-                   class="doc-thumb-img"
+                   class="doc-thumb doc-thumb-img" alt="">
               <div class="doc-icon-area" style="display:none;"
                    th:with="ext=${(doc.currentVersion.originalFileName.substring(doc.currentVersion.originalFileName.lastIndexOf('.')+1)).toLowerCase()}">
                 <div th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"

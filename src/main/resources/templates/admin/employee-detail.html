@@ -185,8 +185,7 @@
                   <a th:if="${cv != null and cv.previewSupported}" th:href="@{/documents/{id}/preview(id=${cv.id})}" target="_blank">
                     <img th:if="${cv.thumbnailStoragePath != null}"
                          th:src="@{/documents/{id}/thumbnail(id=${cv.id})}"
-                         class="doc-thumb" alt=""
-                         class="doc-thumb-img"
+                         class="doc-thumb doc-thumb-img" alt="">
                     <span th:with="ext=${cv.thumbnailStoragePath != null ? '' : (cv.originalFileName.substring(cv.originalFileName.lastIndexOf('.')+1)).toLowerCase()}"
                           th:if="${cv.thumbnailStoragePath == null}"
                           th:class="'doc-icon ' + (${ext == 'pdf'} ? 'ext-pdf' : (${ext == 'jpg' or ext == 'jpeg' or ext == 'png'} ? 'ext-img' : (${ext == 'docx'} ? 'ext-word' : (${ext == 'hwp' or ext == 'hwpx'} ? 'ext-hwp' : 'ext-etc'))))"
