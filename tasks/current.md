@@ -13,7 +13,7 @@
 - 531개 테스트 전 통과 ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-08: 로컬 Docker 환경 세팅 완료. docker-compose.yml SEED_TEST 환경변수 추가, 전 주요 페이지(admin·sales·my/folder·공용폴더 등) 동작 검증 완료. admin@eactive.co.kr / Admin1234!, test@eactive.co.kr / Test1234! 모두 정상.
+2026-06-08: Playwright 브라우저 테스트 19/19 전 통과. 로그인·내폴더·공용폴더·관리자·영업·캘린더·경력계산기·권한제어 전 기능 정상 확인. 앱 완전 운영 가능 상태.
 
 완료 항목:
 - feat: V230__add_expiry_notice_tracking.sql — documents.expiry_warn_sent_at, expired_notice_sent_at 추가 + 배포 백필(기존 임박·만료 문서 발송 처리)
