@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V230 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-08):** Flyway V230(V209 삭제). BUILD SUCCESSFUL. Docker 로컬 환경 구성 완료(PostgreSQL 18 + 앱 컨테이너). Playwright 브라우저 테스트 19/19 전 통과 확인. 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
+**현재 상태 (2026-06-08):** Flyway V230(V209 삭제). BUILD SUCCESSFUL. Docker 로컬 환경 구성 완료(PostgreSQL 18 + 앱 컨테이너). Playwright 브라우저 테스트 19/19 전 통과 확인. 팀 삭제 모달 CSP 버그 수정 완료. 미결: 인력표 팀 미배정자 노출 여부(현재 포함 상태, 정책 결정 필요). 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~046).
 

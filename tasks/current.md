@@ -13,7 +13,7 @@
 - 531개 테스트 전 통과 ✓
 
 ## 이전 세션에서 멈춘 곳
-2026-06-08: Playwright 브라우저 테스트 19/19 전 통과. 로그인·내폴더·공용폴더·관리자·영업·캘린더·경력계산기·권한제어 전 기능 정상 확인. 앱 완전 운영 가능 상태.
+2026-06-08: 팀 삭제 모달 CSP 버그 수정 완료(d144176). 원인: admin/teams.html의 onclick 인라인 이벤트 핸들러가 CSP script-src nonce 정책에 차단됨 → addEventListener로 교체. 인력표(SalesProfileQueryService:87) 팀 미배정자 포함 여부 정책 미결 — 사용자가 세션 종료 요청으로 다음 세션에서 결정 필요.
 
 완료 항목:
 - feat: V230__add_expiry_notice_tracking.sql — documents.expiry_warn_sent_at, expired_notice_sent_at 추가 + 배포 백필(기존 임박·만료 문서 발송 처리)
