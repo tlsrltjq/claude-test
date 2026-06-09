@@ -21,7 +21,7 @@
 
 기술 스택: Java 21 / Spring Boot 3.5 / Gradle / PostgreSQL 18 + Flyway V1~V230 / Thymeleaf + Bootstrap 5.3.3 / Spring Security 세션. 운영: Caddy(HTTPS) + Docker Compose.
 
-**현재 상태 (2026-06-09):** Flyway V230. BUILD SUCCESSFUL. Docker 로컬 환경 구성 완료. 인력표 전 사원(100명) 문서 시드 완료(586개 PDF, R2 업로드). 대시보드 투입 KPI와 캘린더 인력현황 숫자 통일(findAssignableUsers 기준). 프로젝트 이번달 신규투입·종료임박 시드 데이터 추가, 종료 프로젝트 3개 추가(총 8개). 회원가입 주소 필수 항목으로 변경(@NotBlank + JS 검증). 인력표 주소 컬럼 추가(이름-나이 사이, 클릭 시 전체 주소 팝업+클립보드 복사). 인력표 기타자료 컬럼 제거. 일반사원 대시보드 프로젝트 없는 경우 빈 상태 UI 추가. 날짜 입력 전체(7개 파일, 22개 필드) type="date" → 연/월/일 분리 필드(date-split) + 자동 탭 교체 — static/js/date-utils.js 신설. 미결: 인력표 팀 미배정자 노출 여부(정책 결정 필요). 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
+**현재 상태 (2026-06-09):** Flyway V230. BUILD SUCCESSFUL. Docker 로컬 환경 구성 완료. 인력표 전 사원(100명) 문서 시드 완료(586개 PDF, R2 업로드). 대시보드 투입 KPI와 캘린더 인력현황 숫자 통일(findAssignableUsers 기준). 프로젝트 이번달 신규투입·종료임박 시드 데이터 추가, 종료 프로젝트 3개 추가(총 8개). 회원가입 주소 필수 항목으로 변경(@NotBlank + JS 검증). 인력표 주소 컬럼 추가(이름-나이 사이, 클릭 시 전체 주소 팝업+클립보드 복사). 인력표 기타자료 컬럼 제거. 일반사원 대시보드 프로젝트 없는 경우 빈 상태 UI 추가. 날짜 입력 전체(7개 파일, 22개 필드) type="date" → 연/월/일 분리 필드(date-split) + 자동 탭 교체 — static/js/date-utils.js 신설. 정책 확정: 인력표 팀 미배정자 표시 — 팀 없는 사원도 인력표에 노출(기존 코드 유지, `team == null || isProjectTeam()` 조건). 백로그: 고정 도메인 구매·적용, NAS 저장소 연동.
 
 상세: `docs/architecture.md` (패키지·라우트), `docs/spec.md` (기능 SSOT), `docs/decisions.md` (ADR-001~046).
 
