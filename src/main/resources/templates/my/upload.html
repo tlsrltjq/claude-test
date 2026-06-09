@@ -72,7 +72,14 @@
                           </div>
                           <div class="col-6">
                               <label class="form-label">졸업일 <span class="req">*</span></label>
-                              <input type="date" name="issuedDate" id="issuedDateGrad" class="form-control">
+                              <span class="date-split" id="issuedDateGrad">
+                                <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off">
+                                <span class="date-sep">.</span>
+                                <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                                <span class="date-sep">.</span>
+                                <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                                <input type="hidden" name="issuedDate">
+                              </span>
                           </div>
                       </div>
                   </div>
@@ -83,7 +90,14 @@
                       <div class="row g-3">
                           <div class="col-12">
                               <label class="form-label">취득일 <span class="req">*</span></label>
-                              <input type="date" name="issuedDate" id="issuedDateCert" class="form-control">
+                              <span class="date-split" id="issuedDateCert">
+                                <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off">
+                                <span class="date-sep">.</span>
+                                <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                                <span class="date-sep">.</span>
+                                <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                                <input type="hidden" name="issuedDate">
+                              </span>
                           </div>
                       </div>
                   </div>
@@ -108,8 +122,14 @@
                   <!-- 만료일 (선택) -->
                   <div class="mt-3">
                       <label class="form-label">만료일 <span class="opt">(선택 — 자격증·건강보험료 등 유효기간 있는 문서)</span></label>
-                      <input type="date" name="expiresAt" class="form-control"
-                             th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
+                      <span class="date-split">
+                        <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off">
+                        <span class="date-sep">.</span>
+                        <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                        <span class="date-sep">.</span>
+                        <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                        <input type="hidden" name="expiresAt">
+                      </span>
                   </div>
 
                   <!-- 업로드 진행률 -->
@@ -146,6 +166,7 @@
 </div><!-- /.app-shell -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/date-utils.js}"></script>
 <script th:attr="nonce=${cspNonce}">
 /* ── 문서 종류별 제목 placeholder 매핑 ── */
 const TITLE_PLACEHOLDER = {

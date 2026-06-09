@@ -84,11 +84,25 @@
                 <div class="row g-3 mb-3">
                   <div class="col-6">
                     <label class="form-label fw-600">시작일 <span class="text-danger">*</span></label>
-                    <input type="date" name="startDate" class="form-control" required id="startDate">
+                    <span class="date-split" id="startDate">
+                      <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                      <span class="date-sep">.</span>
+                      <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                      <span class="date-sep">.</span>
+                      <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                      <input type="hidden" name="startDate">
+                    </span>
                   </div>
                   <div class="col-6">
                     <label class="form-label fw-600">종료일 <span class="text-danger">*</span></label>
-                    <input type="date" name="endDate" class="form-control" required id="endDate">
+                    <span class="date-split" id="endDate">
+                      <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                      <span class="date-sep">.</span>
+                      <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                      <span class="date-sep">.</span>
+                      <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                      <input type="hidden" name="endDate">
+                    </span>
                   </div>
                 </div>
 
@@ -193,6 +207,7 @@
 </div><!-- /.app-shell -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/date-utils.js}"></script>
 <script th:attr="nonce=${cspNonce}">
 (function () {
 

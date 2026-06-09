@@ -126,10 +126,20 @@
         </a>
       </div>
 
-      <!-- ── 내 프로젝트 현황 (투입 일정이 있는 경우만 표시) ── -->
-      <th:block th:if="${myAssignments != null and !#lists.isEmpty(myAssignments)}">
+      <!-- ── 내 프로젝트 현황 ── -->
+      <th:block th:if="${user.role.name() == 'EMPLOYEE' or (myAssignments != null and !#lists.isEmpty(myAssignments))}">
         <div class="section-hd"><i class="bi bi-kanban-fill me-1 text-primary"></i>내 프로젝트 현황</div>
         <div class="dash-project-card mb-4">
+          <!-- 배정 없음 -->
+          <div th:if="${myAssignments == null or #lists.isEmpty(myAssignments)}"
+               style="padding:1.25rem 1rem;display:flex;align-items:center;gap:.75rem;color:#6c757d;">
+            <i class="bi bi-calendar2-x" style="font-size:1.4rem;flex-shrink:0;"></i>
+            <div>
+              <div style="font-weight:600;font-size:.9rem;color:#495057;">현재 배정된 프로젝트가 없습니다.</div>
+              <div style="font-size:.8rem;margin-top:.2rem;">투입 일정이 생기면 여기에 표시됩니다.</div>
+            </div>
+          </div>
+          <!-- 배정 목록 -->
           <div th:each="pa : ${myAssignments}" class="dash-pa-row">
             <div class="dash-pa-status">
               <span th:if="${pa.status.name() == 'ACTIVE'}"

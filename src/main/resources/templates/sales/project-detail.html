@@ -195,11 +195,25 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-600 small">시작일 <span class="text-danger">*</span></label>
-              <input type="date" class="form-control form-control-sm" name="startDate" th:value="${project.startDate}" required>
+              <span class="date-split date-split-sm">
+                <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                <input type="hidden" name="startDate" th:value="${project.startDate}">
+              </span>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-600 small">종료일 <span class="text-danger">*</span></label>
-              <input type="date" class="form-control form-control-sm" name="endDate" th:value="${project.endDate}" required>
+              <span class="date-split date-split-sm">
+                <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                <input type="hidden" name="endDate" th:value="${project.endDate}">
+              </span>
             </div>
             <div class="col-12">
               <label class="form-label fw-600 small">상태</label>
@@ -277,11 +291,25 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-600 small">투입 시작일 <span class="text-danger">*</span></label>
-              <input type="date" class="form-control form-control-sm" name="startDate" th:value="${project.startDate}" required>
+              <span class="date-split date-split-sm">
+                <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                <input type="hidden" name="startDate" th:value="${project.startDate}">
+              </span>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-600 small">투입 종료일 <span class="text-danger">*</span></label>
-              <input type="date" class="form-control form-control-sm" name="endDate" th:value="${project.endDate}" required>
+              <span class="date-split date-split-sm">
+                <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                <span class="date-sep">.</span>
+                <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                <input type="hidden" name="endDate" th:value="${project.endDate}">
+              </span>
             </div>
           </div>
         </div>
@@ -316,11 +344,25 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-600 small">투입 시작일 <span class="text-danger">*</span></label>
-                <input type="date" class="form-control form-control-sm" name="startDate" th:value="${pa.startDate}" required>
+                <span class="date-split date-split-sm">
+                  <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                  <span class="date-sep">.</span>
+                  <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                  <span class="date-sep">.</span>
+                  <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                  <input type="hidden" name="startDate" th:value="${pa.startDate}">
+                </span>
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-600 small">투입 종료일 <span class="text-danger">*</span></label>
-                <input type="date" class="form-control form-control-sm" name="endDate" th:value="${pa.endDate}" required>
+                <span class="date-split date-split-sm">
+                  <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                  <span class="date-sep">.</span>
+                  <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                  <span class="date-sep">.</span>
+                  <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                  <input type="hidden" name="endDate" th:value="${pa.endDate}">
+                </span>
               </div>
               <div class="col-12">
                 <label class="form-label fw-600 small">상태</label>
@@ -444,5 +486,6 @@ document.querySelectorAll('.delete-member-form').forEach(function(f) {
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/date-utils.js}"></script>
 </body>
 </html>

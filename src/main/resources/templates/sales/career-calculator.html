@@ -101,8 +101,14 @@
                               </div>
                               <div class="col-sm-3">
                                   <div class="field-label">졸업일자 <span class="text-danger">*</span></div>
-                                  <input type="date" name="gradDate" class="form-control form-control-sm"
-                                         th:value="${gradDate}" required>
+                                  <span class="date-split date-split-sm">
+                                    <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off" required>
+                                    <span class="date-sep">.</span>
+                                    <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                                    <span class="date-sep">.</span>
+                                    <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                                    <input type="hidden" name="gradDate" th:value="${gradDate}">
+                                  </span>
                                   <div class="form-text" style="font-size:.72rem">경력 기산점</div>
                               </div>
                               <div class="col-sm-3">
@@ -120,8 +126,14 @@
                               <div class="col-sm-3" id="certDateWrap"
                                    th:style="${certType != null and certType != 'NONE'} ? '' : 'display:none'">
                                   <div class="field-label">취득일자</div>
-                                  <input type="date" name="certDate" id="certDateInput" class="form-control form-control-sm"
-                                         th:value="${certDate}">
+                                  <span class="date-split date-split-sm" id="certDateInput">
+                                    <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off">
+                                    <span class="date-sep">.</span>
+                                    <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                                    <span class="date-sep">.</span>
+                                    <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                                    <input type="hidden" name="certDate" th:value="${certDate}">
+                                  </span>
                                   <div class="form-text" style="font-size:.72rem">경력 기산점</div>
                               </div>
                           </div>
@@ -211,12 +223,24 @@
                                                      th:value="${companies != null and stat.index < #lists.size(companies)} ? ${companies[stat.index]} : ''">
                                           </td>
                                           <td>
-                                              <input type="date" name="startDates" class="form-control"
-                                                     th:value="${startDate}">
+                                              <span class="date-split">
+                                            <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off">
+                                            <span class="date-sep">.</span>
+                                            <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                                            <span class="date-sep">.</span>
+                                            <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                                            <input type="hidden" name="startDates" th:value="${startDate}">
+                                          </span>
                                           </td>
                                           <td>
-                                              <input type="date" name="endDates" class="form-control"
-                                                     th:value="${endDates != null and stat.index < #lists.size(endDates)} ? ${endDates[stat.index]} : ''">
+                                          <span class="date-split">
+                                            <input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off">
+                                            <span class="date-sep">.</span>
+                                            <input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off">
+                                            <span class="date-sep">.</span>
+                                            <input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off">
+                                            <input type="hidden" name="endDates" th:value="${endDates != null and stat.index < #lists.size(endDates)} ? ${endDates[stat.index]} : ''">
+                                          </span>
                                           </td>
                                           <td class="text-center align-middle days-cell" style="font-size:.8rem">-</td>
                                           <td class="text-center align-middle overlap-cell" style="font-size:.78rem">-</td>
@@ -442,6 +466,7 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/date-utils.js}"></script>
 <script th:attr="nonce=${cspNonce}">
 // ── 기준 선택 (학력 / 자격증) ─────────────────────────────────────────────────
 function selectBasis(key) {
@@ -569,11 +594,12 @@ function selectMemberById(id, name, team) {
         .then(r => r.json())
         .then(data => {
             document.getElementById('degreeSelect').value = data.degree || '';
-            document.querySelector('[name="gradDate"]').value = data.gradDate || '';
+            var gradHidden = document.querySelector('input[type="hidden"][name="gradDate"]');
+            if (gradHidden) setDateSplitValue(gradHidden, data.gradDate || '');
             const hasCert = data.certType && data.certType !== 'NONE';
             document.getElementById('certCheck').checked = hasCert;
             toggleCertDate();
-            document.getElementById('certDateInput').value = (hasCert && data.certDate) ? data.certDate : '';
+            setDateSplitValue(document.getElementById('certDateInput'), (hasCert && data.certDate) ? data.certDate : '');
             if (data.degree || data.gradDate || data.certType) {
                 const autoBadge = document.createElement('span');
                 autoBadge.className = 'badge bg-success ms-1';
@@ -587,13 +613,13 @@ function selectMemberById(id, name, team) {
 
 // ── 취득일자 토글 ──────────────────────────────────────────────────────────────
 function toggleCertDate() {
-    const checked = document.getElementById('certCheck').checked;
-    const hidden  = document.getElementById('certTypeSelect');
-    const wrap    = document.getElementById('certDateWrap');
-    const input   = document.getElementById('certDateInput');
+    const checked    = document.getElementById('certCheck').checked;
+    const hidden     = document.getElementById('certTypeSelect');
+    const certWrap   = document.getElementById('certDateWrap');
+    const inputWrap  = document.getElementById('certDateInput');
     hidden.value = checked ? 'ENGINEER' : 'NONE';
-    wrap.style.display = checked ? '' : 'none';
-    if (!checked) input.value = '';
+    certWrap.style.display = checked ? '' : 'none';
+    if (!checked) setDateSplitValue(inputWrap, '');
 }
 
 // ── 경력 기간 행 관리 ──────────────────────────────────────────────────────────
@@ -605,8 +631,8 @@ function addRow() {
     tr.innerHTML = `
         <td class="text-center text-muted align-middle" style="font-size:.78rem">${no}</td>
         <td><input type="text" name="companies" class="form-control" placeholder="회사명"></td>
-        <td><input type="date" name="startDates" class="form-control"></td>
-        <td><input type="date" name="endDates"   class="form-control"></td>
+        <td><span class="date-split"><input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off"><span class="date-sep">.</span><input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off"><span class="date-sep">.</span><input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off"><input type="hidden" name="startDates"></span></td>
+        <td><span class="date-split"><input type="text" class="date-seg date-seg-y" maxlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="off"><span class="date-sep">.</span><input type="text" class="date-seg date-seg-m" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="off"><span class="date-sep">.</span><input type="text" class="date-seg date-seg-d" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="off"><input type="hidden" name="endDates"></span></td>
         <td class="text-center align-middle days-cell" style="font-size:.8rem">-</td>
         <td class="text-center align-middle overlap-cell" style="font-size:.78rem">-</td>
         <td class="text-center align-middle">
@@ -614,6 +640,7 @@ function addRow() {
                     style="font-size:.85rem;border-radius:6px">−</button>
         </td>`;
     body.appendChild(tr);
+    initDateSplits(tr);
     refreshRows();
 }
 
