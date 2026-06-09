@@ -2,6 +2,7 @@
 
 > 형식: `YYYY-MM-DD | 단계 | feat/fix/chore/docs/refactor/test: 내용`
 > 한 줄씩 누적. 옛 상세 이력은 `docs/archive/CHANGELOG-detailed.md` 참조.
+2026-06-09 | 인력표 | docs: 팀 미배정자 인력표 노출 정책 확정 — 기존 코드(team==null 포함) 유지
 2026-06-09 | UX | feat: 날짜 입력 전체(7파일 22필드) type="date" → 연/월/일 분리 필드 + 자동 탭 — date-utils.js 신설, career-calculator addRow 동적 행 포함
 2026-06-09 | 대시보드 | feat: EMPLOYEE 역할 프로젝트 없는 경우에도 내 프로젝트 현황 섹션·빈 상태 문구 항상 표시
 2026-06-09 | 인력표 | feat: 인력표 주소 컬럼 추가(이름-나이 사이, 클릭 팝업+클립보드 복사) / 기타자료 컬럼 제거 / 엑셀 내보내기 동기화

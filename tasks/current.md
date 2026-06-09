@@ -13,6 +13,8 @@
 - 531개 테스트 전 통과 ✓
 
 ## 이전 세션에서 멈춘 곳
+2026-06-09: 인력표 팀 미배정자 정책 확정(노출, 코드 변경 없음). HARNESS·CHANGELOG·tasks 갱신.
+
 2026-06-09: 날짜 입력 분리 필드 + 자동 탭 전체 적용 완료. type="date" → 연/월/일 분리 텍스트 필드(date-split) 교체. static/js/date-utils.js 신설(initDateSplits, setDateSplitValue). 적용 파일 7개: settings, search, project-new, project-detail(모달 3곳), my/document-detail, my/upload, sales/career-calculator(정적+addRow 동적 행). career-calculator autofill·toggleCertDate JS setDateSplitValue 전환. 일반사원 대시보드 프로젝트 없는 경우 빈 상태 UI 추가(dashboard.html EMPLOYEE 조건 확장). 빌드 BUILD SUCCESSFUL, Docker 재기동 정상.
 
 2026-06-09: 인력표 전 사원(100명) 문서 시드 데이터 생성 완료. scripts/seed_documents.js 신설 — PDFKit+malgun.ttf(한글) PDF 생성, @aws-sdk/client-s3로 Cloudflare R2 직접 업로드, {팀명}/{이름}/UUID.pdf 저장 경로. 586개 문서·버전 DB 삽입, 577 APPROVED·6 PENDING_REVIEW·3 REJECTED, 만료 61·임박 64·유효 133. scripts/package.json(pdfkit, @aws-sdk/client-s3, dotenv) 추가. .gitignore에 scripts/node_modules 추가. 인력표 팀 미배정자 포함 여부 — 표시하기로 확정(기존 코드 `team == null || isProjectTeam()` 유지).
