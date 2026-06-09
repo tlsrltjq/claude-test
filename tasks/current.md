@@ -17,6 +17,8 @@
 
 2026-06-09: 내폴더·공용폴더 500 에러 긴급 수정 완료. 원인: 이전 CSP 수정 세션에서 img 태그에 class 속성 중복 추가 + 태그 미닫힘 → Thymeleaf ParseException. 수정 파일: public-folder.html, my/folder.html, admin/employee-documents.html, admin/employee-detail.html, sales/member-documents.html (class="doc-thumb doc-thumb-img" 병합, > 닫힘 추가).
 
+2026-06-09: 대시보드 KPI↔캘린더 인력현황 숫자 불일치 수정 — getDeployStats()의 totalNonAdmin(팀 무관)을 findAssignableUsers()(isProjectTeam() 소속자)로 교체. 이번달 신규투입(류재호, 6/5~) 및 종료임박(전성민, ~6/20) 배정 시드. 종료 프로젝트 3개 추가(국세청·카카오뱅크·한국전력, 총 8개). 회원가입 주소 필수화(SignupRequest @NotBlank + JS 검증). 인력표 주소 컬럼 추가(이름-나이 사이, data-col="address", 클릭 팝업+클립보드 복사), 기타자료 컬럼 제거(templates+SalesProfileExporter 동기화).
+
 완료 항목:
 - feat: V230__add_expiry_notice_tracking.sql — documents.expiry_warn_sent_at, expired_notice_sent_at 추가 + 배포 백필(기존 임박·만료 문서 발송 처리)
 - feat: Document.expiryWarnSentAt/expiredNoticeSentAt 필드 + mark 메서드, updateExpiresAt 시 이력 초기화
