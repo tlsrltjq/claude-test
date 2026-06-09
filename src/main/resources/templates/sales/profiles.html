@@ -183,6 +183,7 @@
               <div class="d-flex flex-wrap gap-3" style="font-size:.82rem">
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-team"> 팀</label>
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-position"> 직급</label>
+                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-address"> 주소</label>
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-age"> 나이</label>
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-birthDate"> 생년월일</label>
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-phone"> 연락처</label>
@@ -196,7 +197,7 @@
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-nationalPensionCertificate"> 국민연금가입증명서</label>
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceCertificate"> 건강보험가입증명서</label>
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-healthInsuranceEligibility"> 건강보험자격득실확인서</label>
-                  <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-etc"> 기타자료</label>
+
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-updatedAt"> 업데이트</label>
                   <label class="mb-0 d-flex align-items-center gap-1"><input type="checkbox" id="chk-assignmentInfo"> 투입 정보</label>
               </div>
@@ -291,6 +292,7 @@
                           <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='name',direction=${query.sort == 'name' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
                              class="sort-link">이름<span th:if="${query.sort == 'name'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
                       </th>
+                      <th data-col="address">주소</th>
                       <th data-col="age">
                           <a th:href="@{/sales/profiles(q=${query.q},teamIds=${query.teamIds},position=${query.position},developerGrades=${query.developerGrades},careerDisplay=${query.careerDisplay},sort='age',direction=${query.sort == 'age' ? (query.direction == 'asc' ? 'desc' : 'asc') : 'asc'})}"
                              class="sort-link">나이<span th:if="${query.sort == 'age'}" th:text="${' ' + (query.direction == 'asc' ? '↑' : '↓')}"></span></a>
@@ -313,7 +315,7 @@
                       <th class="doc-cell" data-col="nationalPensionCertificate">국민연금가입증명서</th>
                       <th class="doc-cell" data-col="healthInsuranceCertificate">건강보험가입증명서</th>
                       <th class="doc-cell" data-col="healthInsuranceEligibility">건강보험자격득실확인서</th>
-                      <th class="doc-cell" data-col="etc">기타자료</th>
+
                       <th data-col="updatedAt">업데이트</th>
                       <th data-col="assignmentInfo">투입 정보</th>
                   </tr>
@@ -340,6 +342,10 @@
                              th:href="@{/sales/employees/{id}/documents(id=${row.user.id})}"
                              th:text="${row.user.name}"></a>
                       </td>
+                      <td data-col="address" class="addr-cell"
+                          th:attr="data-addr=${row.user.address != null and !#strings.isEmpty(row.user.address) ? row.user.address : ''}"
+                          th:text="${row.user.address != null and !#strings.isEmpty(row.user.address) ? row.user.address : '-'}"
+                          style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer"></td>
                       <td data-col="age" th:text="${row.age > 0 ? row.age + '세' : '-'}"></td>
                       <td data-col="birthDate" th:text="${row.user.birthDate != null ? #temporals.format(row.user.birthDate, 'yyyy-MM-dd') : '-'}"></td>
                       <td data-col="phone" th:text="${row.user.phone != null and !row.user.phone.isEmpty() ? row.user.phone : '-'}"></td>
@@ -443,17 +449,6 @@
                           </td>
                       </th:block>
 
-                      <!-- 기타자료 -->
-                      <th:block th:with="dv=${row.getDoc(T(com.eactive.resourcehub.document.entity.DocumentType).ETC)}">
-                          <td class="doc-cell" data-col="etc">
-                              <span th:if="${dv == null}" class="text-muted" style="font-size:.75rem">없음</span>
-                              <span th:if="${dv != null}" class="d-flex gap-1">
-                                  <a th:if="${dv.previewSupported}" th:href="@{/documents/{id}/preview(id=${dv.id})}" target="_blank" class="btn btn-outline-secondary btn-xs"><i class="bi bi-eye"></i></a>
-                                  <a th:href="@{/documents/{id}/download(id=${dv.id})}" class="btn btn-outline-primary btn-xs"><i class="bi bi-download"></i></a>
-                              </span>
-                          </td>
-                      </th:block>
-
                       <td data-col="updatedAt" th:text="${row.user.updatedAt != null ? #temporals.format(row.user.updatedAt, 'yy.MM.dd') : '-'}"></td>
 
                       <!-- 투입 정보 -->
@@ -504,10 +499,10 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:attr="nonce=${cspNonce}">
-const COLS = ['team','position','age','birthDate','phone','email','developerGrade','career',
+const COLS = ['team','position','address','age','birthDate','phone','email','developerGrade','career',
     'resume','careerDescription','license','graduationCertificate',
     'nationalPensionCertificate','healthInsuranceCertificate','healthInsuranceEligibility',
-    'etc','updatedAt','assignmentInfo'];
+    'updatedAt','assignmentInfo'];
 
 function getHidden() {
     try { return JSON.parse(localStorage.getItem('profiles_hidden_cols') || '[]'); } catch(e) { return []; }
@@ -682,6 +677,53 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.row-chk').forEach(function(cb) {
         cb.addEventListener('change', updateSelectedCount);
     });
+
+    /* ── 주소 셀 클릭 팝업 ── */
+    var addrPopup = null;
+    function hideAddrPopup() {
+        if (addrPopup) { addrPopup.remove(); addrPopup = null; }
+    }
+    function showAddrPopup(cell) {
+        var addr = cell.dataset.addr;
+        if (!addr) return;
+        hideAddrPopup();
+        var rect = cell.getBoundingClientRect();
+        var popup = document.createElement('div');
+        popup.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #dee2e6;border-radius:6px;padding:8px 12px;box-shadow:0 4px 16px rgba(0,0,0,.18);font-size:.82rem;max-width:320px;word-break:break-all;display:flex;align-items:flex-start;gap:8px;';
+        var copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'btn btn-outline-primary btn-xs';
+        copyBtn.style.cssText = 'flex-shrink:0;white-space:nowrap;font-size:.75rem;padding:2px 8px;';
+        copyBtn.textContent = '복사';
+        copyBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            navigator.clipboard.writeText(addr).then(function() {
+                copyBtn.textContent = '복사됨!';
+                setTimeout(function() { copyBtn.textContent = '복사'; }, 1500);
+            });
+        });
+        var text = document.createElement('span');
+        text.style.cssText = 'flex:1;line-height:1.5;';
+        text.textContent = addr;
+        popup.appendChild(text);
+        popup.appendChild(copyBtn);
+        var top = rect.bottom + 4;
+        var left = rect.left;
+        if (left + 320 > window.innerWidth) left = Math.max(4, window.innerWidth - 324);
+        popup.style.top = top + 'px';
+        popup.style.left = left + 'px';
+        document.body.appendChild(popup);
+        addrPopup = popup;
+    }
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.addr-cell')) {
+            showAddrPopup(e.target.closest('.addr-cell'));
+            e.stopPropagation();
+        } else {
+            hideAddrPopup();
+        }
+    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') hideAddrPopup(); });
 });
 </script>
 </body>

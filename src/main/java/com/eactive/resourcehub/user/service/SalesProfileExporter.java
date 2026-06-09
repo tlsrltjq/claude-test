@@ -24,6 +24,7 @@ public class SalesProfileExporter {
         new ColDef("team",                  "팀"),
         new ColDef("position",              "직급"),
         new ColDef(null,                    "이름"),
+        new ColDef("address",               "주소"),
         new ColDef("age",                   "나이"),
         new ColDef("birthDate",             "생년월일"),
         new ColDef("phone",                 "연락처"),
@@ -36,8 +37,7 @@ public class SalesProfileExporter {
         new ColDef("graduationCertificate",         "졸업증명서"),
         new ColDef("nationalPensionCertificate",    "국민연금가입증명서"),
         new ColDef("healthInsuranceCertificate",    "건강보험가입증명서"),
-        new ColDef("healthInsuranceEligibility",    "건강보험자격득실확인서"),
-        new ColDef("etc",                           "기타자료")
+        new ColDef("healthInsuranceEligibility",    "건강보험자격득실확인서")
     );
 
     /** 응답 스트림에 직접 write — 메모리에 전체 파일을 적재하지 않음. */
@@ -68,7 +68,9 @@ public class SalesProfileExporter {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(effective.get(i).header());
                 cell.setCellStyle(headerStyle);
-                sheet.setColumnWidth(i, "email".equals(effective.get(i).key()) ? 7000 : 4500);
+                String ck = effective.get(i).key();
+                int w = "address".equals(ck) ? 9000 : "email".equals(ck) ? 7000 : 4500;
+                sheet.setColumnWidth(i, w);
             }
 
             int rowIdx = 1;
@@ -82,6 +84,7 @@ public class SalesProfileExporter {
                         case "team"     -> cell.setCellValue(row.getUser().getTeam() != null ? row.getUser().getTeam().getName() : "");
                         case "position" -> cell.setCellValue(row.getUser().getPosition() != null ? row.getUser().getPosition().getDisplayName() : "");
                         case "name"     -> cell.setCellValue(row.getUser().getName() != null ? row.getUser().getName() : "");
+                        case "address"  -> cell.setCellValue(row.getUser().getAddress() != null ? row.getUser().getAddress() : "");
                         case "age"      -> { if (row.getAge() > 0) cell.setCellValue(row.getAge()); }
                         case "birthDate"-> cell.setCellValue(row.getUser().getBirthDate() != null ? row.getUser().getBirthDate().format(DATE_FMT) : "");
                         case "phone"    -> cell.setCellValue(row.getUser().getPhone() != null ? row.getUser().getPhone() : "");
@@ -95,7 +98,6 @@ public class SalesProfileExporter {
                         case "nationalPensionCertificate"    -> docCell(cell, row, DocumentType.NATIONAL_PENSION_CERTIFICATE);
                         case "healthInsuranceCertificate"    -> docCell(cell, row, DocumentType.HEALTH_INSURANCE_CERTIFICATE);
                         case "healthInsuranceEligibility"    -> docCell(cell, row, DocumentType.HEALTH_INSURANCE_ELIGIBILITY);
-                        case "etc"                           -> docCell(cell, row, DocumentType.ETC);
                         default -> {}
                     }
                 }

@@ -23,6 +23,7 @@ public class SignupRequest {
     @Pattern(regexp = "^[0-9\\-+() ]{7,20}$", message = "올바른 연락처 형식이 아닙니다.")
     private String phone;
 
+    @NotBlank(message = "주소를 입력해주세요.")
     private String address;
 
     private String joinDateStr;

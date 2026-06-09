@@ -88,15 +88,17 @@
 
           <!-- 주소 -->
           <div class="mb-3">
-              <label class="form-label">주소 <span class="text-muted" style="font-size:.82rem">(선택)</span></label>
+              <label class="form-label">주소 <span style="color:#dc3545">*</span></label>
               <div class="d-flex gap-2 mb-2">
                   <input type="text" id="addrPostcode" class="form-control" style="width:110px;flex:none;"
                          placeholder="우편번호" readonly>
                   <button type="button" class="btn btn-outline-secondary btn-sm" id="addrSearchBtn">주소 검색</button>
               </div>
               <input type="text" id="addrRoad" class="form-control mb-2" placeholder="도로명 주소" readonly>
-              <input type="text" id="addrDetail" class="form-control" placeholder="상세 주소">
+              <input type="text" id="addrDetail" class="form-control" placeholder="상세 주소 (동·호수 등)">
               <input type="hidden" id="address" th:field="*{address}">
+              <div id="addrError" class="text-danger mt-1" style="font-size:.85rem;display:none">주소를 검색하여 선택해주세요.</div>
+              <div class="text-danger mt-1" style="font-size:.85rem" th:errors="*{address}"></div>
           </div>
 
           <!-- 팀 + 직급 -->
@@ -514,10 +516,18 @@ document.getElementById('signupForm').addEventListener('submit', function (e) {
     var jdHidden  = document.getElementById('joinDateStr');
     if (jdDisplay && jdHidden) jdHidden.value = jdDisplay.value.replace(/\./g, '');
 
-    /* 주소 조합 */
+    /* 주소 조합 및 필수 검증 */
     var road   = (document.getElementById('addrRoad')   || {value:''}).value.trim();
     var detail = (document.getElementById('addrDetail') || {value:''}).value.trim();
     document.getElementById('address').value = detail ? road + ' ' + detail : road;
+    var addrError = document.getElementById('addrError');
+    if (!road) {
+        e.preventDefault();
+        if (addrError) addrError.style.display = '';
+        document.getElementById('addrSearchBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+    if (addrError) addrError.style.display = 'none';
 
     /* 동의 항목 전체 체크 검증 */
     var consentError = document.getElementById('consentError');

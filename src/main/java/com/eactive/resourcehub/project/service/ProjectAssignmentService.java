@@ -24,6 +24,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -85,7 +86,7 @@ public class ProjectAssignmentService {
                         (a, b) -> a));
     }
 
-    /** 대시보드 통계 — COUNT 쿼리로 목록 전체 로드를 피함 */
+    /** 대시보드 통계 — 캘린더 인력현황과 동일한 모수(프로젝트 팀 소속 비관리자)로 계산 */
     @Transactional(readOnly = true)
     public DeployStats getDeployStats() {
         LocalDate today  = LocalDate.now();
@@ -95,9 +96,21 @@ public class ProjectAssignmentService {
 
         long startingThisMonth = assignmentRepository.countStartingBetween(mStart, mEnd);
         long endingThisMonth   = assignmentRepository.countEndingBetween(mStart, mEnd);
-        long currentlyDeployed = assignmentRepository.countActiveDistinctUsersOn(today);
-        long totalNonAdmin     = userRepository.countByStatusAndRoleNot(UserStatus.ACTIVE, UserRole.ADMIN);
-        long notDeployed       = Math.max(0, totalNonAdmin - currentlyDeployed);
+
+        // findAssignableUsers()와 동일한 기준: ACTIVE + 비관리자 + isProjectTeam()
+        List<User> assignable = findAssignableUsers();
+        Set<Long> assignableIds = assignable.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+
+        long currentlyDeployed = assignmentRepository.findActiveOn(today).stream()
+                .map(pa -> pa.getUser().getId())
+                .distinct()
+                .filter(assignableIds::contains)
+                .count();
+
+        long totalPersonnel = assignable.size();
+        long notDeployed    = Math.max(0, totalPersonnel - currentlyDeployed);
 
         return new DeployStats(startingThisMonth, endingThisMonth, currentlyDeployed, notDeployed);
     }
